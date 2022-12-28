@@ -1,6 +1,9 @@
 package i18n
 
 val frStrings = Strings(
-    hello = "Bonjour!",
-    clickMe = "Cliquez moi"
+    homePageTitle = "Accueil",
+    gamePageTitle = "Page de jeu",
+    goBack = "Revenir",
+    chessPiece = "Pièce d'échecs",
+    goToGamePage = "Aller à la page jeu",
 )

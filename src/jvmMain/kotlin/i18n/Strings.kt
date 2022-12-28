@@ -3,8 +3,11 @@ package i18n
 import androidx.compose.runtime.staticCompositionLocalOf
 
 data class Strings(
-    val hello: String,
-    val clickMe: String,
+    val homePageTitle: String,
+    val gamePageTitle: String,
+    val goBack: String,
+    val chessPiece: String,
+    val goToGamePage: String,
 )
 
 val strings = mapOf(

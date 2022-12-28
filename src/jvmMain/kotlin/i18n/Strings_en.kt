@@ -1,6 +1,9 @@
 package i18n
 
 val enStrings = Strings(
-    hello = "Hello !",
-    clickMe = "Click me",
+    homePageTitle = "Home",
+    gamePageTitle = "Game page",
+    goBack = "Go back",
+    chessPiece = "Chess piece",
+    goToGamePage = "Go to game page",
 )
