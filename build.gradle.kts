@@ -41,6 +41,20 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "ChessAgainstEngine"
             packageVersion = "1.0.0"
+            description = "Play chess against the UCI engine you provide."
+            vendor = "Laurent Bernabe"
+            licenseFile.set(project.file("license.txt"))
+
+            linux {
+                appCategory = "Game"
+                debMaintainer = "laurent.bernabe@gmail.com"
+                iconFile.set(project.file("icon.png"))
+            }
+
+            windows {
+                console = false
+                iconFile.set(project.file("icon.ico"))
+            }
         }
     }
 }
