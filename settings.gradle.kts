@@ -12,5 +12,5 @@ pluginManagement {
     }
 }
 
-rootProject.name = "ChessExperiment"
+rootProject.name = "ChessAgainstEngine"
 

@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="ChessAgainstEngine-jvm-1.0-SNAPSHOT">
+    <output-path>$PROJECT_DIR$/build/libs</output-path>
+    <root id="archive" name="ChessAgainstEngine-jvm-1.0-SNAPSHOT.jar">
+      <element id="module-output" name="ChessAgainstEngine.jvmMain" />
+    </root>
+  </artifact>
+</component>

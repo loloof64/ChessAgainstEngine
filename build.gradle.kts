@@ -1,6 +1,4 @@
-import org.jetbrains.compose.compose
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("multiplatform")
@@ -27,6 +25,7 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
+                implementation("cafe.adriel.lyricist:lyricist:1.2.2")
             }
         }
         val jvmTest by getting
@@ -38,7 +37,7 @@ compose.desktop {
         mainClass = "MainKt"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "ChessExperiment"
+            packageName = "ChessAgainstEngine"
             packageVersion = "1.0.0"
         }
     }
