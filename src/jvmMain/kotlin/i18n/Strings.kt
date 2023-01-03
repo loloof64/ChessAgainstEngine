@@ -8,6 +8,7 @@ data class Strings(
     val goBack: String,
     val chessPiece: String,
     val goToGamePage: String,
+    val swapBoardOrientation: String
 )
 
 val strings = mapOf(

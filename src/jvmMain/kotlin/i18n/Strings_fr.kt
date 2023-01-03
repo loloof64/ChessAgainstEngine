@@ -6,4 +6,5 @@ val frStrings = Strings(
     goBack = "Revenir",
     chessPiece = "Pièce d'échecs",
     goToGamePage = "Aller à la page jeu",
+    swapBoardOrientation = "Changer orientation échiquier"
 )
