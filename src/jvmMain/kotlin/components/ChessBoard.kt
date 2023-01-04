@@ -44,6 +44,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import com.arkivanov.essenty.parcelable.Parcelize
 import i18n.LocalStrings
+import i18n.Strings
 
 const val emptyCell = ' '
 
@@ -54,7 +55,6 @@ fun ChessBoard(
     reversed: Boolean = false,
 ) {
     val strings = LocalStrings.current
-    var dndData by rememberSaveable { mutableStateOf<DragAndDropData?>(null) }
 
     val positionParts = position.split(' ')
     val lineParts = positionParts[0].split('/')
@@ -80,79 +80,106 @@ fun ChessBoard(
             cellSize.toPx()
         }
 
+        var dndData by rememberSaveable { mutableStateOf<DragAndDropData?>(null) }
+
         Box(
             modifier = Modifier.aspectRatio(1f, heightBasedAspectRatio).background(bgColor)
         ) {
             LowerLayer(cellSize, reversed, pieces, isWhiteTurn, dndData)
-            Column(modifier = Modifier.fillMaxSize().pointerInput(Unit) {
-                detectDragGestures(
-                    onDragStart = { offset: Offset ->
-                        val col = ((offset.x - cellSizePx * 0.5) / cellSizePx).toInt()
-                        val row = ((offset.y - cellSizePx * 0.5) / cellSizePx).toInt()
-                        val file = if (reversed) 7 - col else col
-                        val rank = if (reversed) row else 7 - row
+            DragAndDropLayer(cellSizePx, reversed, pieces, isWhiteTurn, strings, onDndDataUpdate = { newDndData ->
+                dndData = newDndData
+            })
+        }
+    }
+}
 
-                        if (file < 0 || file > 7) return@detectDragGestures
-                        if (rank < 0 || rank > 7) return@detectDragGestures
+@Composable
+private fun DragAndDropLayer(
+    cellSizePx: Float,
+    reversed: Boolean,
+    pieces: List<List<Char>>,
+    isWhiteTurn: Boolean,
+    strings: Strings,
+    onDndDataUpdate: (DragAndDropData?) -> Unit
+) {
+    var dndData by rememberSaveable { mutableStateOf<DragAndDropData?>(null) }
+    Column(modifier = Modifier.fillMaxSize().pointerInput(reversed, Unit) {
+        detectDragGestures(
+            onDragStart = { offset: Offset ->
+                val col = ((offset.x - cellSizePx * 0.5) / cellSizePx).toInt()
+                val row = ((offset.y - cellSizePx * 0.5) / cellSizePx).toInt()
+                val file = if (reversed) 7 - col else col
+                val rank = if (reversed) row else 7 - row
 
-                        val piece = pieces[row][col]
-                        if (piece == emptyCell) return@detectDragGestures
+                if (file < 0 || file > 7) return@detectDragGestures
+                if (rank < 0 || rank > 7) return@detectDragGestures
 
-                        val isOurPiece = piece.isUpperCase() == isWhiteTurn
-                        if (!isOurPiece) return@detectDragGestures
 
-                        val startLocation = Offset(cellSizePx * (col + 0.5f), cellSizePx * (row + 0.5f))
+                val piece = pieces[7 - rank][file]
+                if (piece == emptyCell) return@detectDragGestures
 
-                        dndData = DragAndDropData(
-                            startFile = file,
-                            startRank = rank,
-                            endFile = file,
-                            endRank = rank,
-                            carriedPiece = piece,
-                            startLocation = startLocation,
-                            currentLocation = startLocation,
-                        )
-                    },
-                    onDrag = { _, dragAmount ->
-                        if (dndData == null) return@detectDragGestures
 
-                        val currentLocation = dndData!!.currentLocation + dragAmount
+                val isOurPiece = piece.isUpperCase() == isWhiteTurn
+                if (!isOurPiece) return@detectDragGestures
 
-                        val col = ((currentLocation.x - cellSizePx * 0.5) / cellSizePx).toInt()
-                        val row = ((currentLocation.y - cellSizePx * 0.5) / cellSizePx).toInt()
-                        val file = if (reversed) 7 - col else col
-                        val rank = if (reversed) row else 7 - row
+                val startLocation = Offset(cellSizePx * (col + 0.5f), cellSizePx * (row + 0.5f))
 
-                        dndData = dndData!!.copy(
-                            endRank = rank,
-                            endFile = file,
-                            currentLocation = currentLocation,
-                        )
-                    },
-                    onDragEnd = {
-                        if (dndData == null) return@detectDragGestures
-                        dndData = null
-                    },
-                    onDragCancel = {
-                        if (dndData == null) return@detectDragGestures
-                        dndData = null
-                    }
-                )
-            }) {
-                if (dndData != null) {
-                    val xDp = with(LocalDensity.current) {
-                        dndData!!.currentLocation.x.toDp()
-                    }
-                    val yDp = with(LocalDensity.current) {
-                        dndData!!.currentLocation.y.toDp()
-                    }
-                    Image(
-                        painter = painterResource(getVectorForPiece(dndData!!.carriedPiece)),
-                        contentDescription = strings.draggedPiece,
-                        modifier = Modifier.fillMaxSize(0.111f).offset(xDp, yDp),
+                dndData =
+                    DragAndDropData(
+                        startFile = file,
+                        startRank = rank,
+                        endFile = file,
+                        endRank = rank,
+                        carriedPiece = piece,
+                        startLocation = startLocation,
+                        currentLocation = startLocation,
                     )
-                }
+                onDndDataUpdate(dndData)
+
+            },
+            onDrag = { _, dragAmount ->
+                if (dndData == null) return@detectDragGestures
+
+                val currentLocation = dndData!!.currentLocation + dragAmount
+
+                val col = ((currentLocation.x - cellSizePx * 0.5) / cellSizePx).toInt()
+                val row = ((currentLocation.y - cellSizePx * 0.5) / cellSizePx).toInt()
+                val file = if (reversed) 7 - col else col
+                val rank = if (reversed) row else 7 - row
+
+                dndData =
+                    dndData!!.copy(
+                        endRank = rank,
+                        endFile = file,
+                        currentLocation = currentLocation,
+                    )
+                onDndDataUpdate(dndData)
+
+            },
+            onDragEnd = {
+                if (dndData == null) return@detectDragGestures
+                dndData = null
+                onDndDataUpdate(dndData)
+            },
+            onDragCancel = {
+                if (dndData == null) return@detectDragGestures
+                dndData = null
+                onDndDataUpdate(dndData)
             }
+        )
+    }) {
+        if (dndData != null) {
+            val xDp = with(LocalDensity.current) {
+                dndData!!.currentLocation.x.toDp()
+            }
+            val yDp = with(LocalDensity.current) {
+                dndData!!.currentLocation.y.toDp()
+            }
+            Image(
+                painter = painterResource(getVectorForPiece(dndData!!.carriedPiece)),
+                contentDescription = strings.draggedPiece,
+                modifier = Modifier.fillMaxSize(0.111f).offset(xDp, yDp),
+            )
         }
     }
 }
@@ -200,8 +227,8 @@ private fun ChessBoardCellsLine(
     ) {
         ChessBoardVerticalLabel(text = rankLabel, cellSize = cellSize)
         (0..7).forEach { colIndex ->
-            val file = if (reversed) 7-colIndex else colIndex
-            val rank = if (reversed) rowIndex else 7-rowIndex
+            val file = if (reversed) 7 - colIndex else colIndex
+            val rank = if (reversed) rowIndex else 7 - rowIndex
 
             val isDraggedPieceOrigin = if (dndData != null) {
                 file == dndData.startFile && rank == dndData.startRank
