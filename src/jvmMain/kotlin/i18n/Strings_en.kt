@@ -6,5 +6,6 @@ val enStrings = Strings(
     goBack = "Go back",
     chessPiece = "Chess piece",
     goToGamePage = "Go to game page",
-    swapBoardOrientation = "Swap board orientation"
+    swapBoardOrientation = "Swap board orientation",
+    draggedPiece = "Dragged piece",
 )
