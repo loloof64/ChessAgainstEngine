@@ -54,6 +54,7 @@ fun ChessBoard(
     position: String = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
     reversed: Boolean = false,
 ) {
+    var dndData by rememberSaveable { mutableStateOf<DragAndDropData?>(null) }
     val strings = LocalStrings.current
 
     val positionParts = position.split(' ')
@@ -80,7 +81,6 @@ fun ChessBoard(
             cellSize.toPx()
         }
 
-        var dndData by rememberSaveable { mutableStateOf<DragAndDropData?>(null) }
 
         Box(
             modifier = Modifier.aspectRatio(1f, heightBasedAspectRatio).background(bgColor)
@@ -234,11 +234,26 @@ private fun ChessBoardCellsLine(
                 file == dndData.startFile && rank == dndData.startRank
             } else false
 
+            val isIntoDragAndDropCrossLines = if (dndData != null) {
+                file == dndData.endFile || rank == dndData.endRank
+            } else false
+
+            val isDragAndDropStartCell = if (dndData != null) {
+                file == dndData.startFile && rank == dndData.startRank
+            } else false
+
+            val isDragAndDropEndCell = if (dndData != null) {
+                file == dndData.endFile && rank == dndData.endRank
+            } else false
+
             ChessBoardCell(
                 isWhite = if ((colIndex % 2) == 0) firstCellWhite else !firstCellWhite,
                 size = cellSize,
                 pieceValue = piecesValues[if (reversed) 7 - colIndex else colIndex],
                 isDraggedPieceOrigin = isDraggedPieceOrigin,
+                isIntoDragAndDropCrossLines = isIntoDragAndDropCrossLines,
+                isDragAndDropStartCell = isDragAndDropStartCell,
+                isDragAndDropEndCell = isDragAndDropEndCell,
             )
         }
         ChessBoardVerticalLabel(text = rankLabel, cellSize = cellSize)
@@ -323,9 +338,16 @@ private fun ChessBoardCell(
     size: Dp,
     pieceValue: Char,
     isDraggedPieceOrigin: Boolean,
+    isDragAndDropStartCell: Boolean,
+    isDragAndDropEndCell: Boolean,
+    isIntoDragAndDropCrossLines: Boolean,
 ) {
     val strings = LocalStrings.current
-    val bgColor = if (isWhite) Color(0xFFFFDEAD) else Color(0xFFCD853F)
+    var bgColor = if (isWhite) Color(0xFFFFDEAD) else Color(0xFFCD853F)
+    if (isIntoDragAndDropCrossLines) bgColor = Color(0xFFE84FF5)
+    if (isDragAndDropStartCell) bgColor = Color(0xFFDC1818)
+    if (isDragAndDropEndCell) bgColor = Color(0xFF41D94D)
+
     Surface(modifier = modifier.size(size)) {
         Column(modifier = Modifier.background(bgColor)) {
             val noPiece = pieceValue == emptyCell
