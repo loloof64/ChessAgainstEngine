@@ -98,6 +98,9 @@ fun ChessBoard(
                         val piece = pieces[row][col]
                         if (piece == emptyCell) return@detectDragGestures
 
+                        val isOurPiece = piece.isUpperCase() == isWhiteTurn
+                        if (!isOurPiece) return@detectDragGestures
+
                         val startLocation = Offset(cellSizePx * (col + 0.5f), cellSizePx * (row + 0.5f))
 
                         dndData = DragAndDropData(
@@ -298,7 +301,8 @@ private fun ChessBoardCell(
     val bgColor = if (isWhite) Color(0xFFFFDEAD) else Color(0xFFCD853F)
     Surface(modifier = modifier.size(size)) {
         Column(modifier = Modifier.background(bgColor)) {
-            if (pieceValue != emptyCell && !isDraggedPieceOrigin) {
+            val noPiece = pieceValue == emptyCell
+            if (!noPiece && !isDraggedPieceOrigin) {
                 Image(
                     painter = painterResource(getVectorForPiece(pieceValue)),
                     contentDescription = strings.chessPiece,
