@@ -10,6 +10,9 @@ data class Strings(
     val goToGamePage: String,
     val swapBoardOrientation: String,
     val draggedPiece: String,
+    val wrongFieldsCountFen: String,
+    val oppositeKingInCheckFen: String,
+    val close: String,
 )
 
 val strings = mapOf(

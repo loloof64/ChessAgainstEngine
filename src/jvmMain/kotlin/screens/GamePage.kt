@@ -19,13 +19,16 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import components.ChessBoard
 import i18n.LocalStrings
+import logic.ChessGameManager
 
 @Composable
 fun GamePage(
     onBack: () -> Unit,
 ) {
     val strings = LocalStrings.current
-    var boardReversed by rememberSaveable{ mutableStateOf(false) }
+    var boardReversed by rememberSaveable { mutableStateOf(false) }
+    var currentPosition by rememberSaveable { mutableStateOf(ChessGameManager.currentPosition()) }
+
     Scaffold(topBar = {
         TopAppBar(
             title = { Text(strings.gamePageTitle) },
@@ -53,8 +56,7 @@ fun GamePage(
             verticalArrangement = Arrangement.Center
         ) {
             ChessBoard(
-                position = "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2",
-                reversed = boardReversed
+                position = currentPosition
             )
         }
     }

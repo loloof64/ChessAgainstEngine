@@ -45,13 +45,14 @@ import androidx.compose.ui.unit.Dp
 import com.arkivanov.essenty.parcelable.Parcelize
 import i18n.LocalStrings
 import i18n.Strings
+import logic.defaultPosition
 
 const val emptyCell = ' '
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChessBoard(
-    position: String = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+    position: String = defaultPosition,
     reversed: Boolean = false,
 ) {
     var dndData by rememberSaveable { mutableStateOf<DragAndDropData?>(null) }
