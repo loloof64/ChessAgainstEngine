@@ -37,6 +37,10 @@ object ChessGameManager {
 
     fun getPendingPromotion(): PendingPromotion = _pendingPromotion
 
+    fun getPendingPromotionStartSquare(): Square? = _pendingPromotionStartSquare
+
+    fun getPendingPromotionEndSquare(): Square? = _pendingPromotionEndSquare
+
     fun isWhiteTurn(): Boolean {
         val positionFen = _gameLogic.fen
         return positionFen.split(" ")[1] == "w"

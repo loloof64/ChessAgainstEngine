@@ -65,6 +65,10 @@ fun ChessBoard(
     isWhiteTurn: Boolean,
     reversed: Boolean = false,
     pendingPromotion: PendingPromotion,
+    pendingPromotionStartFile: Int?,
+    pendingPromotionStartRank: Int?,
+    pendingPromotionEndFile: Int?,
+    pendingPromotionEndRank: Int?,
     tryPlayingMove: (DragAndDropData) -> Unit,
     onCancelPromotion: () -> Unit,
     onValidatePromotion: (PromotionType) -> Unit,
@@ -90,7 +94,11 @@ fun ChessBoard(
                 reversed = reversed,
                 piecesValues = piecesValues,
                 isWhiteTurn = isWhiteTurn,
-                dndData = dndData
+                dndData = dndData,
+                pendingPromotionStartFile = pendingPromotionStartFile,
+                pendingPromotionStartRank = pendingPromotionStartRank,
+                pendingPromotionEndFile = pendingPromotionEndFile,
+                pendingPromotionEndRank = pendingPromotionEndRank,
             )
             DragAndDropLayer(
                 cellSizePx = cellSizePx,
@@ -270,6 +278,10 @@ private fun LowerLayer(
     piecesValues: List<List<Char>>,
     isWhiteTurn: Boolean,
     dndData: DragAndDropData?,
+    pendingPromotionStartFile: Int?,
+    pendingPromotionStartRank: Int?,
+    pendingPromotionEndFile: Int?,
+    pendingPromotionEndRank: Int?,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         ChessBoardHorizontalLabels(cellSize = cellSize, whiteTurn = null, reversed = reversed)
@@ -283,6 +295,10 @@ private fun LowerLayer(
                 rankLabel = rankLabel, rowPiecesValues = rowPiecesValues,
                 reversed = reversed, dndData = dndData,
                 rowIndex = rowIndex,
+                pendingPromotionStartFile = pendingPromotionStartFile,
+                pendingPromotionStartRank = pendingPromotionStartRank,
+                pendingPromotionEndFile = pendingPromotionEndFile,
+                pendingPromotionEndRank = pendingPromotionEndRank,
             )
         }
         ChessBoardHorizontalLabels(cellSize = cellSize, whiteTurn = isWhiteTurn, reversed = reversed)
@@ -299,6 +315,10 @@ private fun ChessBoardCellsLine(
     reversed: Boolean,
     rowIndex: Int,
     dndData: DragAndDropData?,
+    pendingPromotionStartFile: Int?,
+    pendingPromotionStartRank: Int?,
+    pendingPromotionEndFile: Int?,
+    pendingPromotionEndRank: Int?,
 ) {
     Row(
         modifier = modifier,
@@ -325,6 +345,14 @@ private fun ChessBoardCellsLine(
                 file == dndData.endFile && rank == dndData.endRank
             } else false
 
+            val isPendingPromotionStartCell =
+                file == pendingPromotionStartFile && rank == pendingPromotionStartRank
+
+
+            val isPendingPromotionEndCell =
+                file == pendingPromotionEndFile && rank == pendingPromotionEndRank
+
+
             ChessBoardCell(
                 isWhite = if ((colIndex % 2) == 0) firstCellWhite else !firstCellWhite,
                 size = cellSize,
@@ -333,6 +361,8 @@ private fun ChessBoardCellsLine(
                 isIntoDragAndDropCrossLines = isIntoDragAndDropCrossLines,
                 isDragAndDropStartCell = isDragAndDropStartCell,
                 isDragAndDropEndCell = isDragAndDropEndCell,
+                isPendingPromotionStartCell = isPendingPromotionStartCell,
+                isPendingPromotionEndCell = isPendingPromotionEndCell,
             )
         }
         ChessBoardVerticalLabel(text = rankLabel, cellSize = cellSize)
@@ -420,25 +450,35 @@ private fun ChessBoardCell(
     isDragAndDropStartCell: Boolean,
     isDragAndDropEndCell: Boolean,
     isIntoDragAndDropCrossLines: Boolean,
+    isPendingPromotionStartCell: Boolean,
+    isPendingPromotionEndCell: Boolean,
 ) {
-    val strings = LocalStrings.current
-    var bgColor = if (isWhite) Color(0xFFFFDEAD) else Color(0xFFCD853F)
-    if (isIntoDragAndDropCrossLines) bgColor = Color(0xFFE84FF5)
-    if (isDragAndDropStartCell) bgColor = Color(0xFFDC1818)
-    if (isDragAndDropEndCell) bgColor = Color(0xFF41D94D)
+    val whiteCellColor = 0xFFFFDEAD
+    val blackCellColor = 0xFFCD853F
+    val dragDropCrossLineCellColor = 0xFFE84FF5
+    val dragDropStartCellColor = 0xFFDC1818
+    val dragDropEndCellColor = 0xFF41D94D
 
-    Surface(modifier = modifier.size(size)) {
-        Column(modifier = Modifier.background(bgColor)) {
-            val noPiece = pieceValue == emptyCell
-            if (!noPiece && !isDraggedPieceOrigin) {
-                Image(
-                    painter = painterResource(getVectorForPiece(pieceValue)),
-                    contentDescription = strings.chessPiece,
-                    modifier = Modifier.fillMaxSize(),
-                )
+    val strings = LocalStrings.current
+    var bgColor = if (isWhite) Color(whiteCellColor) else Color(blackCellColor)
+    if (isIntoDragAndDropCrossLines) bgColor = Color(dragDropCrossLineCellColor)
+    if (isDragAndDropStartCell) bgColor = Color(dragDropStartCellColor)
+    if (isDragAndDropEndCell) bgColor = Color(dragDropEndCellColor)
+    if (isPendingPromotionStartCell) bgColor = Color(dragDropStartCellColor)
+    if (isPendingPromotionEndCell) bgColor = Color(dragDropEndCellColor)
+
+        Surface(modifier = modifier.size(size)) {
+            Column(modifier = Modifier.background(bgColor)) {
+                val noPiece = pieceValue == emptyCell
+                if (!noPiece && !isDraggedPieceOrigin) {
+                    Image(
+                        painter = painterResource(getVectorForPiece(pieceValue)),
+                        contentDescription = strings.chessPiece,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
             }
         }
-    }
 }
 
 fun getVectorForPiece(pieceValue: Char): String {

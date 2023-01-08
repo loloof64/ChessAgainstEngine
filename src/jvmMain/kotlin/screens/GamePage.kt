@@ -31,6 +31,8 @@ fun GamePage(
     var boardPieces by rememberSaveable { mutableStateOf(ChessGameManager.getPieces()) }
     var isWhiteTurn by rememberSaveable { mutableStateOf(ChessGameManager.isWhiteTurn()) }
     var pendingPromotion by rememberSaveable { mutableStateOf(PendingPromotion.None) }
+    var pendingPromotionStartSquare by rememberSaveable { mutableStateOf(ChessGameManager.getPendingPromotionStartSquare()) }
+    var pendingPromotionEndSquare by rememberSaveable { mutableStateOf(ChessGameManager.getPendingPromotionEndSquare()) }
 
     Scaffold(topBar = {
         TopAppBar(title = { Text(strings.gamePageTitle) }, navigationIcon = {
@@ -59,6 +61,10 @@ fun GamePage(
                 piecesValues = boardPieces,
                 reversed = boardReversed,
                 pendingPromotion = pendingPromotion,
+                pendingPromotionStartFile = pendingPromotionStartSquare?.x,
+                pendingPromotionStartRank = pendingPromotionStartSquare?.y,
+                pendingPromotionEndFile = pendingPromotionEndSquare?.x,
+                pendingPromotionEndRank = pendingPromotionEndSquare?.y,
                 tryPlayingMove = { dragAndDropData ->
                     ChessGameManager.playMove(
                         startFile = dragAndDropData.startFile,
@@ -69,16 +75,22 @@ fun GamePage(
                     isWhiteTurn = ChessGameManager.isWhiteTurn()
                     boardPieces = ChessGameManager.getPieces()
                     pendingPromotion = ChessGameManager.getPendingPromotion()
+                    pendingPromotionStartSquare = ChessGameManager.getPendingPromotionStartSquare()
+                    pendingPromotionEndSquare = ChessGameManager.getPendingPromotionEndSquare()
                 },
                 onCancelPromotion = {
                     ChessGameManager.cancelPromotion()
                     pendingPromotion = ChessGameManager.getPendingPromotion()
+                    pendingPromotionStartSquare = ChessGameManager.getPendingPromotionStartSquare()
+                    pendingPromotionEndSquare = ChessGameManager.getPendingPromotionEndSquare()
                 },
                 onValidatePromotion = {
                     ChessGameManager.commitPromotion(it)
                     isWhiteTurn = ChessGameManager.isWhiteTurn()
                     boardPieces = ChessGameManager.getPieces()
                     pendingPromotion = ChessGameManager.getPendingPromotion()
+                    pendingPromotionStartSquare = ChessGameManager.getPendingPromotionStartSquare()
+                    pendingPromotionEndSquare = ChessGameManager.getPendingPromotionEndSquare()
                 }
             )
         }
