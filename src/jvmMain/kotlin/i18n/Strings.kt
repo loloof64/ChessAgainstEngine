@@ -17,6 +17,12 @@ data class Strings(
     val rookPromotion: String,
     val bishopPromotion: String,
     val knightPromotion: String,
+    val playerWonGame: String,
+    val playerLostGame: String,
+    val drawByStalemate: String,
+    val drawByThreeFoldRepetition: String,
+    val drawByInsufficientMaterial: String,
+    val drawByFiftyMovesRule: String,
 )
 
 val strings = mapOf(

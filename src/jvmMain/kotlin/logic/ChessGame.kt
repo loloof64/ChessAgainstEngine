@@ -10,11 +10,15 @@ import io.github.wolfraam.chessgame.ChessGame
 import io.github.wolfraam.chessgame.board.PieceType
 import io.github.wolfraam.chessgame.board.Square
 import io.github.wolfraam.chessgame.move.Move
+import io.github.wolfraam.chessgame.result.ChessGameResult
+import io.github.wolfraam.chessgame.result.ChessGameResultType
+import io.github.wolfraam.chessgame.result.DrawType
 
 const val defaultPosition = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 const val emptyPosition = "k/8/8/8/8/8/8/K w - - 0 1"
 
 object ChessGameManager {
+    private var _gameInProgress by mutableStateOf(false)
     private var _gameLogic by mutableStateOf(ChessGame(emptyPosition))
     private var _pendingPromotion by mutableStateOf(PendingPromotion.None)
     private var _pendingPromotionStartSquare by mutableStateOf<Square?>(null)
@@ -35,6 +39,8 @@ object ChessGameManager {
         }
     }
 
+    fun isGameInProgress(): Boolean = _gameInProgress
+
     fun getPendingPromotion(): PendingPromotion = _pendingPromotion
 
     fun getPendingPromotionStartSquare(): Square? = _pendingPromotionStartSquare
@@ -53,11 +59,17 @@ object ChessGameManager {
         _pendingPromotion = PendingPromotion.None
         _pendingPromotionStartSquare = null
         _pendingPromotionEndSquare = null
+        _gameInProgress = true
     }
 
     fun playMove(
         startFile: Int, startRank: Int,
         endFile: Int, endRank: Int,
+        onCheckmate: (Boolean) -> Unit,
+        onStalemate: () -> Unit,
+        onThreeFoldsRepetition: () -> Unit,
+        onInsufficientMaterial: () -> Unit,
+        onFiftyMovesRuleDraw: () -> Unit
     ) {
         val startSquare = Square.values()[8 * startFile + startRank]
         val endSquare = Square.values()[8 * endFile + endRank]
@@ -65,6 +77,13 @@ object ChessGameManager {
 
         if (_gameLogic.isLegalMove(move)) {
             _gameLogic.playMove(move)
+            handleGameEndingStatus(
+                onCheckmate = onCheckmate,
+                onStalemate = onStalemate,
+                onThreeFoldsRepetition = onThreeFoldsRepetition,
+                onInsufficientMaterial = onInsufficientMaterial,
+                onFiftyMovesRuleDraw = onFiftyMovesRuleDraw,
+            )
         } else {
             val isLegalPromotionMove = _gameLogic.isLegalMove(Move(startSquare, endSquare, PieceType.QUEEN))
 
@@ -82,7 +101,14 @@ object ChessGameManager {
         _pendingPromotionEndSquare = null
     }
 
-    fun commitPromotion(pieceType: PromotionType) {
+    fun commitPromotion(
+        pieceType: PromotionType,
+        onCheckmate: (Boolean) -> Unit,
+        onStalemate: () -> Unit,
+        onThreeFoldsRepetition: () -> Unit,
+        onInsufficientMaterial: () -> Unit,
+        onFiftyMovesRuleDraw: () -> Unit
+    ) {
         if (_pendingPromotion == PendingPromotion.None) return
         val promotionPiece = when (pieceType) {
             PromotionType.Queen -> PieceType.QUEEN
@@ -96,7 +122,63 @@ object ChessGameManager {
             _pendingPromotion = PendingPromotion.None
             _pendingPromotionStartSquare = null
             _pendingPromotionEndSquare = null
+
+            handleGameEndingStatus(
+                onCheckmate = onCheckmate,
+                onStalemate = onStalemate,
+                onThreeFoldsRepetition = onThreeFoldsRepetition,
+                onInsufficientMaterial = onInsufficientMaterial,
+                onFiftyMovesRuleDraw = onFiftyMovesRuleDraw,
+            )
         }
     }
 
+    private fun handleGameEndingStatus(
+        onCheckmate: (Boolean) -> Unit,
+        onStalemate: () -> Unit,
+        onThreeFoldsRepetition: () -> Unit,
+        onInsufficientMaterial: () -> Unit,
+        onFiftyMovesRuleDraw: () -> Unit,
+    ) {
+        val gameResult: ChessGameResult? = _gameLogic.gameResult
+        when (gameResult?.chessGameResultType) {
+            ChessGameResultType.WHITE_WINS -> {
+                _gameInProgress = false
+                onCheckmate(true)
+            }
+
+            ChessGameResultType.BLACK_WINS -> {
+                _gameInProgress = false
+                onCheckmate(false)
+            }
+
+            ChessGameResultType.DRAW -> {
+                when (gameResult.drawType) {
+                    DrawType.STALE_MATE -> {
+                        _gameInProgress = false
+                        onStalemate()
+                    }
+
+                    DrawType.THREEFOLD_REPETITION -> {
+                        _gameInProgress = false
+                        onThreeFoldsRepetition()
+                    }
+
+                    DrawType.INSUFFICIENT_MATERIAL -> {
+                        _gameInProgress = false
+                        onInsufficientMaterial()
+                    }
+
+                    DrawType.FIFTY_MOVE_RULE -> {
+                        _gameInProgress = false
+                        onFiftyMovesRuleDraw()
+                    }
+
+                    else -> throw RuntimeException("Not in a draw state.")
+                }
+            }
+
+            else -> {}
+        }
+    }
 }

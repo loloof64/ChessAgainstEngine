@@ -14,5 +14,11 @@ val esStrings = Strings(
     queenPromotion = "Promoción de reina",
     rookPromotion = "Promoción de torre",
     bishopPromotion = "Promoción de alfil",
-    knightPromotion = "Promoción de caballero"
+    knightPromotion = "Promoción de caballero",
+    playerWonGame = "Has ganado por jaque mate.",
+    playerLostGame = "Has perdido por jaque mate.",
+    drawByStalemate = "Igualdad por empate.",
+    drawByThreeFoldRepetition = "Igualdad por triple repetición.",
+    drawByInsufficientMaterial = "Igualdad por material faltante.",
+    drawByFiftyMovesRule = "Igualdad por la regla de los 50 movimientos"
 )

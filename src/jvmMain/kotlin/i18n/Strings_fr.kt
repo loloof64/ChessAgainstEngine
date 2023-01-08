@@ -14,5 +14,11 @@ val frStrings = Strings(
     queenPromotion = "Promotion dame",
     rookPromotion = "Promotion tour",
     bishopPromotion = "Promotion fou",
-    knightPromotion = "Promotion cavalier"
+    knightPromotion = "Promotion cavalier",
+    playerWonGame = "Vous avez gagné par échec et mat.",
+    playerLostGame = "Vous avez perdu par échec et mat.",
+    drawByStalemate = "Nulle par pat.",
+    drawByThreeFoldRepetition = "Nulle par triple répétition.",
+    drawByInsufficientMaterial = "Nulle par manque de matériel.",
+    drawByFiftyMovesRule = "Nulle par la règle des 50 coups.",
 )

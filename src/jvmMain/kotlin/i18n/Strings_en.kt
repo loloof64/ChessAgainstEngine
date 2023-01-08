@@ -15,4 +15,10 @@ val enStrings = Strings(
     rookPromotion = "Rook, promotion",
     bishopPromotion = "Bishop promotion",
     knightPromotion = "Knight promotion",
+    playerWonGame = "You've won by checkmate.",
+    playerLostGame = "You've lost by checkmate.",
+    drawByStalemate = "Draw by stalemate.",
+    drawByThreeFoldRepetition = "Draw by three-fold repetition",
+    drawByInsufficientMaterial = "Draw by insufficient material",
+    drawByFiftyMovesRule = "Draw by the 50 moves rule",
 )
