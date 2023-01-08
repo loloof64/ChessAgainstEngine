@@ -18,6 +18,7 @@
  */
 package components
 
+import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -40,8 +41,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.arkivanov.essenty.parcelable.Parcelize
 import i18n.LocalStrings
+import logic.defaultPosition
 
 const val emptyCell = ' '
 
@@ -205,8 +208,6 @@ private fun DragAndDropLayer(
                 val isOurPiece = piece.isUpperCase() == isWhiteTurn
                 if (!isOurPiece) return@detectDragGestures
 
-                val startLocation = Offset(cellSizePx * (col + 0.5f), cellSizePx * (row + 0.5f))
-
                 dndData =
                     DragAndDropData(
                         startFile = file,
@@ -214,8 +215,8 @@ private fun DragAndDropLayer(
                         endFile = file,
                         endRank = rank,
                         carriedPiece = piece,
-                        startLocation = startLocation,
-                        currentLocation = startLocation,
+                        startLocation = offset,
+                        currentLocation = offset,
                     )
                 onDndDataUpdate(dndData)
 
@@ -467,18 +468,18 @@ private fun ChessBoardCell(
     if (isPendingPromotionStartCell) bgColor = Color(dragDropStartCellColor)
     if (isPendingPromotionEndCell) bgColor = Color(dragDropEndCellColor)
 
-        Surface(modifier = modifier.size(size)) {
-            Column(modifier = Modifier.background(bgColor)) {
-                val noPiece = pieceValue == emptyCell
-                if (!noPiece && !isDraggedPieceOrigin) {
-                    Image(
-                        painter = painterResource(getVectorForPiece(pieceValue)),
-                        contentDescription = strings.chessPiece,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                }
+    Surface(modifier = modifier.size(size)) {
+        Column(modifier = Modifier.background(bgColor)) {
+            val noPiece = pieceValue == emptyCell
+            if (!noPiece && !isDraggedPieceOrigin) {
+                Image(
+                    painter = painterResource(getVectorForPiece(pieceValue)),
+                    contentDescription = strings.chessPiece,
+                    modifier = Modifier.fillMaxSize(),
+                )
             }
         }
+    }
 }
 
 fun getVectorForPiece(pieceValue: Char): String {
@@ -511,3 +512,28 @@ data class DragAndDropData(
     var currentLocation: Offset,
     val carriedPiece: Char,
 )
+
+@Preview
+@Composable
+fun ChessBoardLowerLayerPreview() {
+    val piecesValues = defaultPosition.split(" ")[0].split("/").map { line ->
+        line.flatMap { value ->
+            if (value.isDigit()) {
+                List(value.digitToInt()) { emptyCell }
+            } else {
+                listOf(value)
+            }
+        }
+    }
+    LowerLayer(
+        cellSize = 300.dp,
+        reversed = false,
+        piecesValues = piecesValues,
+        isWhiteTurn = true,
+        dndData = null,
+        pendingPromotionStartFile = null,
+        pendingPromotionStartRank = null,
+        pendingPromotionEndFile = null,
+        pendingPromotionEndRank = null
+    )
+}
