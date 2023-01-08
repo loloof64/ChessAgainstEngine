@@ -54,6 +54,7 @@ const val emptyCell = ' '
 fun ChessBoard(
     position: String = defaultPosition,
     reversed: Boolean = false,
+    tryPlayingMove: (DragAndDropData) -> Unit,
 ) {
     var dndData by rememberSaveable { mutableStateOf<DragAndDropData?>(null) }
     val strings = LocalStrings.current
@@ -87,9 +88,13 @@ fun ChessBoard(
             modifier = Modifier.aspectRatio(1f, heightBasedAspectRatio).background(bgColor)
         ) {
             LowerLayer(cellSize, reversed, pieces, isWhiteTurn, dndData)
-            DragAndDropLayer(cellSizePx, reversed, pieces, isWhiteTurn, strings, onDndDataUpdate = { newDndData ->
-                dndData = newDndData
-            })
+            DragAndDropLayer(
+                cellSizePx, reversed, pieces, isWhiteTurn, strings,
+                tryPlayingMove = tryPlayingMove,
+                onDndDataUpdate = { newDndData ->
+                    dndData = newDndData
+                },
+            )
         }
     }
 }
@@ -101,7 +106,8 @@ private fun DragAndDropLayer(
     pieces: List<List<Char>>,
     isWhiteTurn: Boolean,
     strings: Strings,
-    onDndDataUpdate: (DragAndDropData?) -> Unit
+    onDndDataUpdate: (DragAndDropData?) -> Unit,
+    tryPlayingMove: (DragAndDropData) -> Unit,
 ) {
     var dndData by rememberSaveable { mutableStateOf<DragAndDropData?>(null) }
     Column(modifier = Modifier.fillMaxSize().pointerInput(reversed, Unit) {
@@ -159,13 +165,14 @@ private fun DragAndDropLayer(
             },
             onDragEnd = {
                 if (dndData == null) return@detectDragGestures
+                tryPlayingMove(dndData!!)
                 dndData = null
-                onDndDataUpdate(dndData)
+                onDndDataUpdate(null)
             },
             onDragCancel = {
                 if (dndData == null) return@detectDragGestures
                 dndData = null
-                onDndDataUpdate(dndData)
+                onDndDataUpdate(null)
             }
         )
     }) {

@@ -56,7 +56,17 @@ fun GamePage(
             verticalArrangement = Arrangement.Center
         ) {
             ChessBoard(
-                position = currentPosition
+                position = currentPosition,
+                reversed = boardReversed,
+                tryPlayingMove = { dragAndDropData ->
+                    ChessGameManager.playMove(
+                        startFile = dragAndDropData.startFile,
+                        startRank = dragAndDropData.startRank,
+                        endFile = dragAndDropData.endFile,
+                        endRank = dragAndDropData.endRank,
+                    )
+                    currentPosition = ChessGameManager.currentPosition()
+                }
             )
         }
     }

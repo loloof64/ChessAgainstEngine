@@ -41,7 +41,7 @@ fun MainContent() {
             is Screen.Home -> HomePage(
                 onGoGamePageClick = {
                     try {
-                        ChessGameManager.resetGame("8/8/8/8/2k5/2K5/8/8 w - - 0 1")
+                        ChessGameManager.resetGame(defaultStartPosition)
                         navigation.push(Screen.Game())
                     } catch (ex: WrongFieldsCountException) {
                         scope.launch {
