@@ -23,6 +23,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.onClick
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -41,9 +42,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import com.arkivanov.essenty.parcelable.Parcelize
 import i18n.LocalStrings
-import i18n.Strings
 
 const val emptyCell = ' '
+
+enum class PendingPromotion {
+    None,
+    White,
+    Black
+}
+
+enum class PromotionType {
+    Queen,
+    Rook,
+    Bishop,
+    Knight,
+}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -51,10 +64,12 @@ fun ChessBoard(
     piecesValues: List<List<Char>>,
     isWhiteTurn: Boolean,
     reversed: Boolean = false,
+    pendingPromotion: PendingPromotion,
     tryPlayingMove: (DragAndDropData) -> Unit,
+    onCancelPromotion: () -> Unit,
+    onValidatePromotion: (PromotionType) -> Unit,
 ) {
     var dndData by rememberSaveable { mutableStateOf<DragAndDropData?>(null) }
-    val strings = LocalStrings.current
 
     val bgColor = Color(0xFF9999FF)
     BoxWithConstraints {
@@ -70,13 +85,81 @@ fun ChessBoard(
         Box(
             modifier = Modifier.aspectRatio(1f, heightBasedAspectRatio).background(bgColor)
         ) {
-            LowerLayer(cellSize, reversed, piecesValues, isWhiteTurn, dndData)
+            LowerLayer(
+                cellSize = cellSize,
+                reversed = reversed,
+                piecesValues = piecesValues,
+                isWhiteTurn = isWhiteTurn,
+                dndData = dndData
+            )
             DragAndDropLayer(
-                cellSizePx, reversed, piecesValues, isWhiteTurn, strings,
+                cellSizePx = cellSizePx,
+                reversed = reversed,
+                isActive = pendingPromotion == PendingPromotion.None,
+                piecesValues = piecesValues,
+                isWhiteTurn = isWhiteTurn,
                 tryPlayingMove = tryPlayingMove,
                 onDndDataUpdate = { newDndData ->
                     dndData = newDndData
                 },
+            )
+            if (pendingPromotion != PendingPromotion.None) {
+                PromotionLayer(
+                    cellSize = cellSize,
+                    forWhitePlayer = pendingPromotion == PendingPromotion.White,
+                    onCancelPromotion = onCancelPromotion,
+                    onValidatePromotion = onValidatePromotion,
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun PromotionLayer(
+    cellSize: Dp,
+    forWhitePlayer: Boolean,
+    onCancelPromotion: () -> Unit,
+    onValidatePromotion: (PromotionType) -> Unit,
+) {
+    val strings = LocalStrings.current
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(
+            Color(0x88000000)
+        )
+        .onClick { onCancelPromotion() }
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(0.885f)
+                .fillMaxHeight(0.225f)
+                .offset(x = cellSize * 0.5f, y = cellSize * 3.5f)
+        ) {
+            Image(
+                painter = painterResource(getVectorForPiece(if (forWhitePlayer) 'Q' else 'q')),
+                contentDescription = strings.queenPromotion,
+                modifier = Modifier.size(cellSize).offset(x = cellSize * 0.5f, y = cellSize * 0.5f)
+                    .onClick { onValidatePromotion(PromotionType.Queen) },
+            )
+            Image(
+                painter = painterResource(getVectorForPiece(if (forWhitePlayer) 'R' else 'r')),
+                contentDescription = strings.rookPromotion,
+                modifier = Modifier.size(cellSize).offset(x = cellSize * 1.5f, y = cellSize * 0.5f)
+                    .onClick { onValidatePromotion(PromotionType.Rook) },
+            )
+            Image(
+                painter = painterResource(getVectorForPiece(if (forWhitePlayer) 'B' else 'b')),
+                contentDescription = strings.bishopPromotion,
+                modifier = Modifier.size(cellSize).offset(x = cellSize * 2.5f, y = cellSize * 0.5f)
+                    .onClick { onValidatePromotion(PromotionType.Bishop) },
+            )
+            Image(
+                painter = painterResource(getVectorForPiece(if (forWhitePlayer) 'N' else 'n')),
+                contentDescription = strings.knightPromotion,
+                modifier = Modifier.size(cellSize).offset(x = cellSize * 3.5f, y = cellSize * 0.5f)
+                    .onClick { onValidatePromotion(PromotionType.Knight) },
             )
         }
     }
@@ -86,16 +169,19 @@ fun ChessBoard(
 private fun DragAndDropLayer(
     cellSizePx: Float,
     reversed: Boolean,
+    isActive: Boolean,
     piecesValues: List<List<Char>>,
     isWhiteTurn: Boolean,
-    strings: Strings,
     onDndDataUpdate: (DragAndDropData?) -> Unit,
     tryPlayingMove: (DragAndDropData) -> Unit,
 ) {
+    val strings = LocalStrings.current
     var dndData by rememberSaveable { mutableStateOf<DragAndDropData?>(null) }
     Column(modifier = Modifier.fillMaxSize().pointerInput(reversed, piecesValues, isWhiteTurn) {
         detectDragGestures(
             onDragStart = { offset: Offset ->
+                if (!isActive) return@detectDragGestures
+
                 val col = ((offset.x - cellSizePx * 0.5) / cellSizePx).toInt()
                 val row = ((offset.y - cellSizePx * 0.5) / cellSizePx).toInt()
                 val file = if (reversed) 7 - col else col
@@ -127,6 +213,7 @@ private fun DragAndDropLayer(
 
             },
             onDrag = { _, dragAmount ->
+                if (!isActive) return@detectDragGestures
                 if (dndData == null) return@detectDragGestures
 
                 val currentLocation = dndData!!.currentLocation + dragAmount
@@ -146,12 +233,14 @@ private fun DragAndDropLayer(
 
             },
             onDragEnd = {
+                if (!isActive) return@detectDragGestures
                 if (dndData == null) return@detectDragGestures
                 tryPlayingMove(dndData!!)
                 dndData = null
                 onDndDataUpdate(null)
             },
             onDragCancel = {
+                if (!isActive) return@detectDragGestures
                 if (dndData == null) return@detectDragGestures
                 dndData = null
                 onDndDataUpdate(null)
@@ -178,7 +267,7 @@ private fun DragAndDropLayer(
 private fun LowerLayer(
     cellSize: Dp,
     reversed: Boolean,
-    pieces: List<List<Char>>,
+    piecesValues: List<List<Char>>,
     isWhiteTurn: Boolean,
     dndData: DragAndDropData?,
 ) {
@@ -188,10 +277,10 @@ private fun LowerLayer(
             val rank = if (reversed) rowIndex + 1 else 8 - rowIndex
             val rankLabel = "${Char('0'.code + rank)}"
             val firstIsWhite = rowIndex % 2 == 0
-            val piecesValues = pieces[if (reversed) 7 - rowIndex else rowIndex]
+            val rowPiecesValues = piecesValues[if (reversed) 7 - rowIndex else rowIndex]
             ChessBoardCellsLine(
                 cellSize = cellSize, firstCellWhite = firstIsWhite,
-                rankLabel = rankLabel, piecesValues = piecesValues,
+                rankLabel = rankLabel, rowPiecesValues = rowPiecesValues,
                 reversed = reversed, dndData = dndData,
                 rowIndex = rowIndex,
             )
@@ -206,7 +295,7 @@ private fun ChessBoardCellsLine(
     cellSize: Dp,
     firstCellWhite: Boolean,
     rankLabel: String,
-    piecesValues: List<Char>,
+    rowPiecesValues: List<Char>,
     reversed: Boolean,
     rowIndex: Int,
     dndData: DragAndDropData?,
@@ -239,7 +328,7 @@ private fun ChessBoardCellsLine(
             ChessBoardCell(
                 isWhite = if ((colIndex % 2) == 0) firstCellWhite else !firstCellWhite,
                 size = cellSize,
-                pieceValue = piecesValues[if (reversed) 7 - colIndex else colIndex],
+                pieceValue = rowPiecesValues[if (reversed) 7 - colIndex else colIndex],
                 isDraggedPieceOrigin = isDraggedPieceOrigin,
                 isIntoDragAndDropCrossLines = isIntoDragAndDropCrossLines,
                 isDragAndDropStartCell = isDragAndDropStartCell,

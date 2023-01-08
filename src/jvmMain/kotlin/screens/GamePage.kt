@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import components.ChessBoard
+import components.PendingPromotion
 import i18n.LocalStrings
 import logic.ChessGameManager
 
@@ -29,6 +30,7 @@ fun GamePage(
     var boardReversed by rememberSaveable { mutableStateOf(false) }
     var boardPieces by rememberSaveable { mutableStateOf(ChessGameManager.getPieces()) }
     var isWhiteTurn by rememberSaveable { mutableStateOf(ChessGameManager.isWhiteTurn()) }
+    var pendingPromotion by rememberSaveable { mutableStateOf(PendingPromotion.None) }
 
     Scaffold(topBar = {
         TopAppBar(title = { Text(strings.gamePageTitle) }, navigationIcon = {
@@ -56,6 +58,7 @@ fun GamePage(
             ChessBoard(isWhiteTurn = isWhiteTurn,
                 piecesValues = boardPieces,
                 reversed = boardReversed,
+                pendingPromotion = pendingPromotion,
                 tryPlayingMove = { dragAndDropData ->
                     ChessGameManager.playMove(
                         startFile = dragAndDropData.startFile,
@@ -65,7 +68,19 @@ fun GamePage(
                     )
                     isWhiteTurn = ChessGameManager.isWhiteTurn()
                     boardPieces = ChessGameManager.getPieces()
-                })
+                    pendingPromotion = ChessGameManager.getPendingPromotion()
+                },
+                onCancelPromotion = {
+                    ChessGameManager.cancelPromotion()
+                    pendingPromotion = ChessGameManager.getPendingPromotion()
+                },
+                onValidatePromotion = {
+                    ChessGameManager.commitPromotion(it)
+                    isWhiteTurn = ChessGameManager.isWhiteTurn()
+                    boardPieces = ChessGameManager.getPieces()
+                    pendingPromotion = ChessGameManager.getPendingPromotion()
+                }
+            )
         }
     }
 }

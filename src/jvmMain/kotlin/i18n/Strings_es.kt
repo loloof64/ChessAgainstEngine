@@ -10,5 +10,9 @@ val esStrings = Strings(
     draggedPiece = "Pieza arrastrada",
     wrongFieldsCountFen = "La posición de inicio FEN tiene un recuento de campos incorrecto.",
     oppositeKingInCheckFen = "La posición inicial FEN tiene al rey opuesto en jaque.",
-    close = "Cerrar"
+    close = "Cerrar",
+    queenPromotion = "Promoción de reina",
+    rookPromotion = "Promoción de torre",
+    bishopPromotion = "Promoción de alfil",
+    knightPromotion = "Promoción de caballero"
 )

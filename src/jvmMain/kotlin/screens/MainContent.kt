@@ -21,8 +21,7 @@ import kotlinx.coroutines.launch
 import logic.ChessGameManager
 import logic.KingNotInTurnIsInCheck
 import logic.WrongFieldsCountException
-
-const val defaultStartPosition = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+import logic.defaultPosition
 
 @OptIn(ExperimentalDecomposeApi::class)
 @Composable
@@ -41,7 +40,7 @@ fun MainContent() {
             is Screen.Home -> HomePage(
                 onGoGamePageClick = {
                     try {
-                        ChessGameManager.resetGame(defaultStartPosition)
+                        ChessGameManager.resetGame(defaultPosition)
                         navigation.push(Screen.Game())
                     } catch (ex: WrongFieldsCountException) {
                         scope.launch {
@@ -60,8 +59,7 @@ fun MainContent() {
                             )
                         }
                     }
-                },
-                scaffoldState = scaffoldState
+                }, scaffoldState = scaffoldState
             )
 
             is Screen.Game -> GamePage(onBack = navigation::pop)
@@ -75,5 +73,5 @@ sealed class Screen : Parcelable {
     object Home : Screen()
 
     @Parcelize
-    data class Game(val startPosition: String = defaultStartPosition) : Screen()
+    data class Game(val startPosition: String = defaultPosition) : Screen()
 }

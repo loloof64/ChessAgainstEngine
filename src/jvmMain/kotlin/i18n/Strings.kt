@@ -13,6 +13,10 @@ data class Strings(
     val wrongFieldsCountFen: String,
     val oppositeKingInCheckFen: String,
     val close: String,
+    val queenPromotion: String,
+    val rookPromotion: String,
+    val bishopPromotion: String,
+    val knightPromotion: String,
 )
 
 val strings = mapOf(

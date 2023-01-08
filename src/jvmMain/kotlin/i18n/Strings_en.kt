@@ -11,4 +11,8 @@ val enStrings = Strings(
     wrongFieldsCountFen = "The start position FEN has a wrong fields count.",
     oppositeKingInCheckFen = "The start position FEN has opposite king in check.",
     close = "Close",
+    queenPromotion = "Queen promotion",
+    rookPromotion = "Rook, promotion",
+    bishopPromotion = "Bishop promotion",
+    knightPromotion = "Knight promotion",
 )

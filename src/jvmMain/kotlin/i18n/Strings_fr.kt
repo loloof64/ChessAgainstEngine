@@ -11,4 +11,8 @@ val frStrings = Strings(
     wrongFieldsCountFen = "Le code FEN de la position de départ n'a pas le nombre de champs requis.",
     oppositeKingInCheckFen = "Le code fen de la position de départ a le roi adverse en échec.",
     close = "Fermer",
+    queenPromotion = "Promotion dame",
+    rookPromotion = "Promotion tour",
+    bishopPromotion = "Promotion fou",
+    knightPromotion = "Promotion cavalier"
 )
