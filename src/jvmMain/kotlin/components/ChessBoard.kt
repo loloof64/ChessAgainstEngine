@@ -26,11 +26,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,34 +42,20 @@ import androidx.compose.ui.unit.Dp
 import com.arkivanov.essenty.parcelable.Parcelize
 import i18n.LocalStrings
 import i18n.Strings
-import logic.defaultPosition
 
 const val emptyCell = ' '
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChessBoard(
-    position: String = defaultPosition,
+    piecesValues: List<List<Char>>,
+    isWhiteTurn: Boolean,
     reversed: Boolean = false,
     tryPlayingMove: (DragAndDropData) -> Unit,
 ) {
     var dndData by rememberSaveable { mutableStateOf<DragAndDropData?>(null) }
     val strings = LocalStrings.current
 
-    val positionParts = position.split(' ')
-    val lineParts = positionParts[0].split('/')
-
-    val pieces = lineParts.map { line ->
-        line.flatMap { value ->
-            if (value.isDigit()) {
-                List(value.digitToInt()) { emptyCell }
-            } else {
-                listOf(value)
-            }
-        }
-    }
-
-    val isWhiteTurn = positionParts[1] == "w"
     val bgColor = Color(0xFF9999FF)
     BoxWithConstraints {
         val heightBasedAspectRatio = maxHeight > maxWidth
@@ -87,9 +70,9 @@ fun ChessBoard(
         Box(
             modifier = Modifier.aspectRatio(1f, heightBasedAspectRatio).background(bgColor)
         ) {
-            LowerLayer(cellSize, reversed, pieces, isWhiteTurn, dndData)
+            LowerLayer(cellSize, reversed, piecesValues, isWhiteTurn, dndData)
             DragAndDropLayer(
-                cellSizePx, reversed, pieces, isWhiteTurn, strings,
+                cellSizePx, reversed, piecesValues, isWhiteTurn, strings,
                 tryPlayingMove = tryPlayingMove,
                 onDndDataUpdate = { newDndData ->
                     dndData = newDndData
@@ -103,14 +86,14 @@ fun ChessBoard(
 private fun DragAndDropLayer(
     cellSizePx: Float,
     reversed: Boolean,
-    pieces: List<List<Char>>,
+    piecesValues: List<List<Char>>,
     isWhiteTurn: Boolean,
     strings: Strings,
     onDndDataUpdate: (DragAndDropData?) -> Unit,
     tryPlayingMove: (DragAndDropData) -> Unit,
 ) {
     var dndData by rememberSaveable { mutableStateOf<DragAndDropData?>(null) }
-    Column(modifier = Modifier.fillMaxSize().pointerInput(reversed, Unit) {
+    Column(modifier = Modifier.fillMaxSize().pointerInput(reversed, piecesValues, isWhiteTurn) {
         detectDragGestures(
             onDragStart = { offset: Offset ->
                 val col = ((offset.x - cellSizePx * 0.5) / cellSizePx).toInt()
@@ -122,9 +105,8 @@ private fun DragAndDropLayer(
                 if (rank < 0 || rank > 7) return@detectDragGestures
 
 
-                val piece = pieces[7 - rank][file]
+                val piece = piecesValues[7 - rank][file]
                 if (piece == emptyCell) return@detectDragGestures
-
 
                 val isOurPiece = piece.isUpperCase() == isWhiteTurn
                 if (!isOurPiece) return@detectDragGestures

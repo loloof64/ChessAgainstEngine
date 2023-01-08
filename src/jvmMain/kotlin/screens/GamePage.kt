@@ -27,36 +27,34 @@ fun GamePage(
 ) {
     val strings = LocalStrings.current
     var boardReversed by rememberSaveable { mutableStateOf(false) }
-    var currentPosition by rememberSaveable { mutableStateOf(ChessGameManager.currentPosition()) }
+    var boardPieces by rememberSaveable { mutableStateOf(ChessGameManager.getPieces()) }
+    var isWhiteTurn by rememberSaveable { mutableStateOf(ChessGameManager.isWhiteTurn()) }
 
     Scaffold(topBar = {
-        TopAppBar(
-            title = { Text(strings.gamePageTitle) },
-            navigationIcon = {
-                IconButton(onBack) {
-                    Icon(Icons.Default.ArrowBack, strings.goBack)
-                }
-            }, actions = {
-                IconButton(content = {
-                    Image(
-                        painter = painterResource("icons/swap_vert.svg"),
-                        contentDescription = strings.swapBoardOrientation,
-                        modifier = Modifier,
-                        colorFilter = ColorFilter.tint(Color.White)
-                    )
-                },
-                    onClick = {
-                        boardReversed = !boardReversed
-                    })
+        TopAppBar(title = { Text(strings.gamePageTitle) }, navigationIcon = {
+            IconButton(onBack) {
+                Icon(Icons.Default.ArrowBack, strings.goBack)
+            }
+        }, actions = {
+            IconButton(content = {
+                Image(
+                    painter = painterResource("icons/swap_vert.svg"),
+                    contentDescription = strings.swapBoardOrientation,
+                    modifier = Modifier,
+                    colorFilter = ColorFilter.tint(Color.White)
+                )
+            }, onClick = {
+                boardReversed = !boardReversed
             })
+        })
     }) {
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            ChessBoard(
-                position = currentPosition,
+            ChessBoard(isWhiteTurn = isWhiteTurn,
+                piecesValues = boardPieces,
                 reversed = boardReversed,
                 tryPlayingMove = { dragAndDropData ->
                     ChessGameManager.playMove(
@@ -65,9 +63,9 @@ fun GamePage(
                         endFile = dragAndDropData.endFile,
                         endRank = dragAndDropData.endRank,
                     )
-                    currentPosition = ChessGameManager.currentPosition()
-                }
-            )
+                    isWhiteTurn = ChessGameManager.isWhiteTurn()
+                    boardPieces = ChessGameManager.getPieces()
+                })
         }
     }
 }
