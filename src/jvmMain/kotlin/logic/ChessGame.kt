@@ -62,10 +62,9 @@ object ChessGameManager {
         if (_gameLogic.isLegalMove(move)) {
             _gameLogic.playMove(move)
         } else {
-            val movingPiece = _gameLogic.getPiece(startSquare)
-            val isPromotionMove = (movingPiece.pieceType == PieceType.PAWN)
-                    && ((isWhiteTurn() && endRank == 7) || (!isWhiteTurn() && endRank == 0))
-            if (isPromotionMove) {
+            val isLegalPromotionMove = _gameLogic.isLegalMove(Move(startSquare, endSquare, PieceType.QUEEN))
+
+            if (isLegalPromotionMove) {
                 _pendingPromotion = if (isWhiteTurn()) PendingPromotion.White else PendingPromotion.Black
                 _pendingPromotionStartSquare = startSquare
                 _pendingPromotionEndSquare = endSquare
