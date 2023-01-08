@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import components.ChessBoard
 import components.PendingPromotion
+import components.PlayerType
 import i18n.LocalStrings
 import kotlinx.coroutines.launch
 import logic.ChessGameManager
@@ -35,8 +36,12 @@ fun GamePage(
     var pendingPromotion by rememberSaveable { mutableStateOf(PendingPromotion.None) }
     var pendingPromotionStartSquare by rememberSaveable { mutableStateOf(ChessGameManager.getPendingPromotionStartSquare()) }
     var pendingPromotionEndSquare by rememberSaveable { mutableStateOf(ChessGameManager.getPendingPromotionEndSquare()) }
+    var whitePlayerType by rememberSaveable { mutableStateOf(PlayerType.Human) }
+    var blackPlayerType by rememberSaveable { mutableStateOf(PlayerType.Human) }
 
     fun onCheckmate(whitePlayer: Boolean) {
+        whitePlayerType = PlayerType.Computer
+        blackPlayerType = PlayerType.Computer
         coroutineScope.launch {
             scaffoldState.snackbarHostState.showSnackbar(
                 if (whitePlayer) strings.playerWonGame else strings.playerLostGame,
@@ -47,6 +52,8 @@ fun GamePage(
     }
 
     fun onStalemate() {
+        whitePlayerType = PlayerType.Computer
+        blackPlayerType = PlayerType.Computer
         coroutineScope.launch {
             scaffoldState.snackbarHostState.showSnackbar(
                 strings.drawByStalemate,
@@ -57,6 +64,8 @@ fun GamePage(
     }
 
     fun onThreeFoldRepetition() {
+        whitePlayerType = PlayerType.Computer
+        blackPlayerType = PlayerType.Computer
         coroutineScope.launch {
             scaffoldState.snackbarHostState.showSnackbar(
                 strings.drawByThreeFoldRepetition,
@@ -67,6 +76,8 @@ fun GamePage(
     }
 
     fun onInsufficientMaterial() {
+        whitePlayerType = PlayerType.Computer
+        blackPlayerType = PlayerType.Computer
         coroutineScope.launch {
             scaffoldState.snackbarHostState.showSnackbar(
                 strings.drawByInsufficientMaterial,
@@ -77,6 +88,8 @@ fun GamePage(
     }
 
     fun onFiftyMovesRuleDraw() {
+        whitePlayerType = PlayerType.Computer
+        blackPlayerType = PlayerType.Computer
         coroutineScope.launch {
             scaffoldState.snackbarHostState.showSnackbar(
                 strings.drawByFiftyMovesRule,
@@ -114,6 +127,8 @@ fun GamePage(
             ChessBoard(isWhiteTurn = isWhiteTurn,
                 piecesValues = boardPieces,
                 reversed = boardReversed,
+                whitePlayerType = whitePlayerType,
+                blackPlayerType = blackPlayerType,
                 pendingPromotion = pendingPromotion,
                 pendingPromotionStartFile = pendingPromotionStartSquare?.x,
                 pendingPromotionStartRank = pendingPromotionStartSquare?.y,

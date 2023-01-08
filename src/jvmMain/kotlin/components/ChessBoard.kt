@@ -61,12 +61,19 @@ enum class PromotionType {
     Knight,
 }
 
+enum class PlayerType {
+    Human,
+    Computer,
+}
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChessBoard(
     piecesValues: List<List<Char>>,
     isWhiteTurn: Boolean,
     reversed: Boolean = false,
+    whitePlayerType: PlayerType,
+    blackPlayerType: PlayerType,
     pendingPromotion: PendingPromotion,
     pendingPromotionStartFile: Int?,
     pendingPromotionStartRank: Int?,
@@ -109,6 +116,8 @@ fun ChessBoard(
                 isActive = pendingPromotion == PendingPromotion.None,
                 piecesValues = piecesValues,
                 isWhiteTurn = isWhiteTurn,
+                whitePlayerType = whitePlayerType,
+                blackPlayerType = blackPlayerType,
                 tryPlayingMove = tryPlayingMove,
                 onDndDataUpdate = { newDndData ->
                     dndData = newDndData
@@ -183,6 +192,8 @@ private fun DragAndDropLayer(
     isActive: Boolean,
     piecesValues: List<List<Char>>,
     isWhiteTurn: Boolean,
+    whitePlayerType: PlayerType,
+    blackPlayerType: PlayerType,
     onDndDataUpdate: (DragAndDropData?) -> Unit,
     tryPlayingMove: (DragAndDropData) -> Unit,
 ) {
@@ -204,6 +215,10 @@ private fun DragAndDropLayer(
 
                 val piece = piecesValues[7 - rank][file]
                 if (piece == emptyCell) return@detectDragGestures
+
+                val isComputerTurn = (isWhiteTurn && whitePlayerType == PlayerType.Computer)
+                        || (!isWhiteTurn && blackPlayerType == PlayerType.Computer)
+                if (isComputerTurn) return@detectDragGestures
 
                 val isOurPiece = piece.isUpperCase() == isWhiteTurn
                 if (!isOurPiece) return@detectDragGestures
