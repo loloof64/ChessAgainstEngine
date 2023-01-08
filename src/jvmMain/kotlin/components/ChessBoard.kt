@@ -19,12 +19,9 @@
 package components
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.onClick
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -32,8 +29,10 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
@@ -45,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import com.arkivanov.essenty.parcelable.Parcelize
 import i18n.LocalStrings
 import logic.defaultPosition
+import kotlin.math.*
 
 const val emptyCell = ' '
 
@@ -66,6 +66,13 @@ enum class PlayerType {
     Computer,
 }
 
+data class LastMoveArrow(
+    val startFile: Int,
+    val startRank: Int,
+    val endFile: Int,
+    val endRank: Int,
+)
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChessBoard(
@@ -74,6 +81,7 @@ fun ChessBoard(
     reversed: Boolean = false,
     whitePlayerType: PlayerType,
     blackPlayerType: PlayerType,
+    lastMoveArrow: LastMoveArrow?,
     pendingPromotion: PendingPromotion,
     pendingPromotionStartFile: Int?,
     pendingPromotionStartRank: Int?,
@@ -110,6 +118,11 @@ fun ChessBoard(
                 pendingPromotionEndFile = pendingPromotionEndFile,
                 pendingPromotionEndRank = pendingPromotionEndRank,
             )
+            LastMoveArrowLayer(
+                cellSize = cellSize,
+                reversed = reversed,
+                lastMoveArrow = lastMoveArrow,
+            )
             DragAndDropLayer(
                 cellSizePx = cellSizePx,
                 reversed = reversed,
@@ -131,6 +144,54 @@ fun ChessBoard(
                     onValidatePromotion = onValidatePromotion,
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun LastMoveArrowLayer(
+    cellSize: Dp,
+    reversed: Boolean,
+    lastMoveArrow: LastMoveArrow?,
+) {
+    val cellsSizePx = with(LocalDensity.current) {
+        cellSize.toPx()
+    }
+
+    Canvas(
+        modifier = Modifier
+            .fillMaxSize()
+            .alpha(0.8f)
+    ) {
+        if (lastMoveArrow != null) {
+            val arrowWidth = cellsSizePx * 0.1f
+            val brush = Brush.linearGradient(colors = listOf(Color.Blue, Color.Magenta, Color.Red))
+            val start = Offset(
+                cellsSizePx * (if (reversed) 8.0f - lastMoveArrow.startFile else 1.0f + lastMoveArrow.startFile),
+                cellsSizePx * (if (reversed) 1.0f + lastMoveArrow.startRank else 8.0f - lastMoveArrow.startRank)
+            )
+            val end = Offset(
+                cellsSizePx * (if (reversed) 8.0f - lastMoveArrow.endFile else 1.0f + lastMoveArrow.endFile),
+                cellsSizePx * (if (reversed) 1.0f + lastMoveArrow.endRank else 8.0f - lastMoveArrow.endRank)
+            )
+
+            val deltaX = end.x - start.x
+            val deltaY = end.y - start.y
+
+            val angle = atan2(deltaY, deltaX)
+            val headLen = cellsSizePx * 0.5f
+            val arrowPointLeft = Offset(
+                end.x - headLen * cos(angle - Math.PI / 6).toFloat(),
+                end.y - headLen * sin(angle - Math.PI / 6).toFloat()
+            )
+            val arrowPointRight = Offset(
+                end.x - headLen * cos(angle + Math.PI / 6).toFloat(),
+                end.y - headLen * sin(angle + Math.PI / 6).toFloat()
+            )
+
+            drawLine(brush = brush, start = start, end = end, strokeWidth = arrowWidth)
+            drawLine(brush = brush, start = end, end = arrowPointLeft, strokeWidth = arrowWidth)
+            drawLine(brush = brush, start = end, end = arrowPointRight, strokeWidth = arrowWidth)
         }
     }
 }

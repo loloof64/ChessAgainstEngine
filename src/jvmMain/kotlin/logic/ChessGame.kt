@@ -3,6 +3,7 @@ package logic
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import components.LastMoveArrow
 import components.PendingPromotion
 import components.PromotionType
 import components.emptyCell
@@ -23,6 +24,7 @@ object ChessGameManager {
     private var _pendingPromotion by mutableStateOf(PendingPromotion.None)
     private var _pendingPromotionStartSquare by mutableStateOf<Square?>(null)
     private var _pendingPromotionEndSquare by mutableStateOf<Square?>(null)
+    private var _lastMoveArrow by mutableStateOf<LastMoveArrow?>(null)
 
     fun getPieces(): List<List<Char>> {
         val positionFen = _gameLogic.fen
@@ -38,6 +40,8 @@ object ChessGameManager {
             }
         }
     }
+
+    fun getLastMoveArrow(): LastMoveArrow? = _lastMoveArrow
 
     fun isGameInProgress(): Boolean = _gameInProgress
 
@@ -59,6 +63,7 @@ object ChessGameManager {
         _pendingPromotion = PendingPromotion.None
         _pendingPromotionStartSquare = null
         _pendingPromotionEndSquare = null
+        _lastMoveArrow = null
         _gameInProgress = true
     }
 
@@ -77,6 +82,12 @@ object ChessGameManager {
 
         if (_gameLogic.isLegalMove(move)) {
             _gameLogic.playMove(move)
+            _lastMoveArrow = LastMoveArrow(
+                startFile = startFile,
+                startRank = startRank,
+                endFile = endFile,
+                endRank = endRank
+            )
             handleGameEndingStatus(
                 onCheckmate = onCheckmate,
                 onStalemate = onStalemate,
@@ -122,6 +133,13 @@ object ChessGameManager {
             _pendingPromotion = PendingPromotion.None
             _pendingPromotionStartSquare = null
             _pendingPromotionEndSquare = null
+
+            _lastMoveArrow = LastMoveArrow(
+                startFile = move.from.x,
+                startRank = move.from.y,
+                endFile = move.to.x,
+                endRank = move.to.y
+            )
 
             handleGameEndingStatus(
                 onCheckmate = onCheckmate,

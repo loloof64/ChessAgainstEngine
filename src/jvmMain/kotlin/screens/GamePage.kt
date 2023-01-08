@@ -15,7 +15,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import components.ChessBoard
-import components.PendingPromotion
 import components.PlayerType
 import i18n.LocalStrings
 import kotlinx.coroutines.launch
@@ -33,7 +32,8 @@ fun GamePage(
     var gameInProgress by rememberSaveable { mutableStateOf(ChessGameManager.isGameInProgress()) }
     var boardPieces by rememberSaveable { mutableStateOf(ChessGameManager.getPieces()) }
     var isWhiteTurn by rememberSaveable { mutableStateOf(ChessGameManager.isWhiteTurn()) }
-    var pendingPromotion by rememberSaveable { mutableStateOf(PendingPromotion.None) }
+    var lastMoveArrow by rememberSaveable { mutableStateOf(ChessGameManager.getLastMoveArrow()) }
+    var pendingPromotion by rememberSaveable { mutableStateOf(ChessGameManager.getPendingPromotion()) }
     var pendingPromotionStartSquare by rememberSaveable { mutableStateOf(ChessGameManager.getPendingPromotionStartSquare()) }
     var pendingPromotionEndSquare by rememberSaveable { mutableStateOf(ChessGameManager.getPendingPromotionEndSquare()) }
     var whitePlayerType by rememberSaveable { mutableStateOf(PlayerType.Human) }
@@ -129,6 +129,7 @@ fun GamePage(
                 reversed = boardReversed,
                 whitePlayerType = whitePlayerType,
                 blackPlayerType = blackPlayerType,
+                lastMoveArrow = lastMoveArrow,
                 pendingPromotion = pendingPromotion,
                 pendingPromotionStartFile = pendingPromotionStartSquare?.x,
                 pendingPromotionStartRank = pendingPromotionStartSquare?.y,
@@ -152,6 +153,7 @@ fun GamePage(
                     pendingPromotion = ChessGameManager.getPendingPromotion()
                     pendingPromotionStartSquare = ChessGameManager.getPendingPromotionStartSquare()
                     pendingPromotionEndSquare = ChessGameManager.getPendingPromotionEndSquare()
+                    lastMoveArrow = ChessGameManager.getLastMoveArrow()
                     gameInProgress = ChessGameManager.isGameInProgress()
                 },
                 onCancelPromotion = {
@@ -176,6 +178,7 @@ fun GamePage(
                     pendingPromotion = ChessGameManager.getPendingPromotion()
                     pendingPromotionStartSquare = ChessGameManager.getPendingPromotionStartSquare()
                     pendingPromotionEndSquare = ChessGameManager.getPendingPromotionEndSquare()
+                    lastMoveArrow = ChessGameManager.getLastMoveArrow()
                     gameInProgress = ChessGameManager.isGameInProgress()
                 }
             )
