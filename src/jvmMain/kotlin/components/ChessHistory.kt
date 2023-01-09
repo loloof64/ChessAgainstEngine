@@ -36,10 +36,18 @@ fun GameTermination.toText(): String = when (this) {
     GameTermination.Draw -> "1/2-1/2"
 }
 
+data class MoveCoordinates(
+    val startFile: Int,
+    val startRank: Int,
+    val endFile: Int,
+    val endRank: Int,
+)
+
 sealed class ChessHistoryItem {
     data class MoveNumberItem(val number: Int, val isWhiteTurn: Boolean) : ChessHistoryItem()
     data class GameTerminationItem(val termination: GameTermination) : ChessHistoryItem()
-    data class MoveItem(val san: String, val positionFen: String, val isWhiteMove: Boolean) : ChessHistoryItem()
+    data class MoveItem(val san: String, val positionFen: String, val isWhiteMove: Boolean,
+        val movesCoordinates:MoveCoordinates) : ChessHistoryItem()
 }
 
 const val minFontSizePx = 10f
@@ -48,7 +56,7 @@ const val maxFontSizePx = 30f
 @Composable
 fun ChessHistory(
     modifier: Modifier = Modifier, items: List<ChessHistoryItem>,
-    onPositionRequest: (String) -> Unit
+    onPositionRequest: (String, MoveCoordinates) -> Unit
 ) {
     BoxWithConstraints {
         val fontSize = with(LocalDensity.current) {
@@ -100,7 +108,7 @@ fun ChessHistory(
                         text = AnnotatedString(text = item.san.toFAN(forBlackTurn = !item.isWhiteMove)),
                         style = textStyle,
                         onClick = {
-                            onPositionRequest(item.positionFen)
+                            onPositionRequest(item.positionFen, item.movesCoordinates)
                         },
                     )
                 }

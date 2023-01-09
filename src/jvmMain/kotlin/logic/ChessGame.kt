@@ -26,6 +26,7 @@ object ChessGameManager {
     private var _lastMoveArrow by mutableStateOf<LastMoveArrow?>(null)
     private var _historyElements by mutableStateOf<MutableList<ChessHistoryItem>>(mutableListOf())
     private var _isFirstHistoryNode by mutableStateOf(false)
+    private var _positionFenBeforeLastMove by mutableStateOf<String?>(null)
 
     fun getPieces(): List<List<Char>> {
         val positionFen = _gameLogic.fen
@@ -72,6 +73,7 @@ object ChessGameManager {
         _pendingPromotionEndSquare = null
         _lastMoveArrow = null
         _isFirstHistoryNode = true
+        _positionFenBeforeLastMove = null
         _gameInProgress = true
     }
 
@@ -89,8 +91,16 @@ object ChessGameManager {
         val move = Move(startSquare, endSquare)
 
         if (_gameLogic.isLegalMove(move)) {
-            addMoveToHistory(move = move)
+            _positionFenBeforeLastMove = _gameLogic.fen
             _gameLogic.playMove(move)
+            addMoveToHistory(
+                MoveCoordinates(
+                    startFile = startFile,
+                    startRank = startRank,
+                    endFile = endFile,
+                    endRank = endRank
+                )
+            )
             _lastMoveArrow = LastMoveArrow(
                 startFile = startFile,
                 startRank = startRank,
@@ -138,8 +148,16 @@ object ChessGameManager {
         }
         val move = Move(_pendingPromotionStartSquare, _pendingPromotionEndSquare, promotionPiece)
         if (_gameLogic.isLegalMove(move)) {
-            addMoveToHistory(move = move)
+            _positionFenBeforeLastMove = _gameLogic.fen
             _gameLogic.playMove(move)
+            addMoveToHistory(
+                MoveCoordinates(
+                    startFile = _pendingPromotionStartSquare!!.x,
+                    startRank = _pendingPromotionStartSquare!!.y,
+                    endFile = _pendingPromotionEndSquare!!.x,
+                    endRank = _pendingPromotionEndSquare!!.y
+                )
+            )
             _pendingPromotion = PendingPromotion.None
             _pendingPromotionStartSquare = null
             _pendingPromotionEndSquare = null
@@ -162,9 +180,22 @@ object ChessGameManager {
         }
     }
 
-    private fun addMoveToHistory(move: Move) {
-        val isWhiteTurn = _gameLogic.sideToMove == Side.WHITE
-        val needingToAddMoveNumber = isWhiteTurn && !_isFirstHistoryNode
+    fun requestPosition(positionFen: String, moveCoordinates: MoveCoordinates): Boolean {
+        if (_gameInProgress) return false
+        _gameLogic = ChessGame(positionFen)
+        _lastMoveArrow = LastMoveArrow(
+            startFile = moveCoordinates.startFile,
+            startRank = moveCoordinates.startRank,
+            endFile = moveCoordinates.endFile,
+            endRank = moveCoordinates.endRank
+        )
+        return true
+    }
+
+    private fun addMoveToHistory(moveCoordinates: MoveCoordinates) {
+        val lastMove: Move? = _gameLogic.lastMove
+        val isWhiteTurnBeforeMove = _gameLogic.sideToMove == Side.BLACK
+        val needingToAddMoveNumber = isWhiteTurnBeforeMove && !_isFirstHistoryNode
 
         if (needingToAddMoveNumber) {
             _historyElements.add(
@@ -175,10 +206,12 @@ object ChessGameManager {
             )
         }
 
-        val moveSan = _gameLogic.getNotation(NotationType.SAN, move)
+        val gameLogicBeforeMove = ChessGame(_positionFenBeforeLastMove)
+        val moveSan = gameLogicBeforeMove.getNotation(NotationType.SAN, lastMove)
         _historyElements.add(
             ChessHistoryItem.MoveItem(
-                san = moveSan, positionFen = "", isWhiteMove = isWhiteTurn
+                san = moveSan, positionFen = _gameLogic.fen, isWhiteMove = isWhiteTurnBeforeMove,
+                movesCoordinates = moveCoordinates,
             )
         )
         _isFirstHistoryNode = false

@@ -185,8 +185,16 @@ fun GamePage(
 
             ChessHistory(
                 items = historyElements
-            ) {
-                // not processing requests as now
+            ) { positionFen, moveCoordinates ->
+                val success = ChessGameManager.requestPosition(
+                    positionFen = positionFen,
+                    moveCoordinates = moveCoordinates
+                )
+                if (success) {
+                    isWhiteTurn = ChessGameManager.isWhiteTurn()
+                    boardPieces = ChessGameManager.getPieces()
+                    lastMoveArrow = ChessGameManager.getLastMoveArrow()
+                }
             }
         }
     }
