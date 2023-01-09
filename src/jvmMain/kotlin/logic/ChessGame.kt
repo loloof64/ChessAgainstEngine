@@ -3,14 +3,13 @@ package logic
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import components.LastMoveArrow
-import components.PendingPromotion
-import components.PromotionType
-import components.emptyCell
+import components.*
 import io.github.wolfraam.chessgame.ChessGame
 import io.github.wolfraam.chessgame.board.PieceType
+import io.github.wolfraam.chessgame.board.Side
 import io.github.wolfraam.chessgame.board.Square
 import io.github.wolfraam.chessgame.move.Move
+import io.github.wolfraam.chessgame.notation.NotationType
 import io.github.wolfraam.chessgame.result.ChessGameResult
 import io.github.wolfraam.chessgame.result.ChessGameResultType
 import io.github.wolfraam.chessgame.result.DrawType
@@ -25,6 +24,7 @@ object ChessGameManager {
     private var _pendingPromotionStartSquare by mutableStateOf<Square?>(null)
     private var _pendingPromotionEndSquare by mutableStateOf<Square?>(null)
     private var _lastMoveArrow by mutableStateOf<LastMoveArrow?>(null)
+    private var _historyElements by mutableStateOf<MutableList<ChessHistoryItem>>(mutableListOf())
 
     fun getPieces(): List<List<Char>> {
         val positionFen = _gameLogic.fen
@@ -40,6 +40,8 @@ object ChessGameManager {
             }
         }
     }
+
+    fun getHistoryElements(): List<ChessHistoryItem> = _historyElements
 
     fun getLastMoveArrow(): LastMoveArrow? = _lastMoveArrow
 
@@ -60,6 +62,7 @@ object ChessGameManager {
     fun resetGame(startPosition: String) {
         startPosition.testIfIsLegalChessFen()
         _gameLogic = ChessGame(startPosition)
+        _historyElements = mutableListOf()
         _pendingPromotion = PendingPromotion.None
         _pendingPromotionStartSquare = null
         _pendingPromotionEndSquare = null
@@ -81,6 +84,7 @@ object ChessGameManager {
         val move = Move(startSquare, endSquare)
 
         if (_gameLogic.isLegalMove(move)) {
+            addMoveToHistory(move = move)
             _gameLogic.playMove(move)
             _lastMoveArrow = LastMoveArrow(
                 startFile = startFile,
@@ -129,6 +133,7 @@ object ChessGameManager {
         }
         val move = Move(_pendingPromotionStartSquare, _pendingPromotionEndSquare, promotionPiece)
         if (_gameLogic.isLegalMove(move)) {
+            addMoveToHistory(move = move)
             _gameLogic.playMove(move)
             _pendingPromotion = PendingPromotion.None
             _pendingPromotionStartSquare = null
@@ -141,6 +146,7 @@ object ChessGameManager {
                 endRank = move.to.y
             )
 
+
             handleGameEndingStatus(
                 onCheckmate = onCheckmate,
                 onStalemate = onStalemate,
@@ -149,6 +155,15 @@ object ChessGameManager {
                 onFiftyMovesRuleDraw = onFiftyMovesRuleDraw,
             )
         }
+    }
+
+    private fun addMoveToHistory(move: Move) {
+        val moveSan = _gameLogic.getNotation(NotationType.SAN, move)
+        _historyElements.add(
+            ChessHistoryItem.MoveItem(
+                san = moveSan, positionFen = "", isWhiteMove = _gameLogic.sideToMove == Side.WHITE
+            )
+        )
     }
 
     private fun handleGameEndingStatus(

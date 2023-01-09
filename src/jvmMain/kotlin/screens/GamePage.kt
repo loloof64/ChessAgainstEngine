@@ -35,6 +35,7 @@ fun GamePage(
     var pendingPromotion by rememberSaveable { mutableStateOf(ChessGameManager.getPendingPromotion()) }
     var pendingPromotionStartSquare by rememberSaveable { mutableStateOf(ChessGameManager.getPendingPromotionStartSquare()) }
     var pendingPromotionEndSquare by rememberSaveable { mutableStateOf(ChessGameManager.getPendingPromotionEndSquare()) }
+    var historyElements by rememberSaveable { mutableStateOf(ChessGameManager.getHistoryElements()) }
     var whitePlayerType by rememberSaveable { mutableStateOf(PlayerType.Human) }
     var blackPlayerType by rememberSaveable { mutableStateOf(PlayerType.Human) }
 
@@ -183,12 +184,7 @@ fun GamePage(
             )
 
             ChessHistory(
-                items = listOf(
-                    ChessHistoryItem.MoveNumberItem(2, false),
-                    ChessHistoryItem.MoveItem("Nf3", "", isWhiteMove = true),
-                    ChessHistoryItem.MoveItem("Bc4", "", isWhiteMove = false),
-                    ChessHistoryItem.GameTerminationItem(GameTermination.InProgress)
-                )
+                items = historyElements
             ) {
                 // not processing requests as now
             }
