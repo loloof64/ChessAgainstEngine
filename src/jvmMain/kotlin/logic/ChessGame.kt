@@ -25,6 +25,7 @@ object ChessGameManager {
     private var _pendingPromotionEndSquare by mutableStateOf<Square?>(null)
     private var _lastMoveArrow by mutableStateOf<LastMoveArrow?>(null)
     private var _historyElements by mutableStateOf<MutableList<ChessHistoryItem>>(mutableListOf())
+    private var _isFirstHistoryNode by mutableStateOf(false)
 
     fun getPieces(): List<List<Char>> {
         val positionFen = _gameLogic.fen
@@ -62,11 +63,15 @@ object ChessGameManager {
     fun resetGame(startPosition: String) {
         startPosition.testIfIsLegalChessFen()
         _gameLogic = ChessGame(startPosition)
+        val isWhiteTurn = _gameLogic.sideToMove == Side.WHITE
+        val moveNumber = _gameLogic.fullMoveCount
         _historyElements = mutableListOf()
+        _historyElements.add(ChessHistoryItem.MoveNumberItem(moveNumber, isWhiteTurn))
         _pendingPromotion = PendingPromotion.None
         _pendingPromotionStartSquare = null
         _pendingPromotionEndSquare = null
         _lastMoveArrow = null
+        _isFirstHistoryNode = true
         _gameInProgress = true
     }
 
@@ -158,12 +163,25 @@ object ChessGameManager {
     }
 
     private fun addMoveToHistory(move: Move) {
+        val isWhiteTurn = _gameLogic.sideToMove == Side.WHITE
+        val needingToAddMoveNumber = isWhiteTurn && !_isFirstHistoryNode
+
+        if (needingToAddMoveNumber) {
+            _historyElements.add(
+                ChessHistoryItem.MoveNumberItem(
+                    number = _gameLogic.fullMoveCount,
+                    isWhiteTurn = true,
+                )
+            )
+        }
+
         val moveSan = _gameLogic.getNotation(NotationType.SAN, move)
         _historyElements.add(
             ChessHistoryItem.MoveItem(
-                san = moveSan, positionFen = "", isWhiteMove = _gameLogic.sideToMove == Side.WHITE
+                san = moveSan, positionFen = "", isWhiteMove = isWhiteTurn
             )
         )
+        _isFirstHistoryNode = false
     }
 
     private fun handleGameEndingStatus(
