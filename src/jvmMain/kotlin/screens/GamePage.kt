@@ -156,6 +156,7 @@ fun GamePage(
                     pendingPromotionEndSquare = ChessGameManager.getPendingPromotionEndSquare()
                     lastMoveArrow = ChessGameManager.getLastMoveArrow()
                     gameInProgress = ChessGameManager.isGameInProgress()
+                    selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
                 },
                 onCancelPromotion = {
                     if (!gameInProgress) return@ChessBoard
@@ -181,6 +182,7 @@ fun GamePage(
                     pendingPromotionEndSquare = ChessGameManager.getPendingPromotionEndSquare()
                     lastMoveArrow = ChessGameManager.getLastMoveArrow()
                     gameInProgress = ChessGameManager.isGameInProgress()
+                    selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
                 }
             )
 

@@ -233,11 +233,13 @@ object ChessGameManager {
         when (gameResult?.chessGameResultType) {
             ChessGameResultType.WHITE_WINS -> {
                 _gameInProgress = false
+                selectLastHistoryMoveNodeIfAny()
                 onCheckmate(true)
             }
 
             ChessGameResultType.BLACK_WINS -> {
                 _gameInProgress = false
+                selectLastHistoryMoveNodeIfAny()
                 onCheckmate(false)
             }
 
@@ -245,21 +247,25 @@ object ChessGameManager {
                 when (gameResult.drawType) {
                     DrawType.STALE_MATE -> {
                         _gameInProgress = false
+                        selectLastHistoryMoveNodeIfAny()
                         onStalemate()
                     }
 
                     DrawType.THREEFOLD_REPETITION -> {
                         _gameInProgress = false
+                        selectLastHistoryMoveNodeIfAny()
                         onThreeFoldsRepetition()
                     }
 
                     DrawType.INSUFFICIENT_MATERIAL -> {
                         _gameInProgress = false
+                        selectLastHistoryMoveNodeIfAny()
                         onInsufficientMaterial()
                     }
 
                     DrawType.FIFTY_MOVE_RULE -> {
                         _gameInProgress = false
+                        selectLastHistoryMoveNodeIfAny()
                         onFiftyMovesRuleDraw()
                     }
 
@@ -269,5 +275,13 @@ object ChessGameManager {
 
             else -> {}
         }
+    }
+
+    private fun selectLastHistoryMoveNodeIfAny() {
+        var lastHistoryMoveNodeIndex = _historyElements.size - 1
+        while ((lastHistoryMoveNodeIndex >= 0) && (_historyElements[lastHistoryMoveNodeIndex] !is ChessHistoryItem.MoveItem)) {
+            lastHistoryMoveNodeIndex--
+        }
+        _selectedNodeIndex = if (lastHistoryMoveNodeIndex >= 0) lastHistoryMoveNodeIndex else null
     }
 }
