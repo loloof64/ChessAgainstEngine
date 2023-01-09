@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import com.google.accompanist.flowlayout.FlowCrossAxisAlignment
 import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.flowlayout.MainAxisAlignment
+import logic.toFAN
 
 enum class GameTermination {
     InProgress,
@@ -34,7 +35,7 @@ fun GameTermination.toText(): String = when (this) {
 sealed class ChessHistoryItem {
     data class MoveNumberItem(val number: Int, val isWhiteTurn: Boolean) : ChessHistoryItem()
     data class GameTerminationItem(val termination: GameTermination) : ChessHistoryItem()
-    data class MoveItem(val san: String, val positionFen: String) : ChessHistoryItem()
+    data class MoveItem(val san: String, val positionFen: String, val isWhiteMove: Boolean) : ChessHistoryItem()
 }
 
 const val minFontSizePx = 10f
@@ -84,7 +85,7 @@ fun ChessHistory(
                     }
 
                     is ChessHistoryItem.MoveItem -> ClickableText(
-                        text = AnnotatedString(text = item.san),
+                        text = AnnotatedString(text = item.san.toFAN(forBlackTurn = !item.isWhiteMove)),
                         style = textStyle,
                         onClick = {
                             onPositionRequest(item.positionFen)

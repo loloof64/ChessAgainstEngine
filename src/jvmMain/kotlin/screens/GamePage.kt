@@ -185,8 +185,8 @@ fun GamePage(
             ChessHistory(
                 items = listOf(
                     ChessHistoryItem.MoveNumberItem(2, false),
-                    ChessHistoryItem.MoveItem("Nf3", ""),
-                    ChessHistoryItem.MoveItem("Nf6", ""),
+                    ChessHistoryItem.MoveItem("Nf3", "", isWhiteMove = true),
+                    ChessHistoryItem.MoveItem("Nf6", "", isWhiteMove = false),
                     ChessHistoryItem.GameTerminationItem(GameTermination.InProgress)
                 )
             ) {
