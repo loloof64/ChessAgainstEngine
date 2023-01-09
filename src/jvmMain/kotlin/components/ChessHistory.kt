@@ -46,8 +46,10 @@ data class MoveCoordinates(
 sealed class ChessHistoryItem {
     data class MoveNumberItem(val number: Int, val isWhiteTurn: Boolean) : ChessHistoryItem()
     data class GameTerminationItem(val termination: GameTermination) : ChessHistoryItem()
-    data class MoveItem(val san: String, val positionFen: String, val isWhiteMove: Boolean,
-        val movesCoordinates:MoveCoordinates) : ChessHistoryItem()
+    data class MoveItem(
+        val san: String, val positionFen: String, val isWhiteMove: Boolean,
+        val movesCoordinates: MoveCoordinates
+    ) : ChessHistoryItem()
 }
 
 const val minFontSizePx = 10f
@@ -55,8 +57,10 @@ const val maxFontSizePx = 30f
 
 @Composable
 fun ChessHistory(
-    modifier: Modifier = Modifier, items: List<ChessHistoryItem>,
-    onPositionRequest: (String, MoveCoordinates) -> Unit
+    modifier: Modifier = Modifier,
+    selectedNodeIndex: Int?,
+    items: List<ChessHistoryItem>,
+    onPositionRequest: (String, MoveCoordinates, Int) -> Unit
 ) {
     BoxWithConstraints {
         val fontSize = with(LocalDensity.current) {
@@ -89,7 +93,7 @@ fun ChessHistory(
             crossAxisAlignment = FlowCrossAxisAlignment.Start,
             mainAxisSpacing = 10.dp,
         ) {
-            items.map { item ->
+            items.mapIndexed { index, item ->
                 when (item) {
                     is ChessHistoryItem.MoveNumberItem -> Text(
                         style = textStyle,
@@ -106,9 +110,12 @@ fun ChessHistory(
 
                     is ChessHistoryItem.MoveItem -> ClickableText(
                         text = AnnotatedString(text = item.san.toFAN(forBlackTurn = !item.isWhiteMove)),
-                        style = textStyle,
+                        style = if (index != selectedNodeIndex) textStyle else textStyle.copy(
+                            background = Color.Blue,
+                            color = Color.White
+                        ),
                         onClick = {
-                            onPositionRequest(item.positionFen, item.movesCoordinates)
+                            onPositionRequest(item.positionFen, item.movesCoordinates, index)
                         },
                     )
                 }

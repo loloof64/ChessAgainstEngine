@@ -36,6 +36,7 @@ fun GamePage(
     var pendingPromotionStartSquare by rememberSaveable { mutableStateOf(ChessGameManager.getPendingPromotionStartSquare()) }
     var pendingPromotionEndSquare by rememberSaveable { mutableStateOf(ChessGameManager.getPendingPromotionEndSquare()) }
     var historyElements by rememberSaveable { mutableStateOf(ChessGameManager.getHistoryElements()) }
+    var selectedHistoryNodeIndex by rememberSaveable{ mutableStateOf(ChessGameManager.getSelectedHistoryNodeIndex()) }
     var whitePlayerType by rememberSaveable { mutableStateOf(PlayerType.Human) }
     var blackPlayerType by rememberSaveable { mutableStateOf(PlayerType.Human) }
 
@@ -184,16 +185,19 @@ fun GamePage(
             )
 
             ChessHistory(
-                items = historyElements
-            ) { positionFen, moveCoordinates ->
+                items = historyElements,
+                selectedNodeIndex = selectedHistoryNodeIndex
+            ) { positionFen, moveCoordinates, nodeToSelectIndex ->
                 val success = ChessGameManager.requestPosition(
                     positionFen = positionFen,
-                    moveCoordinates = moveCoordinates
+                    moveCoordinates = moveCoordinates,
+                    nodeToSelectIndex
                 )
                 if (success) {
                     isWhiteTurn = ChessGameManager.isWhiteTurn()
                     boardPieces = ChessGameManager.getPieces()
                     lastMoveArrow = ChessGameManager.getLastMoveArrow()
+                    selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
                 }
             }
         }

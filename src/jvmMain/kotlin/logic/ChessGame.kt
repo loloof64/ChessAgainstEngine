@@ -27,6 +27,7 @@ object ChessGameManager {
     private var _historyElements by mutableStateOf<MutableList<ChessHistoryItem>>(mutableListOf())
     private var _isFirstHistoryNode by mutableStateOf(false)
     private var _positionFenBeforeLastMove by mutableStateOf<String?>(null)
+    private var _selectedNodeIndex by mutableStateOf<Int?>(null)
 
     fun getPieces(): List<List<Char>> {
         val positionFen = _gameLogic.fen
@@ -55,6 +56,8 @@ object ChessGameManager {
 
     fun getPendingPromotionEndSquare(): Square? = _pendingPromotionEndSquare
 
+    fun getSelectedHistoryNodeIndex(): Int? = _selectedNodeIndex
+
     fun isWhiteTurn(): Boolean {
         val positionFen = _gameLogic.fen
         return positionFen.split(" ")[1] == "w"
@@ -74,6 +77,7 @@ object ChessGameManager {
         _lastMoveArrow = null
         _isFirstHistoryNode = true
         _positionFenBeforeLastMove = null
+        _selectedNodeIndex = null
         _gameInProgress = true
     }
 
@@ -180,7 +184,7 @@ object ChessGameManager {
         }
     }
 
-    fun requestPosition(positionFen: String, moveCoordinates: MoveCoordinates): Boolean {
+    fun requestPosition(positionFen: String, moveCoordinates: MoveCoordinates, nodeToSelectIndex: Int): Boolean {
         if (_gameInProgress) return false
         _gameLogic = ChessGame(positionFen)
         _lastMoveArrow = LastMoveArrow(
@@ -189,6 +193,7 @@ object ChessGameManager {
             endFile = moveCoordinates.endFile,
             endRank = moveCoordinates.endRank
         )
+        _selectedNodeIndex = nodeToSelectIndex
         return true
     }
 
