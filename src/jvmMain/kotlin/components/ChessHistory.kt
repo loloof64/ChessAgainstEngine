@@ -24,6 +24,13 @@ enum class GameTermination {
     Draw
 }
 
+fun GameTermination.toText(): String = when (this) {
+    GameTermination.InProgress -> "*"
+    GameTermination.WhiteWin -> "1-0"
+    GameTermination.BlackWin -> "0-1"
+    GameTermination.Draw -> "1/2-1/2"
+}
+
 sealed class ChessHistoryItem {
     data class MoveNumberItem(val number: Int, val isWhiteTurn: Boolean) : ChessHistoryItem()
     data class GameTerminationItem(val termination: GameTermination) : ChessHistoryItem()
@@ -67,11 +74,13 @@ fun ChessHistory(
                         style = textStyle,
                         text = "${item.number}.${if (item.isWhiteTurn) "" else ".."}"
                     )
-                    is ChessHistoryItem.GameTerminationItem -> when (item.termination) {
-                        GameTermination.InProgress -> '*'
-                        GameTermination.WhiteWin -> "1-0"
-                        GameTermination.BlackWin -> "0-1"
-                        GameTermination.Draw -> "1/2-1/2"
+
+                    is ChessHistoryItem.GameTerminationItem -> {
+                        val text = item.termination.toText()
+                        Text(
+                            style = textStyle,
+                            text = text,
+                        )
                     }
 
                     is ChessHistoryItem.MoveItem -> ClickableText(
