@@ -575,7 +575,7 @@ fun getVectorForPiece(pieceValue: Char): String {
         'k' -> "Chess_kdt45.svg"
         else -> throw IllegalArgumentException("Not recognized piece $pieceValue")
     }
-    return "chess_vectors/$name"
+    return "images/chess_vectors/$name"
 }
 
 @Parcelize

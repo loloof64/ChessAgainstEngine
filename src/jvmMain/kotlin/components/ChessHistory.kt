@@ -11,7 +11,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.platform.Font
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.flowlayout.FlowCrossAxisAlignment
 import com.google.accompanist.flowlayout.FlowRow
@@ -48,7 +51,7 @@ fun ChessHistory(
 ) {
     BoxWithConstraints {
         val fontSize = with(LocalDensity.current) {
-            var size = maxWidth * 0.08f
+            var size = maxWidth * 0.1f
             if (size.toPx() > maxFontSizePx) {
                 size = maxFontSizePx.toDp()
             }
@@ -59,7 +62,14 @@ fun ChessHistory(
         }
         val textStyle = TextStyle(
             fontSize = fontSize,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Normal,
+            fontFamily = FontFamily(
+                Font(
+                    resource = "fonts/FreeSerif.ttf",
+                    weight = FontWeight.Normal,
+                    style = FontStyle.Normal,
+                ),
+            )
         )
         FlowRow(
             modifier = modifier
