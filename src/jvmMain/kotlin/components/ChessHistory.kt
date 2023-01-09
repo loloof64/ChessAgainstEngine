@@ -47,7 +47,7 @@ fun ChessHistory(
 ) {
     BoxWithConstraints {
         val fontSize = with(LocalDensity.current) {
-            var size = maxWidth * 0.1f
+            var size = maxWidth * 0.08f
             if (size.toPx() > maxFontSizePx) {
                 size = maxFontSizePx.toDp()
             }
