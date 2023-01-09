@@ -4,9 +4,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
@@ -62,6 +65,7 @@ fun ChessHistory(
     items: List<ChessHistoryItem>,
     onPositionRequest: (String, MoveCoordinates, Int) -> Unit
 ) {
+    val scrollState = rememberScrollState()
     BoxWithConstraints {
         val fontSize = with(LocalDensity.current) {
             var size = maxWidth * 0.1f
@@ -87,6 +91,7 @@ fun ChessHistory(
         FlowRow(
             modifier = modifier
                 .fillMaxSize()
+                .verticalScroll(scrollState)
                 .background(Color(0x88FFCC00))
                 .padding(6.dp),
             mainAxisAlignment = MainAxisAlignment.Start,
