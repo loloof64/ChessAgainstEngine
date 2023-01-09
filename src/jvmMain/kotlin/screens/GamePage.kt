@@ -188,20 +188,57 @@ fun GamePage(
 
             ChessHistory(
                 items = historyElements,
-                selectedNodeIndex = selectedHistoryNodeIndex
-            ) { positionFen, moveCoordinates, nodeToSelectIndex ->
-                val success = ChessGameManager.requestPosition(
-                    positionFen = positionFen,
-                    moveCoordinates = moveCoordinates,
-                    nodeToSelectIndex
-                )
-                if (success) {
-                    isWhiteTurn = ChessGameManager.isWhiteTurn()
-                    boardPieces = ChessGameManager.getPieces()
-                    lastMoveArrow = ChessGameManager.getLastMoveArrow()
-                    selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
+                selectedNodeIndex = selectedHistoryNodeIndex,
+                onPositionRequest = { positionFen, moveCoordinates, nodeToSelectIndex ->
+                    val success = ChessGameManager.requestPosition(
+                        positionFen = positionFen,
+                        moveCoordinates = moveCoordinates,
+                        nodeToSelectIndex
+                    )
+                    if (success) {
+                        isWhiteTurn = ChessGameManager.isWhiteTurn()
+                        boardPieces = ChessGameManager.getPieces()
+                        lastMoveArrow = ChessGameManager.getLastMoveArrow()
+                        selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
+                    }
+                },
+                onRequestBackOneMove = {
+                    val success = ChessGameManager.requestGotoPreviousHistoryNode()
+                    if (success) {
+                        isWhiteTurn = ChessGameManager.isWhiteTurn()
+                        boardPieces = ChessGameManager.getPieces()
+                        lastMoveArrow = ChessGameManager.getLastMoveArrow()
+                        selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
+                    }
+                },
+                onRequestForwardOneMove = {
+                    val success = ChessGameManager.requestGotoNextHistoryNode()
+                    if (success) {
+                        isWhiteTurn = ChessGameManager.isWhiteTurn()
+                        boardPieces = ChessGameManager.getPieces()
+                        lastMoveArrow = ChessGameManager.getLastMoveArrow()
+                        selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
+                    }
+                },
+                onRequestGotoFirstPosition = {
+                    val success = ChessGameManager.requestGotoFirstPosition()
+                    if (success) {
+                        isWhiteTurn = ChessGameManager.isWhiteTurn()
+                        boardPieces = ChessGameManager.getPieces()
+                        lastMoveArrow = ChessGameManager.getLastMoveArrow()
+                        selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
+                    }
+                },
+                onRequestGotoLastMove = {
+                    val success = ChessGameManager.requestGotoLastHistoryNode()
+                    if (success) {
+                        isWhiteTurn = ChessGameManager.isWhiteTurn()
+                        boardPieces = ChessGameManager.getPieces()
+                        lastMoveArrow = ChessGameManager.getLastMoveArrow()
+                        selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
+                    }
                 }
-            }
+            )
         }
     }
 }

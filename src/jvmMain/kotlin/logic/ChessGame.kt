@@ -28,6 +28,7 @@ object ChessGameManager {
     private var _isFirstHistoryNode by mutableStateOf(false)
     private var _positionFenBeforeLastMove by mutableStateOf<String?>(null)
     private var _selectedNodeIndex by mutableStateOf<Int?>(null)
+    private var _startPosition by mutableStateOf(defaultPosition)
 
     fun getPieces(): List<List<Char>> {
         val positionFen = _gameLogic.fen
@@ -63,10 +64,14 @@ object ChessGameManager {
         return positionFen.split(" ")[1] == "w"
     }
 
-
-    fun resetGame(startPosition: String) {
+    fun setStartPosition(startPosition: String) {
         startPosition.testIfIsLegalChessFen()
-        _gameLogic = ChessGame(startPosition)
+        _startPosition = startPosition
+    }
+
+
+    fun resetGame() {
+        _gameLogic = ChessGame(_startPosition)
         val isWhiteTurn = _gameLogic.sideToMove == Side.WHITE
         val moveNumber = _gameLogic.fullMoveCount
         _historyElements = mutableListOf()
@@ -195,6 +200,81 @@ object ChessGameManager {
         )
         _selectedNodeIndex = nodeToSelectIndex
         return true
+    }
+
+    fun requestGotoPreviousHistoryNode(): Boolean {
+        if (_gameInProgress) return false
+        if (_selectedNodeIndex == null) return false
+        return if (requestBackOneMove()) {
+            val currentHistoryNode = _historyElements[_selectedNodeIndex!!] as ChessHistoryItem.MoveItem
+            _gameLogic = ChessGame(currentHistoryNode.positionFen)
+            _lastMoveArrow = LastMoveArrow(
+                startFile = currentHistoryNode.movesCoordinates.startFile,
+                startRank = currentHistoryNode.movesCoordinates.startRank,
+                endFile = currentHistoryNode.movesCoordinates.endFile,
+                endRank = currentHistoryNode.movesCoordinates.endRank,
+            )
+            true
+        } else {
+            _gameLogic = ChessGame(_startPosition)
+            _selectedNodeIndex = null
+            _lastMoveArrow = null
+            true
+        }
+    }
+
+    fun requestGotoNextHistoryNode(): Boolean {
+        if (_gameInProgress) return false
+        return requestForwardOneMove()
+    }
+
+    fun requestGotoFirstPosition(): Boolean {
+        if (_gameInProgress) return false
+        while (requestGotoPreviousHistoryNode());
+        return true
+    }
+    fun requestGotoLastHistoryNode(): Boolean {
+        if (_gameInProgress) return false
+        while (requestGotoNextHistoryNode());
+        return true
+    }
+
+    private fun requestForwardOneMove(): Boolean {
+        if (_gameInProgress) return false
+        if (_selectedNodeIndex!= null && _selectedNodeIndex!! >= _historyElements.size - 1) return false
+        var newSelectedNodeIndex = if (_selectedNodeIndex == null) {
+            0
+        } else (_selectedNodeIndex!! + 1)
+        while ((newSelectedNodeIndex < _historyElements.size - 1) && (_historyElements[newSelectedNodeIndex] !is ChessHistoryItem.MoveItem)) {
+            newSelectedNodeIndex++
+        }
+        if (_historyElements[newSelectedNodeIndex] !is ChessHistoryItem.MoveItem) return false
+        _selectedNodeIndex = newSelectedNodeIndex
+        val currentHistoryNode = _historyElements[newSelectedNodeIndex] as ChessHistoryItem.MoveItem
+        _gameLogic = ChessGame(currentHistoryNode.positionFen)
+        _lastMoveArrow = LastMoveArrow(
+            startFile = currentHistoryNode.movesCoordinates.startFile,
+            startRank = currentHistoryNode.movesCoordinates.startRank,
+            endFile = currentHistoryNode.movesCoordinates.endFile,
+            endRank = currentHistoryNode.movesCoordinates.endRank,
+        )
+        return true
+    }
+
+    private fun requestBackOneMove(): Boolean {
+        if (_gameInProgress) return false
+        if (_selectedNodeIndex == null) return false
+        if (_selectedNodeIndex!! <= 0) return false
+        var newSelectedNodeIndex = _selectedNodeIndex!! - 1
+        while ((newSelectedNodeIndex >= 0) && (_historyElements[newSelectedNodeIndex] !is ChessHistoryItem.MoveItem)) {
+            newSelectedNodeIndex--
+        }
+        return if (newSelectedNodeIndex >= 0) {
+            _selectedNodeIndex = newSelectedNodeIndex
+            true
+        } else {
+            false
+        }
     }
 
     private fun addMoveToHistory(moveCoordinates: MoveCoordinates) {

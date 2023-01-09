@@ -20,5 +20,9 @@ val esStrings = Strings(
     drawByStalemate = "Igualdad por empate.",
     drawByThreeFoldRepetition = "Igualdad por triple repetición.",
     drawByInsufficientMaterial = "Igualdad por material faltante.",
-    drawByFiftyMovesRule = "Igualdad por la regla de los 50 movimientos"
+    drawByFiftyMovesRule = "Igualdad por la regla de los 50 movimientos",
+    goBackHistory = "Movimiento anterior",
+    goForwardHistory = "Siguiente movimiento",
+    goStartHistory = "Primera posición",
+    goEndHistory = "Última jugada"
 )

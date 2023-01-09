@@ -21,4 +21,8 @@ val frStrings = Strings(
     drawByThreeFoldRepetition = "Nulle par triple répétition.",
     drawByInsufficientMaterial = "Nulle par manque de matériel.",
     drawByFiftyMovesRule = "Nulle par la règle des 50 coups.",
+    goBackHistory = "Coup précédent",
+    goForwardHistory = "Coup suivant",
+    goStartHistory = "Première position",
+    goEndHistory = "Dernier coup"
 )

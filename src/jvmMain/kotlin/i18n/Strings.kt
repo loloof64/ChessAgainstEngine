@@ -23,6 +23,10 @@ data class Strings(
     val drawByThreeFoldRepetition: String,
     val drawByInsufficientMaterial: String,
     val drawByFiftyMovesRule: String,
+    val goBackHistory: String,
+    val goForwardHistory: String,
+    val goStartHistory: String,
+    val goEndHistory: String,
 )
 
 val strings = mapOf(

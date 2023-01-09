@@ -21,4 +21,8 @@ val enStrings = Strings(
     drawByThreeFoldRepetition = "Draw by three-fold repetition",
     drawByInsufficientMaterial = "Draw by insufficient material",
     drawByFiftyMovesRule = "Draw by the 50 moves rule",
+    goBackHistory = "Previous move",
+    goForwardHistory = "Next move",
+    goStartHistory = "First position",
+    goEndHistory = "Last move"
 )
