@@ -2,7 +2,7 @@ package screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -14,8 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
-import components.ChessBoard
-import components.PlayerType
+import components.*
 import i18n.LocalStrings
 import kotlinx.coroutines.launch
 import logic.ChessGameManager
@@ -119,10 +118,10 @@ fun GamePage(
                 })
             })
         }) {
-        Column(
+        Row(
             modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             ChessBoard(isWhiteTurn = isWhiteTurn,
                 piecesValues = boardPieces,
@@ -182,6 +181,17 @@ fun GamePage(
                     gameInProgress = ChessGameManager.isGameInProgress()
                 }
             )
+
+            ChessHistory(
+                items = listOf(
+                    ChessHistoryItem.MoveNumberItem(2, false),
+                    ChessHistoryItem.MoveItem("Nf3", ""),
+                    ChessHistoryItem.MoveItem("Nf6", ""),
+                    ChessHistoryItem.GameTerminationItem(GameTermination.InProgress)
+                )
+            ) {
+                // not processing requests as now
+            }
         }
     }
 }
