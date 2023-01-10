@@ -10,10 +10,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import i18n.LocalStrings
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.awt.KeyboardFocusManager
+import java.io.IOException
+import java.io.PrintWriter
+import java.util.*
 import javax.swing.JFileChooser
 
 @Composable
@@ -26,8 +27,49 @@ fun OptionsPage(
     var enginePath by rememberSaveable { mutableStateOf("") }
 
     suspend fun testUCIEngine(enginePath: String): Boolean {
-        delay(200)
-        return false
+        return withContext(Dispatchers.IO) {
+            try {
+                val process =
+                    ProcessBuilder(enginePath).start()
+                val processIn = Scanner(process.inputStream)
+                val outputTask = async {
+                    while (isActive) {
+                        try {
+                            val currentLine = processIn.nextLine()
+                            if (currentLine == "readyok") {
+                                return@async true
+                            }
+
+                        } catch (ex: IllegalStateException) {
+                            return@async false
+                        } catch (ex: NoSuchElementException) {
+                            return@async false
+                        }
+                    }
+                    return@async false
+                }
+                val inputTask = launch {
+                    val processOut = PrintWriter(process.outputStream)
+                    processOut.write("uci\n")
+                    processOut.flush()
+
+                    processOut.write("isready\n")
+                    processOut.flush()
+                }
+                inputTask.join()
+                val deferredOutputTaskResult = async {
+                    val loopResult = outputTask.await()
+                    loopResult
+                }
+                launch {
+                    delay(500)
+                    process.destroy()
+                }
+                deferredOutputTaskResult.await()
+            } catch (ex: IOException) {
+                false
+            }
+        }
     }
 
     fun purposeSelectEnginePath() {
@@ -42,16 +84,14 @@ fun OptionsPage(
 
             coroutineScope.launch(Dispatchers.Default) {
                 val isReallyEngine = testUCIEngine(result.absolutePath)
-                with(Dispatchers.Main) {
-                    if (isReallyEngine) {
-                        enginePath = result.absolutePath
-                    } else {
-                        scaffoldState.snackbarHostState.showSnackbar(
-                            strings.notChessUCIEngineError,
-                            actionLabel = strings.close,
-                            duration = SnackbarDuration.Long
-                        )
-                    }
+                if (isReallyEngine) {
+                    enginePath = result.absolutePath
+                } else {
+                    scaffoldState.snackbarHostState.showSnackbar(
+                        strings.notChessUCIEngineError,
+                        actionLabel = strings.close,
+                        duration = SnackbarDuration.Long
+                    )
                 }
             }
         }
