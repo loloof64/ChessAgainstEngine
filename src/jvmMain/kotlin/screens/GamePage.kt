@@ -46,7 +46,7 @@ fun GamePage(
         blackPlayerType = ChessGameManager.getBlackPlayerType()
         coroutineScope.launch {
             scaffoldState.snackbarHostState.showSnackbar(
-                if (whitePlayer) strings.playerWonGame else strings.playerLostGame,
+                if (whitePlayer) strings.whiteWonGame else strings.blackWonGame,
                 actionLabel = strings.close,
                 duration = SnackbarDuration.Long
             )
