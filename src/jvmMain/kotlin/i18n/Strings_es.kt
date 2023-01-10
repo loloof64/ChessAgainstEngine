@@ -36,4 +36,5 @@ val esStrings = Strings(
     enginePath = "Ruta del motor de ajedrez UCI",
     selectEnginePathDialogTitle = "Seleccione el motor de ajedrez UCI",
     chooseUciEngine = "Seleccionar el motor de ajedrez",
+    notChessUCIEngineError = "El motor seleccionado no es un motor UCI de ajedrez ejecutable.",
 )

@@ -36,4 +36,5 @@ val enStrings = Strings(
     enginePath = "chess UCI engine path",
     selectEnginePathDialogTitle = "Select the chess UCI engine",
     chooseUciEngine = "Choose chess engine",
+    notChessUCIEngineError = "The selected engine is not a runnable chess UCI engine."
 )

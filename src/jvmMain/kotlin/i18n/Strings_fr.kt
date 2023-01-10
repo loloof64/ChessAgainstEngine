@@ -36,4 +36,5 @@ val frStrings = Strings(
     enginePath = "Chemin moteur d'échecs UCI",
     selectEnginePathDialogTitle = "Choisissez le chemin du moteur d'échecs UCI",
     chooseUciEngine = "Choisir le moteur d'échecs",
+    notChessUCIEngineError = "Le moteur choisi n'est pas un moteur d'échecs UCI exécutable."
 )
