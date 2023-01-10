@@ -5,6 +5,7 @@ val esStrings = Strings(
     cancel = "Cancelar",
     homePageTitle = "Casa",
     gamePageTitle = "Página del juego",
+    optionsPageTitle = "Página de preferencias",
     goBack = "Volver",
     chessPiece = "Pieza de ajedrez",
     goToGamePage = "Ir a la página del juego",
@@ -30,5 +31,6 @@ val esStrings = Strings(
     stopGame = "Detener el juego",
     purposeStopGameTitle = "¿Detener el juego actual?",
     purposeStopGameMessage = "¿Quieres detener el juego actual?",
-    gameAborted = "Juego abortado."
+    gameAborted = "Juego abortado.",
+    preferences = "Preferencias"
 )

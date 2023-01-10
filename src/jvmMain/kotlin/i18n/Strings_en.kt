@@ -5,6 +5,7 @@ val enStrings = Strings(
     cancel = "Cancel",
     homePageTitle = "Home",
     gamePageTitle = "Game page",
+    optionsPageTitle = "Preferences page",
     goBack = "Go back",
     chessPiece = "Chess piece",
     goToGamePage = "Go to game page",
@@ -30,5 +31,6 @@ val enStrings = Strings(
     stopGame = "Stop game",
     purposeStopGameTitle = "Stop current game ?",
     purposeStopGameMessage = "Do you want to stop current game ?",
-    gameAborted = "Game aborted."
+    gameAborted = "Game aborted.",
+    preferences = "Preferences",
 )

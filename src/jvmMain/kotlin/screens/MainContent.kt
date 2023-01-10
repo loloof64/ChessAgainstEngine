@@ -59,10 +59,15 @@ fun MainContent() {
                             )
                         }
                     }
-                }, scaffoldState = scaffoldState
+                },
+                onGoOptionsPageClick = {
+                    navigation.push(Screen.Options)
+                },
+                scaffoldState = scaffoldState
             )
 
             is Screen.Game -> GamePage(onBack = navigation::pop)
+            is Screen.Options -> OptionsPage(onBack = navigation::pop)
         }
     }
 }
@@ -74,4 +79,7 @@ sealed class Screen : Parcelable {
 
     @Parcelize
     data class Game(val startPosition: String = defaultPosition) : Screen()
+
+    @Parcelize
+    object Options : Screen()
 }

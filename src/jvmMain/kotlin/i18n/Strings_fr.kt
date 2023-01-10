@@ -5,6 +5,7 @@ val frStrings = Strings(
     cancel = "Annuler",
     homePageTitle = "Accueil",
     gamePageTitle = "Page de jeu",
+    optionsPageTitle = "Page des préférences",
     goBack = "Revenir",
     chessPiece = "Pièce d'échecs",
     goToGamePage = "Aller à la page jeu",
@@ -30,5 +31,6 @@ val frStrings = Strings(
     stopGame = "Interrompre la partie",
     purposeStopGameTitle = "Interrompre la partie ?",
     purposeStopGameMessage = "Souhaitez-vous interrompre la partie ?",
-    gameAborted = "Partie interrompue."
+    gameAborted = "Partie interrompue.",
+    preferences = "Préferences"
 )

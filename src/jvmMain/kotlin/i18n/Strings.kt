@@ -7,6 +7,7 @@ data class Strings(
     val cancel: String,
     val homePageTitle: String,
     val gamePageTitle: String,
+    val optionsPageTitle: String,
     val goBack: String,
     val chessPiece: String,
     val goToGamePage: String,
@@ -32,7 +33,8 @@ data class Strings(
     val stopGame: String,
     val purposeStopGameTitle: String,
     val purposeStopGameMessage: String,
-    val gameAborted: String
+    val gameAborted: String,
+    val preferences: String,
 )
 
 val strings = mapOf(

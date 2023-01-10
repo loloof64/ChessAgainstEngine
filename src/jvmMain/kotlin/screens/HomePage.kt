@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -12,15 +14,24 @@ import i18n.LocalStrings
 @Composable
 fun HomePage(
     onGoGamePageClick: () -> Unit,
+    onGoOptionsPageClick: () -> Unit,
     scaffoldState: ScaffoldState,
 ) {
     val strings = LocalStrings.current
     Scaffold(topBar = {
         TopAppBar(
-            title = { Text(strings.homePageTitle) }
+            title = { Text(strings.homePageTitle) },
+            actions = {
+                IconButton(
+                    onGoOptionsPageClick
+                ) {
+                    Icon(Icons.Default.Settings, strings.preferences)
+                }
+            }
         )
     }, scaffoldState = scaffoldState) {
-        Column(modifier = Modifier.fillMaxSize(),
+        Column(
+            modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
