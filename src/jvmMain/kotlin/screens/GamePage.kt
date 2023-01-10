@@ -1,9 +1,7 @@
 package screens
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -16,6 +14,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import components.*
 import i18n.LocalStrings
+import io.github.wolfraam.chessgame.board.Square
 import kotlinx.coroutines.launch
 import logic.ChessGameManager
 
@@ -123,186 +122,274 @@ fun GamePage(
         }
     }
 
-    Scaffold(
-        scaffoldState = scaffoldState,
-        topBar = {
-            TopAppBar(title = { Text(strings.gamePageTitle) }, navigationIcon = {
-                IconButton(onBack) {
-                    Icon(Icons.Default.ArrowBack, strings.goBack)
-                }
-            }, actions = {
-                IconButton(content = {
-                    Image(
-                        painter = painterResource("icons/swap_vert.svg"),
-                        contentDescription = strings.swapBoardOrientation,
-                        modifier = Modifier,
-                        colorFilter = ColorFilter.tint(Color.White)
-                    )
-                }, onClick = {
-                    boardReversed = !boardReversed
+    fun onMovePlayed() {
+        isWhiteTurn = ChessGameManager.isWhiteTurn()
+        boardPieces = ChessGameManager.getPieces()
+        pendingPromotion = ChessGameManager.getPendingPromotion()
+        pendingPromotionStartSquare = ChessGameManager.getPendingPromotionStartSquare()
+        pendingPromotionEndSquare = ChessGameManager.getPendingPromotionEndSquare()
+        lastMoveArrow = ChessGameManager.getLastMoveArrow()
+        gameInProgress = ChessGameManager.isGameInProgress()
+        whitePlayerType = ChessGameManager.getWhitePlayerType()
+        blackPlayerType = ChessGameManager.getBlackPlayerType()
+        selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
+    }
+
+    fun onPromotionCancelled() {
+        pendingPromotion = ChessGameManager.getPendingPromotion()
+        pendingPromotionStartSquare = ChessGameManager.getPendingPromotionStartSquare()
+        pendingPromotionEndSquare = ChessGameManager.getPendingPromotionEndSquare()
+    }
+
+    BoxWithConstraints {
+        val isLandscape = maxWidth > maxHeight
+        Scaffold(
+            scaffoldState = scaffoldState,
+            topBar = {
+                TopAppBar(title = { Text(strings.gamePageTitle) }, navigationIcon = {
+                    IconButton(onBack) {
+                        Icon(Icons.Default.ArrowBack, strings.goBack)
+                    }
+                }, actions = {
+                    IconButton(content = {
+                        Image(
+                            painter = painterResource("icons/swap_vert.svg"),
+                            contentDescription = strings.swapBoardOrientation,
+                            modifier = Modifier,
+                            colorFilter = ColorFilter.tint(Color.White)
+                        )
+                    }, onClick = {
+                        boardReversed = !boardReversed
+                    })
+                    IconButton(::purposeStopGame) {
+                        Image(
+                            painter = painterResource("icons/cancel.svg"),
+                            contentDescription = strings.stopGame,
+                            modifier = Modifier,
+                            colorFilter = ColorFilter.tint(Color.White)
+                        )
+                    }
                 })
-                IconButton(::purposeStopGame) {
-                    Image(
-                        painter = painterResource("icons/cancel.svg"),
-                        contentDescription = strings.stopGame,
-                        modifier = Modifier,
-                        colorFilter = ColorFilter.tint(Color.White)
-                    )
-                }
-            })
-        }) {
-        Row(
-            modifier = Modifier.fillMaxSize(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ChessBoard(isWhiteTurn = isWhiteTurn,
-                piecesValues = boardPieces,
-                reversed = boardReversed,
-                whitePlayerType = whitePlayerType,
-                blackPlayerType = blackPlayerType,
-                lastMoveArrow = lastMoveArrow,
-                pendingPromotion = pendingPromotion,
-                pendingPromotionStartFile = pendingPromotionStartSquare?.x,
-                pendingPromotionStartRank = pendingPromotionStartSquare?.y,
-                pendingPromotionEndFile = pendingPromotionEndSquare?.x,
-                pendingPromotionEndRank = pendingPromotionEndSquare?.y,
-                tryPlayingMove = { dragAndDropData ->
-                    if (!gameInProgress) return@ChessBoard
-                    ChessGameManager.playMove(
-                        startFile = dragAndDropData.startFile,
-                        startRank = dragAndDropData.startRank,
-                        endFile = dragAndDropData.endFile,
-                        endRank = dragAndDropData.endRank,
+            }) {
+
+            if (isLandscape) {
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                )
+                {
+                    ChessBoardComponent(
+                        isWhiteTurn = isWhiteTurn,
+                        piecesValues = boardPieces,
+                        reversed = boardReversed,
+                        whitePlayerType = whitePlayerType,
+                        blackPlayerType = blackPlayerType,
+                        lastMoveArrow = lastMoveArrow,
+                        pendingPromotion = pendingPromotion,
+                        pendingPromotionStartSquare = pendingPromotionStartSquare,
+                        pendingPromotionEndSquare = pendingPromotionEndSquare,
+                        gameInProgress = gameInProgress,
                         onCheckmate = ::onCheckmate,
                         onStalemate = ::onStalemate,
-                        onThreeFoldsRepetition = ::onThreeFoldRepetition,
-                        onInsufficientMaterial = ::onInsufficientMaterial,
                         onFiftyMovesRuleDraw = ::onFiftyMovesRuleDraw,
+                        onThreeFoldRepetition = ::onThreeFoldRepetition,
+                        onInsufficientMaterial = ::onInsufficientMaterial,
+                        onMovePlayed = ::onMovePlayed,
+                        onPromotionCancelled = ::onPromotionCancelled,
                     )
-                    isWhiteTurn = ChessGameManager.isWhiteTurn()
-                    boardPieces = ChessGameManager.getPieces()
-                    pendingPromotion = ChessGameManager.getPendingPromotion()
-                    pendingPromotionStartSquare = ChessGameManager.getPendingPromotionStartSquare()
-                    pendingPromotionEndSquare = ChessGameManager.getPendingPromotionEndSquare()
-                    lastMoveArrow = ChessGameManager.getLastMoveArrow()
-                    gameInProgress = ChessGameManager.isGameInProgress()
-                    whitePlayerType = ChessGameManager.getWhitePlayerType()
-                    blackPlayerType = ChessGameManager.getBlackPlayerType()
-                    selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
-                },
-                onCancelPromotion = {
-                    if (!gameInProgress) return@ChessBoard
-                    ChessGameManager.cancelPromotion()
-                    pendingPromotion = ChessGameManager.getPendingPromotion()
-                    pendingPromotionStartSquare = ChessGameManager.getPendingPromotionStartSquare()
-                    pendingPromotionEndSquare = ChessGameManager.getPendingPromotionEndSquare()
-                },
-                onValidatePromotion = {
-                    if (!gameInProgress) return@ChessBoard
-                    ChessGameManager.commitPromotion(
-                        pieceType = it,
+
+                    HistoryComponent(
+                        historyElements = historyElements,
+                        selectedHistoryNodeIndex = selectedHistoryNodeIndex,
+                        onPositionSelected = {
+                            isWhiteTurn = ChessGameManager.isWhiteTurn()
+                            boardPieces = ChessGameManager.getPieces()
+                            lastMoveArrow = ChessGameManager.getLastMoveArrow()
+                            selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
+                        },
+                    )
+                }
+            } else {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                )
+                {
+                    ChessBoardComponent(
+                        isWhiteTurn = isWhiteTurn,
+                        piecesValues = boardPieces,
+                        reversed = boardReversed,
+                        whitePlayerType = whitePlayerType,
+                        blackPlayerType = blackPlayerType,
+                        lastMoveArrow = lastMoveArrow,
+                        pendingPromotion = pendingPromotion,
+                        pendingPromotionStartSquare = pendingPromotionStartSquare,
+                        pendingPromotionEndSquare = pendingPromotionEndSquare,
+                        gameInProgress = gameInProgress,
                         onCheckmate = ::onCheckmate,
                         onStalemate = ::onStalemate,
-                        onThreeFoldsRepetition = ::onThreeFoldRepetition,
-                        onInsufficientMaterial = ::onInsufficientMaterial,
                         onFiftyMovesRuleDraw = ::onFiftyMovesRuleDraw,
+                        onThreeFoldRepetition = ::onThreeFoldRepetition,
+                        onInsufficientMaterial = ::onInsufficientMaterial,
+                        onMovePlayed = ::onMovePlayed,
+                        onPromotionCancelled = ::onPromotionCancelled,
                     )
-                    isWhiteTurn = ChessGameManager.isWhiteTurn()
-                    boardPieces = ChessGameManager.getPieces()
-                    pendingPromotion = ChessGameManager.getPendingPromotion()
-                    pendingPromotionStartSquare = ChessGameManager.getPendingPromotionStartSquare()
-                    pendingPromotionEndSquare = ChessGameManager.getPendingPromotionEndSquare()
-                    lastMoveArrow = ChessGameManager.getLastMoveArrow()
-                    gameInProgress = ChessGameManager.isGameInProgress()
-                    whitePlayerType = ChessGameManager.getWhitePlayerType()
-                    blackPlayerType = ChessGameManager.getBlackPlayerType()
-                    selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
-                }
-            )
 
-            ChessHistory(
-                items = historyElements,
-                selectedNodeIndex = selectedHistoryNodeIndex,
-                onPositionRequest = { positionFen, moveCoordinates, nodeToSelectIndex ->
-                    val success = ChessGameManager.requestPosition(
-                        positionFen = positionFen,
-                        moveCoordinates = moveCoordinates,
-                        nodeToSelectIndex
+                    HistoryComponent(
+                        historyElements = historyElements,
+                        selectedHistoryNodeIndex = selectedHistoryNodeIndex,
+                        onPositionSelected = {
+                            isWhiteTurn = ChessGameManager.isWhiteTurn()
+                            boardPieces = ChessGameManager.getPieces()
+                            lastMoveArrow = ChessGameManager.getLastMoveArrow()
+                            selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
+                        },
                     )
-                    if (success) {
-                        isWhiteTurn = ChessGameManager.isWhiteTurn()
-                        boardPieces = ChessGameManager.getPieces()
-                        lastMoveArrow = ChessGameManager.getLastMoveArrow()
-                        selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
-                    }
-                },
-                onRequestBackOneMove = {
-                    val success = ChessGameManager.requestGotoPreviousHistoryNode()
-                    if (success) {
-                        isWhiteTurn = ChessGameManager.isWhiteTurn()
-                        boardPieces = ChessGameManager.getPieces()
-                        lastMoveArrow = ChessGameManager.getLastMoveArrow()
-                        selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
-                    }
-                },
-                onRequestForwardOneMove = {
-                    val success = ChessGameManager.requestGotoNextHistoryNode()
-                    if (success) {
-                        isWhiteTurn = ChessGameManager.isWhiteTurn()
-                        boardPieces = ChessGameManager.getPieces()
-                        lastMoveArrow = ChessGameManager.getLastMoveArrow()
-                        selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
-                    }
-                },
-                onRequestGotoFirstPosition = {
-                    val success = ChessGameManager.requestGotoFirstPosition()
-                    if (success) {
-                        isWhiteTurn = ChessGameManager.isWhiteTurn()
-                        boardPieces = ChessGameManager.getPieces()
-                        lastMoveArrow = ChessGameManager.getLastMoveArrow()
-                        selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
-                    }
-                },
-                onRequestGotoLastMove = {
-                    val success = ChessGameManager.requestGotoLastHistoryNode()
-                    if (success) {
-                        isWhiteTurn = ChessGameManager.isWhiteTurn()
-                        boardPieces = ChessGameManager.getPieces()
-                        lastMoveArrow = ChessGameManager.getLastMoveArrow()
-                        selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
-                    }
                 }
-            )
-        }
+            }
 
-        if (purposeStopGameDialogOpen) {
-            AlertDialog(
-                onDismissRequest = {
-                    purposeStopGameDialogOpen = false
-                },
-                title = {
-                    Text(strings.purposeStopGameTitle)
-                },
-                text = {
-                    Text(strings.purposeStopGameMessage)
-                },
-                confirmButton = {
-                    Button({
+            if (purposeStopGameDialogOpen) {
+                AlertDialog(
+                    onDismissRequest = {
                         purposeStopGameDialogOpen = false
-                        stopGame()
-                    }) {
-                        Text(strings.validate)
+                    },
+                    title = {
+                        Text(strings.purposeStopGameTitle)
+                    },
+                    text = {
+                        Text(strings.purposeStopGameMessage)
+                    },
+                    confirmButton = {
+                        Button({
+                            purposeStopGameDialogOpen = false
+                            stopGame()
+                        }) {
+                            Text(strings.validate)
+                        }
+                    },
+                    dismissButton = {
+                        Button({
+                            purposeStopGameDialogOpen = false
+                        }) {
+                            Text(strings.cancel)
+                        }
                     }
-                },
-                dismissButton = {
-                    Button({
-                        purposeStopGameDialogOpen = false
-                    }) {
-                        Text(strings.cancel)
-                    }
-                }
-            )
+                )
+            }
         }
     }
+}
+
+@Composable
+private fun ChessBoardComponent(
+    gameInProgress: Boolean,
+    isWhiteTurn: Boolean,
+    reversed: Boolean,
+    piecesValues: List<List<Char>>,
+    whitePlayerType: PlayerType,
+    blackPlayerType: PlayerType,
+    lastMoveArrow: LastMoveArrow?,
+    pendingPromotion: PendingPromotion,
+    pendingPromotionStartSquare: Square?,
+    pendingPromotionEndSquare: Square?,
+    onCheckmate: (Boolean) -> Unit,
+    onStalemate: () -> Unit,
+    onThreeFoldRepetition: () -> Unit,
+    onInsufficientMaterial: () -> Unit,
+    onFiftyMovesRuleDraw: () -> Unit,
+    onMovePlayed: () -> Unit,
+    onPromotionCancelled: () -> Unit,
+) {
+    ChessBoard(isWhiteTurn = isWhiteTurn,
+        piecesValues = piecesValues,
+        reversed = reversed,
+        whitePlayerType = whitePlayerType,
+        blackPlayerType = blackPlayerType,
+        lastMoveArrow = lastMoveArrow,
+        pendingPromotion = pendingPromotion,
+        pendingPromotionStartFile = pendingPromotionStartSquare?.x,
+        pendingPromotionStartRank = pendingPromotionStartSquare?.y,
+        pendingPromotionEndFile = pendingPromotionEndSquare?.x,
+        pendingPromotionEndRank = pendingPromotionEndSquare?.y,
+        tryPlayingMove = { dragAndDropData ->
+            if (!gameInProgress) return@ChessBoard
+            ChessGameManager.playMove(
+                startFile = dragAndDropData.startFile,
+                startRank = dragAndDropData.startRank,
+                endFile = dragAndDropData.endFile,
+                endRank = dragAndDropData.endRank,
+                onCheckmate = onCheckmate,
+                onStalemate = onStalemate,
+                onThreeFoldsRepetition = onThreeFoldRepetition,
+                onInsufficientMaterial = onInsufficientMaterial,
+                onFiftyMovesRuleDraw = onFiftyMovesRuleDraw,
+            )
+            onMovePlayed()
+        },
+        onCancelPromotion = {
+            if (!gameInProgress) return@ChessBoard
+            ChessGameManager.cancelPromotion()
+            onPromotionCancelled()
+        },
+        onValidatePromotion = {
+            if (!gameInProgress) return@ChessBoard
+            ChessGameManager.commitPromotion(
+                pieceType = it,
+                onCheckmate = onCheckmate,
+                onStalemate = onStalemate,
+                onThreeFoldsRepetition = onThreeFoldRepetition,
+                onInsufficientMaterial = onInsufficientMaterial,
+                onFiftyMovesRuleDraw = onFiftyMovesRuleDraw,
+            )
+            onMovePlayed()
+        }
+    )
+}
+
+@Composable
+fun HistoryComponent(
+    historyElements: List<ChessHistoryItem>,
+    selectedHistoryNodeIndex: Int?,
+    onPositionSelected: () -> Unit,
+) {
+    ChessHistory(
+        items = historyElements,
+        selectedNodeIndex = selectedHistoryNodeIndex,
+        onPositionRequest = { positionFen, moveCoordinates, nodeToSelectIndex ->
+            val success = ChessGameManager.requestPosition(
+                positionFen = positionFen,
+                moveCoordinates = moveCoordinates,
+                nodeToSelectIndex
+            )
+            if (success) {
+                onPositionSelected()
+            }
+        },
+        onRequestBackOneMove = {
+            val success = ChessGameManager.requestGotoPreviousHistoryNode()
+            if (success) {
+                onPositionSelected()
+            }
+        },
+        onRequestForwardOneMove = {
+            val success = ChessGameManager.requestGotoNextHistoryNode()
+            if (success) {
+                onPositionSelected()
+            }
+        },
+        onRequestGotoFirstPosition = {
+            val success = ChessGameManager.requestGotoFirstPosition()
+            if (success) {
+                onPositionSelected()
+            }
+        },
+        onRequestGotoLastMove = {
+            val success = ChessGameManager.requestGotoLastHistoryNode()
+            if (success) {
+                onPositionSelected()
+            }
+        }
+    )
 }

@@ -14,6 +14,7 @@ import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import i18n.LocalStrings
 import i18n.strings
 import screens.MainContent
+import java.awt.Dimension
 
 @Composable
 @Preview
@@ -34,6 +35,8 @@ fun App() {
 
 fun main() = application {
     Window(onCloseRequest = ::exitApplication) {
+        window.minimumSize = Dimension(500, 400)
+        window.isResizable = false
         App()
     }
 }
