@@ -32,5 +32,8 @@ val esStrings = Strings(
     purposeStopGameTitle = "¿Detener el juego actual?",
     purposeStopGameMessage = "¿Quieres detener el juego actual?",
     gameAborted = "Juego abortado.",
-    preferences = "Preferencias"
+    preferences = "Preferencias",
+    enginePath = "Ruta del motor de ajedrez UCI",
+    selectEnginePathDialogTitle = "Seleccione el motor de ajedrez UCI",
+    chooseUciEngine = "Seleccionar el motor de ajedrez",
 )

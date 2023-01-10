@@ -32,5 +32,8 @@ val frStrings = Strings(
     purposeStopGameTitle = "Interrompre la partie ?",
     purposeStopGameMessage = "Souhaitez-vous interrompre la partie ?",
     gameAborted = "Partie interrompue.",
-    preferences = "Préferences"
+    preferences = "Préferences",
+    enginePath = "Chemin moteur d'échecs UCI",
+    selectEnginePathDialogTitle = "Choisissez le chemin du moteur d'échecs UCI",
+    chooseUciEngine = "Choisir le moteur d'échecs",
 )

@@ -35,6 +35,9 @@ data class Strings(
     val purposeStopGameMessage: String,
     val gameAborted: String,
     val preferences: String,
+    val enginePath: String,
+    val selectEnginePathDialogTitle: String,
+    val chooseUciEngine: String,
 )
 
 val strings = mapOf(

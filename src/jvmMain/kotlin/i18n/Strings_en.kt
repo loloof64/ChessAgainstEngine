@@ -33,4 +33,7 @@ val enStrings = Strings(
     purposeStopGameMessage = "Do you want to stop current game ?",
     gameAborted = "Game aborted.",
     preferences = "Preferences",
+    enginePath = "chess UCI engine path",
+    selectEnginePathDialogTitle = "Select the chess UCI engine",
+    chooseUciEngine = "Choose chess engine",
 )
