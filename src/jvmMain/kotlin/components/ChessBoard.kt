@@ -78,7 +78,7 @@ data class LastMoveArrow(
 fun ChessBoard(
     piecesValues: List<List<Char>>,
     isWhiteTurn: Boolean,
-    reversed: Boolean = false,
+    reversed: Boolean,
     whitePlayerType: PlayerType,
     blackPlayerType: PlayerType,
     lastMoveArrow: LastMoveArrow?,
@@ -260,78 +260,80 @@ private fun DragAndDropLayer(
 ) {
     val strings = LocalStrings.current
     var dndData by rememberSaveable { mutableStateOf<DragAndDropData?>(null) }
-    Column(modifier = Modifier.fillMaxSize().pointerInput(reversed, piecesValues, isWhiteTurn) {
-        detectDragGestures(
-            onDragStart = { offset: Offset ->
-                if (!isActive) return@detectDragGestures
+    Column(
+        modifier = Modifier.fillMaxSize()
+            .pointerInput(reversed, piecesValues, isWhiteTurn, whitePlayerType, blackPlayerType) {
+                detectDragGestures(
+                    onDragStart = { offset: Offset ->
+                        if (!isActive) return@detectDragGestures
 
-                val col = ((offset.x - cellSizePx * 0.5) / cellSizePx).toInt()
-                val row = ((offset.y - cellSizePx * 0.5) / cellSizePx).toInt()
-                val file = if (reversed) 7 - col else col
-                val rank = if (reversed) row else 7 - row
+                        val col = ((offset.x - cellSizePx * 0.5) / cellSizePx).toInt()
+                        val row = ((offset.y - cellSizePx * 0.5) / cellSizePx).toInt()
+                        val file = if (reversed) 7 - col else col
+                        val rank = if (reversed) row else 7 - row
 
-                if (file < 0 || file > 7) return@detectDragGestures
-                if (rank < 0 || rank > 7) return@detectDragGestures
+                        if (file < 0 || file > 7) return@detectDragGestures
+                        if (rank < 0 || rank > 7) return@detectDragGestures
 
 
-                val piece = piecesValues[7 - rank][file]
-                if (piece == emptyCell) return@detectDragGestures
+                        val piece = piecesValues[7 - rank][file]
+                        if (piece == emptyCell) return@detectDragGestures
 
-                val isComputerTurn = (isWhiteTurn && whitePlayerType == PlayerType.Computer)
-                        || (!isWhiteTurn && blackPlayerType == PlayerType.Computer)
-                if (isComputerTurn) return@detectDragGestures
+                        val isComputerTurn = (isWhiteTurn && whitePlayerType == PlayerType.Computer)
+                                || (!isWhiteTurn && blackPlayerType == PlayerType.Computer)
+                        if (isComputerTurn) return@detectDragGestures
 
-                val isOurPiece = piece.isUpperCase() == isWhiteTurn
-                if (!isOurPiece) return@detectDragGestures
+                        val isOurPiece = piece.isUpperCase() == isWhiteTurn
+                        if (!isOurPiece) return@detectDragGestures
 
-                dndData =
-                    DragAndDropData(
-                        startFile = file,
-                        startRank = rank,
-                        endFile = file,
-                        endRank = rank,
-                        carriedPiece = piece,
-                        startLocation = offset,
-                        currentLocation = offset,
-                    )
-                onDndDataUpdate(dndData)
+                        dndData =
+                            DragAndDropData(
+                                startFile = file,
+                                startRank = rank,
+                                endFile = file,
+                                endRank = rank,
+                                carriedPiece = piece,
+                                startLocation = offset,
+                                currentLocation = offset,
+                            )
+                        onDndDataUpdate(dndData)
 
-            },
-            onDrag = { _, dragAmount ->
-                if (!isActive) return@detectDragGestures
-                if (dndData == null) return@detectDragGestures
+                    },
+                    onDrag = { _, dragAmount ->
+                        if (!isActive) return@detectDragGestures
+                        if (dndData == null) return@detectDragGestures
 
-                val currentLocation = dndData!!.currentLocation + dragAmount
+                        val currentLocation = dndData!!.currentLocation + dragAmount
 
-                val col = ((currentLocation.x - cellSizePx * 0.5) / cellSizePx).toInt()
-                val row = ((currentLocation.y - cellSizePx * 0.5) / cellSizePx).toInt()
-                val file = if (reversed) 7 - col else col
-                val rank = if (reversed) row else 7 - row
+                        val col = ((currentLocation.x - cellSizePx * 0.5) / cellSizePx).toInt()
+                        val row = ((currentLocation.y - cellSizePx * 0.5) / cellSizePx).toInt()
+                        val file = if (reversed) 7 - col else col
+                        val rank = if (reversed) row else 7 - row
 
-                dndData =
-                    dndData!!.copy(
-                        endRank = rank,
-                        endFile = file,
-                        currentLocation = currentLocation,
-                    )
-                onDndDataUpdate(dndData)
+                        dndData =
+                            dndData!!.copy(
+                                endRank = rank,
+                                endFile = file,
+                                currentLocation = currentLocation,
+                            )
+                        onDndDataUpdate(dndData)
 
-            },
-            onDragEnd = {
-                if (!isActive) return@detectDragGestures
-                if (dndData == null) return@detectDragGestures
-                tryPlayingMove(dndData!!)
-                dndData = null
-                onDndDataUpdate(null)
-            },
-            onDragCancel = {
-                if (!isActive) return@detectDragGestures
-                if (dndData == null) return@detectDragGestures
-                dndData = null
-                onDndDataUpdate(null)
-            }
-        )
-    }) {
+                    },
+                    onDragEnd = {
+                        if (!isActive) return@detectDragGestures
+                        if (dndData == null) return@detectDragGestures
+                        tryPlayingMove(dndData!!)
+                        dndData = null
+                        onDndDataUpdate(null)
+                    },
+                    onDragCancel = {
+                        if (!isActive) return@detectDragGestures
+                        if (dndData == null) return@detectDragGestures
+                        dndData = null
+                        onDndDataUpdate(null)
+                    }
+                )
+            }) {
         if (dndData != null) {
             val xDp = with(LocalDensity.current) {
                 dndData!!.currentLocation.x.toDp()

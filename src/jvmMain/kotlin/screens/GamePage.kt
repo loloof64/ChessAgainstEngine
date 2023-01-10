@@ -19,6 +19,7 @@ import i18n.LocalStrings
 import kotlinx.coroutines.launch
 import logic.ChessGameManager
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun GamePage(
     onBack: () -> Unit,
@@ -27,6 +28,7 @@ fun GamePage(
     val coroutineScope = rememberCoroutineScope()
 
     val strings = LocalStrings.current
+    var purposeStopGameDialogOpen by rememberSaveable { mutableStateOf(false) }
     var boardReversed by rememberSaveable { mutableStateOf(false) }
     var gameInProgress by rememberSaveable { mutableStateOf(ChessGameManager.isGameInProgress()) }
     var boardPieces by rememberSaveable { mutableStateOf(ChessGameManager.getPieces()) }
@@ -36,13 +38,13 @@ fun GamePage(
     var pendingPromotionStartSquare by rememberSaveable { mutableStateOf(ChessGameManager.getPendingPromotionStartSquare()) }
     var pendingPromotionEndSquare by rememberSaveable { mutableStateOf(ChessGameManager.getPendingPromotionEndSquare()) }
     var historyElements by rememberSaveable { mutableStateOf(ChessGameManager.getHistoryElements()) }
-    var selectedHistoryNodeIndex by rememberSaveable{ mutableStateOf(ChessGameManager.getSelectedHistoryNodeIndex()) }
-    var whitePlayerType by rememberSaveable { mutableStateOf(PlayerType.Human) }
-    var blackPlayerType by rememberSaveable { mutableStateOf(PlayerType.Human) }
+    var selectedHistoryNodeIndex by rememberSaveable { mutableStateOf(ChessGameManager.getSelectedHistoryNodeIndex()) }
+    var whitePlayerType by rememberSaveable { mutableStateOf(ChessGameManager.getWhitePlayerType()) }
+    var blackPlayerType by rememberSaveable { mutableStateOf(ChessGameManager.getBlackPlayerType()) }
 
     fun onCheckmate(whitePlayer: Boolean) {
-        whitePlayerType = PlayerType.Computer
-        blackPlayerType = PlayerType.Computer
+        whitePlayerType = ChessGameManager.getWhitePlayerType()
+        blackPlayerType = ChessGameManager.getBlackPlayerType()
         coroutineScope.launch {
             scaffoldState.snackbarHostState.showSnackbar(
                 if (whitePlayer) strings.playerWonGame else strings.playerLostGame,
@@ -53,8 +55,8 @@ fun GamePage(
     }
 
     fun onStalemate() {
-        whitePlayerType = PlayerType.Computer
-        blackPlayerType = PlayerType.Computer
+        whitePlayerType = ChessGameManager.getWhitePlayerType()
+        blackPlayerType = ChessGameManager.getBlackPlayerType()
         coroutineScope.launch {
             scaffoldState.snackbarHostState.showSnackbar(
                 strings.drawByStalemate,
@@ -65,8 +67,8 @@ fun GamePage(
     }
 
     fun onThreeFoldRepetition() {
-        whitePlayerType = PlayerType.Computer
-        blackPlayerType = PlayerType.Computer
+        whitePlayerType = ChessGameManager.getWhitePlayerType()
+        blackPlayerType = ChessGameManager.getBlackPlayerType()
         coroutineScope.launch {
             scaffoldState.snackbarHostState.showSnackbar(
                 strings.drawByThreeFoldRepetition,
@@ -77,8 +79,8 @@ fun GamePage(
     }
 
     fun onInsufficientMaterial() {
-        whitePlayerType = PlayerType.Computer
-        blackPlayerType = PlayerType.Computer
+        whitePlayerType = ChessGameManager.getWhitePlayerType()
+        blackPlayerType = ChessGameManager.getBlackPlayerType()
         coroutineScope.launch {
             scaffoldState.snackbarHostState.showSnackbar(
                 strings.drawByInsufficientMaterial,
@@ -89,11 +91,32 @@ fun GamePage(
     }
 
     fun onFiftyMovesRuleDraw() {
-        whitePlayerType = PlayerType.Computer
-        blackPlayerType = PlayerType.Computer
+        whitePlayerType = ChessGameManager.getWhitePlayerType()
+        blackPlayerType = ChessGameManager.getBlackPlayerType()
         coroutineScope.launch {
             scaffoldState.snackbarHostState.showSnackbar(
                 strings.drawByFiftyMovesRule,
+                actionLabel = strings.close,
+                duration = SnackbarDuration.Long
+            )
+        }
+    }
+
+    fun purposeStopGame() {
+        if (ChessGameManager.isGameInProgress()) {
+            purposeStopGameDialogOpen = true
+        }
+    }
+
+    fun stopGame() {
+        ChessGameManager.stopGame()
+        gameInProgress = ChessGameManager.isGameInProgress()
+        selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
+        whitePlayerType = ChessGameManager.getWhitePlayerType()
+        blackPlayerType = ChessGameManager.getBlackPlayerType()
+        coroutineScope.launch {
+            scaffoldState.snackbarHostState.showSnackbar(
+                strings.gameAborted,
                 actionLabel = strings.close,
                 duration = SnackbarDuration.Long
             )
@@ -118,6 +141,14 @@ fun GamePage(
                 }, onClick = {
                     boardReversed = !boardReversed
                 })
+                IconButton(::purposeStopGame) {
+                    Image(
+                        painter = painterResource("icons/cancel.svg"),
+                        contentDescription = strings.stopGame,
+                        modifier = Modifier,
+                        colorFilter = ColorFilter.tint(Color.White)
+                    )
+                }
             })
         }) {
         Row(
@@ -156,6 +187,8 @@ fun GamePage(
                     pendingPromotionEndSquare = ChessGameManager.getPendingPromotionEndSquare()
                     lastMoveArrow = ChessGameManager.getLastMoveArrow()
                     gameInProgress = ChessGameManager.isGameInProgress()
+                    whitePlayerType = ChessGameManager.getWhitePlayerType()
+                    blackPlayerType = ChessGameManager.getBlackPlayerType()
                     selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
                 },
                 onCancelPromotion = {
@@ -182,6 +215,8 @@ fun GamePage(
                     pendingPromotionEndSquare = ChessGameManager.getPendingPromotionEndSquare()
                     lastMoveArrow = ChessGameManager.getLastMoveArrow()
                     gameInProgress = ChessGameManager.isGameInProgress()
+                    whitePlayerType = ChessGameManager.getWhitePlayerType()
+                    blackPlayerType = ChessGameManager.getBlackPlayerType()
                     selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
                 }
             )
@@ -236,6 +271,35 @@ fun GamePage(
                         boardPieces = ChessGameManager.getPieces()
                         lastMoveArrow = ChessGameManager.getLastMoveArrow()
                         selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
+                    }
+                }
+            )
+        }
+
+        if (purposeStopGameDialogOpen) {
+            AlertDialog(
+                onDismissRequest = {
+                    purposeStopGameDialogOpen = false
+                },
+                title = {
+                    Text(strings.purposeStopGameTitle)
+                },
+                text = {
+                    Text(strings.purposeStopGameMessage)
+                },
+                confirmButton = {
+                    Button({
+                        purposeStopGameDialogOpen = false
+                        stopGame()
+                    }) {
+                        Text(strings.validate)
+                    }
+                },
+                dismissButton = {
+                    Button({
+                        purposeStopGameDialogOpen = false
+                    }) {
+                        Text(strings.cancel)
                     }
                 }
             )

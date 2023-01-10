@@ -1,6 +1,8 @@
 package i18n
 
 val esStrings = Strings(
+    validate = "Confirmar",
+    cancel = "Cancelar",
     homePageTitle = "Casa",
     gamePageTitle = "Página del juego",
     goBack = "Volver",
@@ -24,5 +26,9 @@ val esStrings = Strings(
     goBackHistory = "Movimiento anterior",
     goForwardHistory = "Siguiente movimiento",
     goStartHistory = "Primera posición",
-    goEndHistory = "Última jugada"
+    goEndHistory = "Última jugada",
+    stopGame = "Detener el juego",
+    purposeStopGameTitle = "¿Detener el juego actual?",
+    purposeStopGameMessage = "¿Quieres detener el juego actual?",
+    gameAborted = "Juego abortado."
 )

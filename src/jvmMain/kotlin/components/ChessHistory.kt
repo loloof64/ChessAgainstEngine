@@ -98,11 +98,11 @@ fun ChessHistory(
         )
         Column(modifier = Modifier.fillMaxSize()) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().padding(6.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.Top,
             ) {
-                Button(onClick = onRequestGotoFirstPosition, modifier = Modifier.size(50.dp)) {
+                Button(onClick = onRequestGotoFirstPosition, modifier = Modifier.size(45.dp)) {
                     Image(
                         modifier = Modifier.size(30.dp),
                         painter = painterResource("images/material_vectors/keyboard_double_arrow_left.svg"),
@@ -110,7 +110,7 @@ fun ChessHistory(
                         colorFilter = ColorFilter.tint(Color.White)
                     )
                 }
-                Button(onClick = onRequestBackOneMove, modifier = Modifier.size(50.dp)) {
+                Button(onClick = onRequestBackOneMove, modifier = Modifier.size(45.dp)) {
                     Image(
                         modifier = Modifier.size(30.dp),
                         painter = painterResource("images/material_vectors/arrow_back.svg"),
@@ -118,7 +118,7 @@ fun ChessHistory(
                         colorFilter = ColorFilter.tint(Color.White)
                     )
                 }
-                Button(onClick = onRequestForwardOneMove, modifier = Modifier.size(50.dp)) {
+                Button(onClick = onRequestForwardOneMove, modifier = Modifier.size(45.dp)) {
                     Image(
                         modifier = Modifier.size(30.dp),
                         painter = painterResource("images/material_vectors/arrow_forward.svg"),
@@ -126,7 +126,7 @@ fun ChessHistory(
                         colorFilter = ColorFilter.tint(Color.White)
                     )
                 }
-                Button(onClick = onRequestGotoLastMove, modifier = Modifier.size(50.dp)) {
+                Button(onClick = onRequestGotoLastMove, modifier = Modifier.size(45.dp)) {
                     Image(
                         modifier = Modifier.size(30.dp),
                         painter = painterResource("images/material_vectors/keyboard_double_arrow_right.svg"),

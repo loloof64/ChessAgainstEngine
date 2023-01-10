@@ -1,6 +1,8 @@
 package i18n
 
 val frStrings = Strings(
+    validate = "Valider",
+    cancel = "Annuler",
     homePageTitle = "Accueil",
     gamePageTitle = "Page de jeu",
     goBack = "Revenir",
@@ -24,5 +26,9 @@ val frStrings = Strings(
     goBackHistory = "Coup précédent",
     goForwardHistory = "Coup suivant",
     goStartHistory = "Première position",
-    goEndHistory = "Dernier coup"
+    goEndHistory = "Dernier coup",
+    stopGame = "Interrompre la partie",
+    purposeStopGameTitle = "Interrompre la partie ?",
+    purposeStopGameMessage = "Souhaitez-vous interrompre la partie ?",
+    gameAborted = "Partie interrompue."
 )

@@ -29,6 +29,8 @@ object ChessGameManager {
     private var _positionFenBeforeLastMove by mutableStateOf<String?>(null)
     private var _selectedNodeIndex by mutableStateOf<Int?>(null)
     private var _startPosition by mutableStateOf(defaultPosition)
+    private var _whitePlayerType by mutableStateOf(PlayerType.Human)
+    private var _blackPlayerType by mutableStateOf(PlayerType.Human)
 
     fun getPieces(): List<List<Char>> {
         val positionFen = _gameLogic.fen
@@ -44,6 +46,10 @@ object ChessGameManager {
             }
         }
     }
+
+    fun getWhitePlayerType(): PlayerType = _whitePlayerType
+
+    fun getBlackPlayerType(): PlayerType = _blackPlayerType
 
     fun getHistoryElements(): List<ChessHistoryItem> = _historyElements
 
@@ -69,11 +75,19 @@ object ChessGameManager {
         _startPosition = startPosition
     }
 
+    fun stopGame() {
+        _gameInProgress = false
+        _whitePlayerType = PlayerType.Computer
+        _blackPlayerType = PlayerType.Computer
+        selectLastHistoryMoveNodeIfAny()
+    }
 
     fun resetGame() {
         _gameLogic = ChessGame(_startPosition)
         val isWhiteTurn = _gameLogic.sideToMove == Side.WHITE
         val moveNumber = _gameLogic.fullMoveCount
+        _whitePlayerType = PlayerType.Human
+        _blackPlayerType = PlayerType.Human
         _historyElements = mutableListOf()
         _historyElements.add(ChessHistoryItem.MoveNumberItem(moveNumber, isWhiteTurn))
         _pendingPromotion = PendingPromotion.None
@@ -233,6 +247,7 @@ object ChessGameManager {
         while (requestGotoPreviousHistoryNode());
         return true
     }
+
     fun requestGotoLastHistoryNode(): Boolean {
         if (_gameInProgress) return false
         while (requestGotoNextHistoryNode());
@@ -241,7 +256,7 @@ object ChessGameManager {
 
     private fun requestForwardOneMove(): Boolean {
         if (_gameInProgress) return false
-        if (_selectedNodeIndex!= null && _selectedNodeIndex!! >= _historyElements.size - 1) return false
+        if (_selectedNodeIndex != null && _selectedNodeIndex!! >= _historyElements.size - 1) return false
         var newSelectedNodeIndex = if (_selectedNodeIndex == null) {
             0
         } else (_selectedNodeIndex!! + 1)
@@ -313,12 +328,16 @@ object ChessGameManager {
         when (gameResult?.chessGameResultType) {
             ChessGameResultType.WHITE_WINS -> {
                 _gameInProgress = false
+                _whitePlayerType = PlayerType.Computer
+                _blackPlayerType = PlayerType.Computer
                 selectLastHistoryMoveNodeIfAny()
                 onCheckmate(true)
             }
 
             ChessGameResultType.BLACK_WINS -> {
                 _gameInProgress = false
+                _whitePlayerType = PlayerType.Computer
+                _blackPlayerType = PlayerType.Computer
                 selectLastHistoryMoveNodeIfAny()
                 onCheckmate(false)
             }
@@ -327,24 +346,32 @@ object ChessGameManager {
                 when (gameResult.drawType) {
                     DrawType.STALE_MATE -> {
                         _gameInProgress = false
+                        _whitePlayerType = PlayerType.Computer
+                        _blackPlayerType = PlayerType.Computer
                         selectLastHistoryMoveNodeIfAny()
                         onStalemate()
                     }
 
                     DrawType.THREEFOLD_REPETITION -> {
                         _gameInProgress = false
+                        _whitePlayerType = PlayerType.Computer
+                        _blackPlayerType = PlayerType.Computer
                         selectLastHistoryMoveNodeIfAny()
                         onThreeFoldsRepetition()
                     }
 
                     DrawType.INSUFFICIENT_MATERIAL -> {
                         _gameInProgress = false
+                        _whitePlayerType = PlayerType.Computer
+                        _blackPlayerType = PlayerType.Computer
                         selectLastHistoryMoveNodeIfAny()
                         onInsufficientMaterial()
                     }
 
                     DrawType.FIFTY_MOVE_RULE -> {
                         _gameInProgress = false
+                        _whitePlayerType = PlayerType.Computer
+                        _blackPlayerType = PlayerType.Computer
                         selectLastHistoryMoveNodeIfAny()
                         onFiftyMovesRuleDraw()
                     }
