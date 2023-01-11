@@ -43,6 +43,7 @@ data class Strings(
     val savedPreferences: String,
     val save: String,
     val noEngineDefinedWarning: String,
+    val engineThinkingTime: String,
 )
 
 val strings = mapOf(

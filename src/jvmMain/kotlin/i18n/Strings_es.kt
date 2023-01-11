@@ -40,5 +40,6 @@ val esStrings = Strings(
     clearEnginePath = "Borrar",
     savedPreferences = "Preferencias guardadas.",
     save = "Salvar",
-    noEngineDefinedWarning = "No olvide definir un motor de ajedrez en la página de preferencias."
+    noEngineDefinedWarning = "No olvide definir un motor de ajedrez en la página de preferencias.",
+    engineThinkingTime = "Tiempo de pensar",
 )

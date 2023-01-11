@@ -26,6 +26,7 @@ fun OptionsPage(
     val coroutineScope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState()
     var enginePath by rememberSaveable { mutableStateOf(PreferencesManager.getEnginePath()) }
+    var thinkingTime by rememberSaveable { mutableStateOf(PreferencesManager.getEngineThinkingTime()) }
 
     suspend fun testUCIEngine(enginePath: String): Boolean {
         return withContext(Dispatchers.IO) {
@@ -100,6 +101,7 @@ fun OptionsPage(
 
     fun saveParameters() {
         PreferencesManager.saveEnginePath(enginePath)
+        PreferencesManager.saveEngineThinkingTime(thinkingTime)
         coroutineScope.launch {
             scaffoldState.snackbarHostState.showSnackbar(
                 strings.savedPreferences,
@@ -123,7 +125,10 @@ fun OptionsPage(
         Column(modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Column {
+            Column(
+                modifier = Modifier.fillMaxHeight(0.4f),
+                verticalArrangement = Arrangement.Top
+            ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly,
@@ -141,6 +146,22 @@ fun OptionsPage(
                     Button({ enginePath = "" }) {
                         Text(strings.clearEnginePath)
                     }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                )  {
+                    val thinkingTimeInSeconds = String.format("%.1f", thinkingTime.toFloat() / 1000)
+                    Text(strings.engineThinkingTime)
+                    Slider(
+                        modifier = Modifier.size(400.dp),
+                        value = thinkingTime.toFloat(),
+                        onValueChange = {thinkingTime = it.toInt()},
+                        valueRange = 500f..10_000f,
+                    )
+                    Text("$thinkingTimeInSeconds s")
                 }
             }
 

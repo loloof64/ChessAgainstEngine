@@ -40,5 +40,6 @@ val frStrings = Strings(
     clearEnginePath = "Effacer",
     savedPreferences = "Paramètres enregistrés.",
     save = "Sauvegarder",
-    noEngineDefinedWarning = "N'oubliez pas de renseigner un moteur d'échecs dans la page de paramètres."
+    noEngineDefinedWarning = "N'oubliez pas de renseigner un moteur d'échecs dans la page de paramètres.",
+    engineThinkingTime = "Temps de réflexion",
 )
