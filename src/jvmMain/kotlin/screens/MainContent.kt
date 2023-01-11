@@ -66,7 +66,10 @@ fun MainContent() {
                 scaffoldState = scaffoldState
             )
 
-            is Screen.Game -> GamePage(onBack = navigation::pop)
+            is Screen.Game -> GamePage(
+                onBack = navigation::pop,
+                onGoOptionsPageClick = { navigation.push(Screen.Options) })
+
             is Screen.Options -> OptionsPage(onBack = navigation::pop)
         }
     }

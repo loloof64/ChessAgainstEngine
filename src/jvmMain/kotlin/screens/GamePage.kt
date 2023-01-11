@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -22,6 +23,7 @@ import logic.ChessGameManager
 @Composable
 fun GamePage(
     onBack: () -> Unit,
+    onGoOptionsPageClick: () -> Unit,
 ) {
     val scaffoldState = rememberScaffoldState()
     val coroutineScope = rememberCoroutineScope()
@@ -168,6 +170,11 @@ fun GamePage(
                             modifier = Modifier,
                             colorFilter = ColorFilter.tint(Color.White)
                         )
+                    }
+                    IconButton(
+                        onGoOptionsPageClick
+                    ) {
+                        Icon(Icons.Default.Settings, strings.preferences)
                     }
                 })
             }) {
