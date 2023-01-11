@@ -39,5 +39,6 @@ val esStrings = Strings(
     notChessUCIEngineError = "El motor seleccionado no es un motor UCI de ajedrez ejecutable.",
     clearEnginePath = "Borrar",
     savedPreferences = "Preferencias guardadas.",
-    save = "Salvar"
+    save = "Salvar",
+    noEngineDefinedWarning = "No olvide definir un motor de ajedrez en la página de preferencias."
 )

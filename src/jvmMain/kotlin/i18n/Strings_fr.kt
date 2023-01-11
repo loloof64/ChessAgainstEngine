@@ -39,5 +39,6 @@ val frStrings = Strings(
     notChessUCIEngineError = "Le moteur choisi n'est pas un moteur d'échecs UCI exécutable.",
     clearEnginePath = "Effacer",
     savedPreferences = "Paramètres enregistrés.",
-    save = "Sauvegarder"
+    save = "Sauvegarder",
+    noEngineDefinedWarning = "N'oubliez pas de renseigner un moteur d'échecs dans la page de paramètres."
 )

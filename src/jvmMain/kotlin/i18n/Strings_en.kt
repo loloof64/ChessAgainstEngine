@@ -40,4 +40,5 @@ val enStrings = Strings(
     clearEnginePath = "Clear",
     savedPreferences = "Saved preferences.",
     save = "Save",
+    noEngineDefinedWarning = "Don't forget to define a chess engine in the preferences page."
 )

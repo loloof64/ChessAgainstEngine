@@ -18,10 +18,7 @@ import com.arkivanov.essenty.parcelable.Parcelable
 import com.arkivanov.essenty.parcelable.Parcelize
 import i18n.LocalStrings
 import kotlinx.coroutines.launch
-import logic.ChessGameManager
-import logic.KingNotInTurnIsInCheck
-import logic.WrongFieldsCountException
-import logic.defaultPosition
+import logic.*
 
 @OptIn(ExperimentalDecomposeApi::class)
 @Composable
@@ -66,9 +63,11 @@ fun MainContent() {
                 scaffoldState = scaffoldState
             )
 
-            is Screen.Game -> GamePage(
-                onBack = navigation::pop,
-                onGoOptionsPageClick = { navigation.push(Screen.Options) })
+            is Screen.Game -> {
+                return@ChildStack GamePage(
+                    onBack = navigation::pop,
+                    onGoOptionsPageClick = { navigation.push(Screen.Options) })
+            }
 
             is Screen.Options -> OptionsPage(onBack = navigation::pop)
         }

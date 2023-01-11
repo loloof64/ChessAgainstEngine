@@ -17,8 +17,10 @@ import androidx.compose.ui.unit.dp
 import components.*
 import i18n.LocalStrings
 import io.github.wolfraam.chessgame.board.Square
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import logic.ChessGameManager
+import logic.PreferencesManager
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -142,6 +144,17 @@ fun GamePage(
         pendingPromotion = ChessGameManager.getPendingPromotion()
         pendingPromotionStartSquare = ChessGameManager.getPendingPromotionStartSquare()
         pendingPromotionEndSquare = ChessGameManager.getPendingPromotionEndSquare()
+    }
+
+    if (PreferencesManager.getEnginePath().isEmpty()) {
+        coroutineScope.launch {
+            scaffoldState.snackbarHostState.showSnackbar(
+                message = strings.noEngineDefinedWarning,
+                actionLabel = strings.close,
+                duration = SnackbarDuration.Long,
+            )
+            delay(500)
+        }
     }
 
     BoxWithConstraints {

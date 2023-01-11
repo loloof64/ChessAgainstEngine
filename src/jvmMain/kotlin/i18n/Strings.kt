@@ -42,6 +42,7 @@ data class Strings(
     val clearEnginePath: String,
     val savedPreferences: String,
     val save: String,
+    val noEngineDefinedWarning: String,
 )
 
 val strings = mapOf(
