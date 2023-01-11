@@ -33,8 +33,9 @@ val frStrings = Strings(
     purposeStopGameMessage = "Souhaitez-vous interrompre la partie ?",
     gameAborted = "Partie interrompue.",
     preferences = "Préferences",
-    enginePath = "Chemin moteur d'échecs UCI",
+    enginePath = "Moteur d'échecs UCI",
     selectEnginePathDialogTitle = "Choisissez le chemin du moteur d'échecs UCI",
     chooseUciEngine = "Choisir le moteur d'échecs",
-    notChessUCIEngineError = "Le moteur choisi n'est pas un moteur d'échecs UCI exécutable."
+    notChessUCIEngineError = "Le moteur choisi n'est pas un moteur d'échecs UCI exécutable.",
+    clearEnginePath = "Effacer"
 )

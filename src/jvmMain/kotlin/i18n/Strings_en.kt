@@ -33,8 +33,9 @@ val enStrings = Strings(
     purposeStopGameMessage = "Do you want to stop current game ?",
     gameAborted = "Game aborted.",
     preferences = "Preferences",
-    enginePath = "chess UCI engine path",
+    enginePath = "Chess UCI engine",
     selectEnginePathDialogTitle = "Select the chess UCI engine",
     chooseUciEngine = "Choose chess engine",
-    notChessUCIEngineError = "The selected engine is not a runnable chess UCI engine."
+    notChessUCIEngineError = "The selected engine is not a runnable chess UCI engine.",
+    clearEnginePath = "Clear"
 )

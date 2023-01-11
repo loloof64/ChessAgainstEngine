@@ -122,6 +122,9 @@ fun OptionsPage(
                 Button(::purposeSelectEnginePath) {
                     Text(strings.chooseUciEngine)
                 }
+                Button({ enginePath = "" }) {
+                    Text(strings.clearEnginePath)
+                }
             }
         }
     }

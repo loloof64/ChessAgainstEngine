@@ -39,6 +39,7 @@ data class Strings(
     val selectEnginePathDialogTitle: String,
     val chooseUciEngine: String,
     val notChessUCIEngineError: String,
+    val clearEnginePath: String,
 )
 
 val strings = mapOf(
