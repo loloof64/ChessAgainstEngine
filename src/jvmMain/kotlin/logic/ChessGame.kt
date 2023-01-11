@@ -77,8 +77,8 @@ object ChessGameManager {
 
     fun stopGame() {
         _gameInProgress = false
-        _whitePlayerType = PlayerType.Computer
-        _blackPlayerType = PlayerType.Computer
+        _whitePlayerType = PlayerType.None
+        _blackPlayerType = PlayerType.None
         selectLastHistoryMoveNodeIfAny()
     }
 
@@ -328,16 +328,16 @@ object ChessGameManager {
         when (gameResult?.chessGameResultType) {
             ChessGameResultType.WHITE_WINS -> {
                 _gameInProgress = false
-                _whitePlayerType = PlayerType.Computer
-                _blackPlayerType = PlayerType.Computer
+                _whitePlayerType = PlayerType.None
+                _blackPlayerType = PlayerType.None
                 selectLastHistoryMoveNodeIfAny()
                 onCheckmate(true)
             }
 
             ChessGameResultType.BLACK_WINS -> {
                 _gameInProgress = false
-                _whitePlayerType = PlayerType.Computer
-                _blackPlayerType = PlayerType.Computer
+                _whitePlayerType = PlayerType.None
+                _blackPlayerType = PlayerType.None
                 selectLastHistoryMoveNodeIfAny()
                 onCheckmate(false)
             }
@@ -346,32 +346,32 @@ object ChessGameManager {
                 when (gameResult.drawType) {
                     DrawType.STALE_MATE -> {
                         _gameInProgress = false
-                        _whitePlayerType = PlayerType.Computer
-                        _blackPlayerType = PlayerType.Computer
+                        _whitePlayerType = PlayerType.None
+                        _blackPlayerType = PlayerType.None
                         selectLastHistoryMoveNodeIfAny()
                         onStalemate()
                     }
 
                     DrawType.THREEFOLD_REPETITION -> {
                         _gameInProgress = false
-                        _whitePlayerType = PlayerType.Computer
-                        _blackPlayerType = PlayerType.Computer
+                        _whitePlayerType = PlayerType.None
+                        _blackPlayerType = PlayerType.None
                         selectLastHistoryMoveNodeIfAny()
                         onThreeFoldsRepetition()
                     }
 
                     DrawType.INSUFFICIENT_MATERIAL -> {
                         _gameInProgress = false
-                        _whitePlayerType = PlayerType.Computer
-                        _blackPlayerType = PlayerType.Computer
+                        _whitePlayerType = PlayerType.None
+                        _blackPlayerType = PlayerType.None
                         selectLastHistoryMoveNodeIfAny()
                         onInsufficientMaterial()
                     }
 
                     DrawType.FIFTY_MOVE_RULE -> {
                         _gameInProgress = false
-                        _whitePlayerType = PlayerType.Computer
-                        _blackPlayerType = PlayerType.Computer
+                        _whitePlayerType = PlayerType.None
+                        _blackPlayerType = PlayerType.None
                         selectLastHistoryMoveNodeIfAny()
                         onFiftyMovesRuleDraw()
                     }

@@ -64,6 +64,7 @@ enum class PromotionType {
 enum class PlayerType {
     Human,
     Computer,
+    None,
 }
 
 data class LastMoveArrow(
@@ -282,6 +283,10 @@ private fun DragAndDropLayer(
                         val isComputerTurn = (isWhiteTurn && whitePlayerType == PlayerType.Computer)
                                 || (!isWhiteTurn && blackPlayerType == PlayerType.Computer)
                         if (isComputerTurn) return@detectDragGestures
+
+                        val isNobodyTurn = (isWhiteTurn && whitePlayerType == PlayerType.None)
+                                || (!isWhiteTurn && blackPlayerType == PlayerType.None)
+                        if (isNobodyTurn) return@detectDragGestures
 
                         val isOurPiece = piece.isUpperCase() == isWhiteTurn
                         if (!isOurPiece) return@detectDragGestures
