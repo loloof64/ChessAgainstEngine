@@ -40,6 +40,8 @@ data class Strings(
     val chooseUciEngine: String,
     val notChessUCIEngineError: String,
     val clearEnginePath: String,
+    val savedPreferences: String,
+    val save: String,
 )
 
 val strings = mapOf(

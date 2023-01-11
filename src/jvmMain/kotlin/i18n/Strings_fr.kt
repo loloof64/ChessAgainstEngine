@@ -37,5 +37,7 @@ val frStrings = Strings(
     selectEnginePathDialogTitle = "Choisissez le chemin du moteur d'échecs UCI",
     chooseUciEngine = "Choisir le moteur d'échecs",
     notChessUCIEngineError = "Le moteur choisi n'est pas un moteur d'échecs UCI exécutable.",
-    clearEnginePath = "Effacer"
+    clearEnginePath = "Effacer",
+    savedPreferences = "Paramètres enregistrés.",
+    save = "Sauvegarder"
 )

@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import i18n.LocalStrings
 import kotlinx.coroutines.*
+import logic.PreferencesManager
 import java.awt.KeyboardFocusManager
 import java.io.IOException
 import java.io.PrintWriter
@@ -24,7 +25,7 @@ fun OptionsPage(
     val strings = LocalStrings.current
     val coroutineScope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState()
-    var enginePath by rememberSaveable { mutableStateOf("") }
+    var enginePath by rememberSaveable { mutableStateOf(PreferencesManager.getEnginePath()) }
 
     suspend fun testUCIEngine(enginePath: String): Boolean {
         return withContext(Dispatchers.IO) {
@@ -97,6 +98,17 @@ fun OptionsPage(
         }
     }
 
+    fun saveParameters() {
+        PreferencesManager.saveEnginePath(enginePath)
+        coroutineScope.launch {
+            scaffoldState.snackbarHostState.showSnackbar(
+                strings.savedPreferences,
+                strings.close,
+                SnackbarDuration.Long
+            )
+        }
+    }
+
     Scaffold(
         scaffoldState = scaffoldState,
         topBar = {
@@ -107,23 +119,34 @@ fun OptionsPage(
             })
         }
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(strings.enginePath)
-                TextField(
-                    modifier = Modifier.width(250.dp),
-                    value = enginePath,
-                    readOnly = true,
-                    onValueChange = {})
-                Button(::purposeSelectEnginePath) {
-                    Text(strings.chooseUciEngine)
+        Column(modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(strings.enginePath)
+                    TextField(
+                        modifier = Modifier.width(250.dp),
+                        value = enginePath,
+                        readOnly = true,
+                        onValueChange = {})
+                    Button(::purposeSelectEnginePath) {
+                        Text(strings.chooseUciEngine)
+                    }
+                    Button({ enginePath = "" }) {
+                        Text(strings.clearEnginePath)
+                    }
                 }
-                Button({ enginePath = "" }) {
-                    Text(strings.clearEnginePath)
+            }
+
+            Row(modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly) {
+                Button(::saveParameters) {
+                    Text(strings.save)
                 }
             }
         }
