@@ -103,9 +103,10 @@ fun OptionsPage(
         coroutineScope.launch {
             scaffoldState.snackbarHostState.showSnackbar(
                 strings.savedPreferences,
-                strings.close,
-                SnackbarDuration.Long
+                duration = SnackbarDuration.Short
             )
+            delay(300)
+            onBack()
         }
     }
 
@@ -147,6 +148,9 @@ fun OptionsPage(
                 horizontalArrangement = Arrangement.SpaceEvenly) {
                 Button(::saveParameters) {
                     Text(strings.save)
+                }
+                Button(onBack) {
+                    Text(strings.cancel)
                 }
             }
         }
