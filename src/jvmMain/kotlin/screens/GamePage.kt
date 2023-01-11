@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import components.*
 import i18n.LocalStrings
 import io.github.wolfraam.chessgame.board.Square
@@ -157,7 +158,7 @@ fun GamePage(
                         Image(
                             painter = painterResource("icons/swap_vert.svg"),
                             contentDescription = strings.swapBoardOrientation,
-                            modifier = Modifier,
+                            modifier = Modifier.size(30.dp),
                             colorFilter = ColorFilter.tint(Color.White)
                         )
                     }, onClick = {
@@ -167,14 +168,18 @@ fun GamePage(
                         Image(
                             painter = painterResource("icons/cancel.svg"),
                             contentDescription = strings.stopGame,
-                            modifier = Modifier,
+                            modifier = Modifier.size(30.dp),
                             colorFilter = ColorFilter.tint(Color.White)
                         )
                     }
                     IconButton(
                         onGoOptionsPageClick
                     ) {
-                        Icon(Icons.Default.Settings, strings.preferences)
+                        Icon(
+                            Icons.Default.Settings,
+                            strings.preferences,
+                            modifier = Modifier.size(30.dp)
+                        )
                     }
                 })
             }) {
