@@ -42,4 +42,6 @@ val esStrings = Strings(
     save = "Salvar",
     noEngineDefinedWarning = "No olvide definir un motor de ajedrez en la página de preferencias.",
     engineThinkingTime = "Tiempo de pensar",
+    computerSidesOptions = "Juegos de computadora",
+    computerPlaysWhite = "Blancos",
 )

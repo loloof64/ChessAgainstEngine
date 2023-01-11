@@ -44,6 +44,9 @@ data class Strings(
     val save: String,
     val noEngineDefinedWarning: String,
     val engineThinkingTime: String,
+    val computerSidesOptions: String,
+    val computerPlaysWhite: String,
+
 )
 
 val strings = mapOf(

@@ -42,4 +42,6 @@ val frStrings = Strings(
     save = "Sauvegarder",
     noEngineDefinedWarning = "N'oubliez pas de renseigner un moteur d'échecs dans la page de paramètres.",
     engineThinkingTime = "Temps de réflexion",
+    computerSidesOptions = "Côté(s) ordinateur",
+    computerPlaysWhite = "Blancs",
 )

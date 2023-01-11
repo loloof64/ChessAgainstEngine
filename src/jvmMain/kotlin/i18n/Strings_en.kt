@@ -41,5 +41,7 @@ val enStrings = Strings(
     savedPreferences = "Saved preferences.",
     save = "Save",
     noEngineDefinedWarning = "Don't forget to define a chess engine in the preferences page.",
-    engineThinkingTime = "Thinking time"
+    engineThinkingTime = "Thinking time",
+    computerSidesOptions = "Computer plays",
+    computerPlaysWhite = "White",
 )
