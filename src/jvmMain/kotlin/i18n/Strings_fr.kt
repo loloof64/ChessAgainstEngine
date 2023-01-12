@@ -44,4 +44,5 @@ val frStrings = Strings(
     engineThinkingTime = "Temps de réflexion",
     computerSidesOptions = "Côté(s) ordinateur",
     computerPlaysWhite = "Blancs",
+    computerPlaysBlack = "Noirs",
 )

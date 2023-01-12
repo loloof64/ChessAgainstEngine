@@ -7,9 +7,12 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import i18n.LocalStrings
+import kotlinx.coroutines.launch
+import logic.UciEngineChannel
 
 @Composable
 fun HomePage(
@@ -17,6 +20,17 @@ fun HomePage(
     onGoOptionsPageClick: () -> Unit,
     scaffoldState: ScaffoldState,
 ) {
+    val coroutineScope = rememberCoroutineScope()
+
+    if (!UciEngineChannel.isProcessStarted()) {
+        coroutineScope.launch {
+            ////////////////////////////////////
+            println("Trying to start engine")
+            ///////////////////////////////////////
+            UciEngineChannel.tryStartingEngine()
+        }
+    }
+
     val strings = LocalStrings.current
     Scaffold(topBar = {
         TopAppBar(

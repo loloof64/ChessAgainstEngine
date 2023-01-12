@@ -44,4 +44,5 @@ val enStrings = Strings(
     engineThinkingTime = "Thinking time",
     computerSidesOptions = "Computer plays",
     computerPlaysWhite = "White",
+    computerPlaysBlack = "Black",
 )

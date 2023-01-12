@@ -46,8 +46,8 @@ fun GamePage(
     var whitePlayerType by rememberSaveable { mutableStateOf(ChessGameManager.getWhitePlayerType()) }
     var blackPlayerType by rememberSaveable { mutableStateOf(ChessGameManager.getBlackPlayerType()) }
 
-    var cpuPlaysWhite by rememberSaveable{ mutableStateOf(false) }
-    var cpuPlaysBlack by rememberSaveable{ mutableStateOf(false) }
+    var cpuPlaysWhite by rememberSaveable { mutableStateOf(false) }
+    var cpuPlaysBlack by rememberSaveable { mutableStateOf(false) }
 
     fun onCheckmate(whitePlayer: Boolean) {
         whitePlayerType = ChessGameManager.getWhitePlayerType()
@@ -150,7 +150,11 @@ fun GamePage(
     }
 
     fun handleWhiteSideTypeChange(newState: Boolean) {
-        // todo
+        cpuPlaysWhite = newState
+    }
+
+    fun handleBlackSideTypeChange(newState: Boolean) {
+        cpuPlaysBlack = newState
     }
 
     if (PreferencesManager.getEnginePath().isEmpty()) {
@@ -206,8 +210,9 @@ fun GamePage(
 
             Column {
                 if (isLandscape) {
+                    val heightRatio = if (PreferencesManager.getEnginePath().isNotEmpty()) 0.8f else 1.0f
                     Row(
-                        modifier = Modifier.fillMaxWidth().fillMaxHeight(0.8f),
+                        modifier = Modifier.fillMaxWidth().fillMaxHeight(heightRatio),
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
                     )
@@ -244,8 +249,9 @@ fun GamePage(
                         )
                     }
                 } else {
+                    val heightRatio = if (PreferencesManager.getEnginePath().isNotEmpty()) 0.8f else 1.0f
                     Column(
-                        modifier = Modifier.fillMaxWidth().fillMaxHeight(0.9f),
+                        modifier = Modifier.fillMaxWidth().fillMaxHeight(heightRatio),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     )
@@ -285,18 +291,31 @@ fun GamePage(
                     }
                 }
 
-                Row(
-                    horizontalArrangement = Arrangement.SpaceAround,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(strings.computerSidesOptions)
-                    Text(strings.computerPlaysWhite)
-                    Checkbox(
-                        checked = cpuPlaysWhite,
-                        onCheckedChange = ::handleWhiteSideTypeChange,
-                        enabled = PreferencesManager.getEnginePath().isNotEmpty(),
-                    )
+
+                if (PreferencesManager.getEnginePath().isNotEmpty()) {
+                    Row(
+                        horizontalArrangement = Arrangement.Start,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(6.dp)
+                    ) {
+                        Text(strings.computerSidesOptions)
+
+                        Checkbox(
+                            modifier = Modifier.padding(start = 20.dp, end = 0.dp),
+                            checked = cpuPlaysWhite,
+                            onCheckedChange = ::handleWhiteSideTypeChange,
+                        )
+                        Text(strings.computerPlaysWhite)
+
+                        Checkbox(
+                            modifier = Modifier.padding(start = 20.dp, end = 0.dp),
+                            checked = cpuPlaysBlack,
+                            onCheckedChange = ::handleBlackSideTypeChange,
+                        )
+                        Text(strings.computerPlaysBlack)
+                    }
                 }
+
             }
 
             if (purposeStopGameDialogOpen) {

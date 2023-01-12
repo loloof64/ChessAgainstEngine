@@ -44,4 +44,5 @@ val esStrings = Strings(
     engineThinkingTime = "Tiempo de pensar",
     computerSidesOptions = "Juegos de computadora",
     computerPlaysWhite = "Blancos",
+    computerPlaysBlack = "Negros",
 )

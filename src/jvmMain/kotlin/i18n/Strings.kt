@@ -46,6 +46,7 @@ data class Strings(
     val engineThinkingTime: String,
     val computerSidesOptions: String,
     val computerPlaysWhite: String,
+    val computerPlaysBlack: String,
 
 )
 
