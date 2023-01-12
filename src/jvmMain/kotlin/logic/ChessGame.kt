@@ -32,6 +32,8 @@ object ChessGameManager {
     private var _whitePlayerType by mutableStateOf(PlayerType.Human)
     private var _blackPlayerType by mutableStateOf(PlayerType.Human)
 
+    fun getCurrentPosition(): String = _gameLogic.fen
+
     fun getPieces(): List<List<Char>> {
         val positionFen = _gameLogic.fen
         val lineParts = positionFen.split(" ")[0].split('/')

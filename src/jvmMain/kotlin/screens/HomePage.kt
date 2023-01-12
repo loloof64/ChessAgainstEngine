@@ -24,10 +24,9 @@ fun HomePage(
 
     if (!UciEngineChannel.isProcessStarted()) {
         coroutineScope.launch {
-            ////////////////////////////////////
-            println("Trying to start engine")
-            ///////////////////////////////////////
-            UciEngineChannel.tryStartingEngine()
+            UciEngineChannel.tryStartingEngineProcess()
+            UciEngineChannel.sendCommand("uci")
+            UciEngineChannel.sendCommand("isready")
         }
     }
 

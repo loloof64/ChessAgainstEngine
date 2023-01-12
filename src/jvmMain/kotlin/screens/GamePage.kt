@@ -21,6 +21,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import logic.ChessGameManager
 import logic.PreferencesManager
+import logic.UciEngineChannel
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -149,12 +150,28 @@ fun GamePage(
         pendingPromotionEndSquare = ChessGameManager.getPendingPromotionEndSquare()
     }
 
+    fun launchMoveComputation() {
+        val thinkingTimeMs = PreferencesManager.getEngineThinkingTime()
+        coroutineScope.launch {
+            UciEngineChannel.sendCommand("position fen ${ChessGameManager.getCurrentPosition()}")
+            UciEngineChannel.sendCommand("go movetime $thinkingTimeMs")
+        }
+    }
+
     fun handleWhiteSideTypeChange(newState: Boolean) {
         cpuPlaysWhite = newState
+        val isOurTurn = ChessGameManager.isWhiteTurn()
+        if (isOurTurn && newState) {
+            launchMoveComputation()
+        }
     }
 
     fun handleBlackSideTypeChange(newState: Boolean) {
         cpuPlaysBlack = newState
+        val isOurTurn = !ChessGameManager.isWhiteTurn()
+        if (isOurTurn && newState) {
+            launchMoveComputation()
+        }
     }
 
     if (PreferencesManager.getEnginePath().isEmpty()) {

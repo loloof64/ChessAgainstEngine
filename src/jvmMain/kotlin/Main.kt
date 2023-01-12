@@ -14,7 +14,6 @@ import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import i18n.LocalStrings
 import i18n.strings
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import logic.UciEngineChannel
 import screens.MainContent
@@ -42,7 +41,6 @@ fun main() = application {
     Window(onCloseRequest = {
         coroutineScope.launch {
             UciEngineChannel.stopProcess()
-            delay(500)
             exitApplication()
         }
     }) {
