@@ -54,6 +54,12 @@ fun GamePage(
     var cpuScoreEvaluation by rememberSaveable { mutableStateOf(0.0f) }
     var showCpuScoreEvaluation by rememberSaveable { mutableStateOf(false) }
 
+    fun justUpdatePositionEvaluation() {
+        coroutineScope.launch {
+            UciEngineChannel.getNewPositionEvaluation(ChessGameManager.getCurrentPosition())
+        }
+    }
+
     fun onCheckmate(whitePlayer: Boolean) {
         whitePlayerType = ChessGameManager.getWhitePlayerType()
         blackPlayerType = ChessGameManager.getBlackPlayerType()
@@ -136,6 +142,8 @@ fun GamePage(
         whitePlayerType = ChessGameManager.getWhitePlayerType()
         blackPlayerType = ChessGameManager.getBlackPlayerType()
         selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
+
+        justUpdatePositionEvaluation()
     }
 
     fun onPromotionCancelled() {

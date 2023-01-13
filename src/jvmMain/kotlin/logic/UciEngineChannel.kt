@@ -53,6 +53,11 @@ object UciEngineChannel {
         process?.sendCommand("go movetime ${PreferencesManager.getEngineThinkingTime()}")
     }
 
+    suspend fun getNewPositionEvaluation(position: String) {
+        process?.sendCommand("position fen $position")
+        process?.sendCommand("go movetime 10")
+    }
+
 
     fun stopProcess() {
         process?.stopProcess()
