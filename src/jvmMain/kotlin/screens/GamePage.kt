@@ -188,7 +188,12 @@ fun GamePage(
             whitePlayerType = if (newState) PlayerType.Computer else PlayerType.Human
             ChessGameManager.setWhitePlayerType(whitePlayerType)
             val weMustCancelCpuThinking = !newState && engineIsThinking && isWhiteTurn
-            if (weMustCancelCpuThinking) engineIsThinking = false
+            if (weMustCancelCpuThinking) {
+                engineIsThinking = false
+                coroutineScope.launch {
+                    UciEngineChannel.stopCurrentComputation()
+                }
+            }
             makeCpuPlayIfAppropriated()
         }
     }
@@ -199,7 +204,12 @@ fun GamePage(
             blackPlayerType = if (newState) PlayerType.Computer else PlayerType.Human
             ChessGameManager.setBlackPlayerType(blackPlayerType)
             val weMustCancelCpuThinking = !newState && engineIsThinking && !isWhiteTurn
-            if (weMustCancelCpuThinking) engineIsThinking = false
+            if (weMustCancelCpuThinking) {
+                engineIsThinking = false
+                coroutineScope.launch {
+                    UciEngineChannel.stopCurrentComputation()
+                }
+            }
             makeCpuPlayIfAppropriated()
         }
     }

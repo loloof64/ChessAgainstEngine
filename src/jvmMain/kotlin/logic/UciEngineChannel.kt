@@ -19,6 +19,10 @@ object UciEngineChannel {
 
     fun isProcessStarted(): Boolean = process != null
 
+    suspend fun stopCurrentComputation() {
+        process?.sendCommand("stop\n")
+    }
+
     @Suppress("RegExpRedundantEscape")
     private fun handleEngineOutput(engineOutput: String) {
         if (engineOutput.startsWith("bestmove")) {

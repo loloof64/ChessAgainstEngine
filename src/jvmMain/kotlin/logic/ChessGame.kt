@@ -81,6 +81,7 @@ object ChessGameManager {
             )
         } catch (ex: IllegalMoveException) {
             println("Illegal move from engine : $uciMove")
+            throw ex
         }
     }
 
