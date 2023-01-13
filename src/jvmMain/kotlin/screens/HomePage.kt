@@ -24,12 +24,6 @@ fun HomePage(
 
     if (!UciEngineChannel.isProcessStarted()) {
         coroutineScope.launch {
-            UciEngineChannel.setBestMoveCallback {
-                println("Got move $it")
-            }
-            UciEngineChannel.setScoreCallback {
-                println("Got score : $it")
-            }
             UciEngineChannel.tryStartingEngineProcess()
         }
     }

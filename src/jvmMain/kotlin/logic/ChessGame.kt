@@ -8,6 +8,7 @@ import io.github.wolfraam.chessgame.ChessGame
 import io.github.wolfraam.chessgame.board.PieceType
 import io.github.wolfraam.chessgame.board.Side
 import io.github.wolfraam.chessgame.board.Square
+import io.github.wolfraam.chessgame.move.IllegalMoveException
 import io.github.wolfraam.chessgame.move.Move
 import io.github.wolfraam.chessgame.notation.NotationType
 import io.github.wolfraam.chessgame.result.ChessGameResult
@@ -16,6 +17,32 @@ import io.github.wolfraam.chessgame.result.DrawType
 
 const val defaultPosition = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 const val emptyPosition = "k/8/8/8/8/8/8/K w - - 0 1"
+
+fun String.toLastMoveArrow(): LastMoveArrow {
+    if (length < 4) throw IllegalMoveException("Not a uci chess move string : $this.")
+
+    val startFile = this[0].code - 'a'.code
+    val startRank = this[1].code - '1'.code
+
+    val endFile = this[2].code - 'a'.code
+    val endRank = this[3].code - '1'.code
+
+    return LastMoveArrow(
+        startFile = startFile,
+        startRank = startRank,
+        endFile = endFile,
+        endRank = endRank
+    )
+}
+
+fun LastMoveArrow.toMoveCoordinates(): MoveCoordinates {
+    return MoveCoordinates(
+        startFile = startFile,
+        startRank = startRank,
+        endFile = endFile,
+        endRank = endRank
+    )
+}
 
 object ChessGameManager {
     private var _gameInProgress by mutableStateOf(false)
@@ -31,6 +58,31 @@ object ChessGameManager {
     private var _startPosition by mutableStateOf(defaultPosition)
     private var _whitePlayerType by mutableStateOf(PlayerType.Human)
     private var _blackPlayerType by mutableStateOf(PlayerType.Human)
+
+    fun processEngineMove(
+        uciMove: String,
+        onCheckmate: (Boolean) -> Unit,
+        onStalemate: () -> Unit,
+        onThreeFoldsRepetition: () -> Unit,
+        onInsufficientMaterial: () -> Unit,
+        onFiftyMovesRuleDraw: () -> Unit
+    ) {
+        try {
+            _positionFenBeforeLastMove = _gameLogic.fen
+            _gameLogic.playMove(NotationType.UCI, uciMove)
+            _lastMoveArrow = uciMove.toLastMoveArrow()
+            addMoveToHistory(_lastMoveArrow!!.toMoveCoordinates())
+            handleGameEndingStatus(
+                onCheckmate = onCheckmate,
+                onStalemate = onStalemate,
+                onThreeFoldsRepetition = onThreeFoldsRepetition,
+                onInsufficientMaterial = onInsufficientMaterial,
+                onFiftyMovesRuleDraw = onFiftyMovesRuleDraw,
+            )
+        } catch (ex: IllegalMoveException) {
+            println("Illegal move from engine : $uciMove")
+        }
+    }
 
     fun getCurrentPosition(): String = _gameLogic.fen
 

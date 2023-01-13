@@ -48,8 +48,8 @@ fun GamePage(
     var whitePlayerType by rememberSaveable { mutableStateOf(ChessGameManager.getWhitePlayerType()) }
     var blackPlayerType by rememberSaveable { mutableStateOf(ChessGameManager.getBlackPlayerType()) }
 
-    var cpuPlaysWhite by rememberSaveable { mutableStateOf(false) }
-    var cpuPlaysBlack by rememberSaveable { mutableStateOf(false) }
+    var cpuPlaysWhiteChecked by rememberSaveable { mutableStateOf(false) }
+    var cpuPlaysBlackChecked by rememberSaveable { mutableStateOf(false) }
 
     fun onCheckmate(whitePlayer: Boolean) {
         whitePlayerType = ChessGameManager.getWhitePlayerType()
@@ -152,25 +152,57 @@ fun GamePage(
     }
 
     fun launchMoveComputation() {
-        coroutineScope.launch (Dispatchers.Default) {
+        coroutineScope.launch(Dispatchers.Default) {
             UciEngineChannel.getBestMoveForPosition(ChessGameManager.getCurrentPosition())
         }
     }
 
-    fun handleWhiteSideTypeChange(newState: Boolean) {
-        cpuPlaysWhite = newState
-        val isOurTurn = ChessGameManager.isWhiteTurn()
-        if (isOurTurn && newState) {
+    fun makeCpuPlayIfAppropriated() {
+        if (!gameInProgress) return
+        val isCpuTurn =
+            (isWhiteTurn && whitePlayerType == PlayerType.Computer) || (!isWhiteTurn && blackPlayerType == PlayerType.Computer)
+        if (isCpuTurn) {
+            //todo show circular progress bar
             launchMoveComputation()
         }
     }
 
-    fun handleBlackSideTypeChange(newState: Boolean) {
-        cpuPlaysBlack = newState
-        val isOurTurn = !ChessGameManager.isWhiteTurn()
-        if (isOurTurn && newState) {
-            launchMoveComputation()
+    fun handleWhiteSideTypeChange(newState: Boolean) {
+        cpuPlaysWhiteChecked = newState
+        if (gameInProgress) {
+            whitePlayerType = if (newState) PlayerType.Computer else PlayerType.Human
+            makeCpuPlayIfAppropriated()
         }
+    }
+
+    fun handleBlackSideTypeChange(newState: Boolean) {
+        cpuPlaysBlackChecked = newState
+        if (gameInProgress) {
+            blackPlayerType = if (newState) PlayerType.Computer else PlayerType.Human
+            makeCpuPlayIfAppropriated()
+        }
+    }
+
+    UciEngineChannel.setBestMoveCallback {
+        ChessGameManager.processEngineMove(
+            uciMove = it,
+            onCheckmate = ::onCheckmate,
+            onStalemate = ::onStalemate,
+            onThreeFoldsRepetition = ::onThreeFoldRepetition,
+            onInsufficientMaterial = ::onInsufficientMaterial,
+            onFiftyMovesRuleDraw = ::onFiftyMovesRuleDraw,
+        )
+
+        isWhiteTurn = ChessGameManager.isWhiteTurn()
+        boardPieces = ChessGameManager.getPieces()
+        lastMoveArrow = ChessGameManager.getLastMoveArrow()
+        gameInProgress = ChessGameManager.isGameInProgress()
+        whitePlayerType = ChessGameManager.getWhitePlayerType()
+        blackPlayerType = ChessGameManager.getBlackPlayerType()
+        selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
+    }
+    UciEngineChannel.setScoreCallback {
+        println("Got score : $it")
     }
 
     if (PreferencesManager.getEnginePath().isEmpty()) {
@@ -318,14 +350,14 @@ fun GamePage(
 
                         Checkbox(
                             modifier = Modifier.padding(start = 20.dp, end = 0.dp),
-                            checked = cpuPlaysWhite,
+                            checked = cpuPlaysWhiteChecked,
                             onCheckedChange = ::handleWhiteSideTypeChange,
                         )
                         Text(strings.computerPlaysWhite)
 
                         Checkbox(
                             modifier = Modifier.padding(start = 20.dp, end = 0.dp),
-                            checked = cpuPlaysBlack,
+                            checked = cpuPlaysBlackChecked,
                             onCheckedChange = ::handleBlackSideTypeChange,
                         )
                         Text(strings.computerPlaysBlack)
