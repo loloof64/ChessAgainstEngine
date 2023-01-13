@@ -47,7 +47,7 @@ fun GamePage(
     var selectedHistoryNodeIndex by rememberSaveable { mutableStateOf(ChessGameManager.getSelectedHistoryNodeIndex()) }
     var whitePlayerType by rememberSaveable { mutableStateOf(ChessGameManager.getWhitePlayerType()) }
     var blackPlayerType by rememberSaveable { mutableStateOf(ChessGameManager.getBlackPlayerType()) }
-    var showEngineSpinner by rememberSaveable { mutableStateOf(false) }
+    var engineIsThinking by rememberSaveable { mutableStateOf(false) }
 
     var cpuPlaysWhiteChecked by rememberSaveable { mutableStateOf(false) }
     var cpuPlaysBlackChecked by rememberSaveable { mutableStateOf(false) }
@@ -150,10 +150,11 @@ fun GamePage(
 
     fun makeCpuPlayIfAppropriated() {
         if (!gameInProgress) return
+        if (engineIsThinking) return
         val isCpuTurn =
             (isWhiteTurn && whitePlayerType == PlayerType.Computer) || (!isWhiteTurn && blackPlayerType == PlayerType.Computer)
         if (isCpuTurn) {
-            showEngineSpinner = true
+            engineIsThinking = true
             launchMoveComputation()
         }
     }
@@ -162,6 +163,8 @@ fun GamePage(
         cpuPlaysWhiteChecked = newState
         if (gameInProgress) {
             whitePlayerType = if (newState) PlayerType.Computer else PlayerType.Human
+            val weMustCancelCpuThinking = !newState && engineIsThinking && isWhiteTurn
+            if (weMustCancelCpuThinking) engineIsThinking = false
             makeCpuPlayIfAppropriated()
         }
     }
@@ -170,11 +173,14 @@ fun GamePage(
         cpuPlaysBlackChecked = newState
         if (gameInProgress) {
             blackPlayerType = if (newState) PlayerType.Computer else PlayerType.Human
+            val weMustCancelCpuThinking = !newState && engineIsThinking && !isWhiteTurn
+            if (weMustCancelCpuThinking) engineIsThinking = false
             makeCpuPlayIfAppropriated()
         }
     }
 
     UciEngineChannel.setBestMoveCallback {
+        if (!engineIsThinking) return@setBestMoveCallback
         ChessGameManager.processEngineMove(
             uciMove = it,
             onCheckmate = ::onCheckmate,
@@ -192,7 +198,7 @@ fun GamePage(
         blackPlayerType = ChessGameManager.getBlackPlayerType()
         selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
 
-        showEngineSpinner = false
+        engineIsThinking = false
     }
     UciEngineChannel.setScoreCallback {
         println("Got score : $it")
@@ -329,7 +335,7 @@ fun GamePage(
                         }
                     }
 
-                    if (showEngineSpinner) {
+                    if (engineIsThinking) {
                         CircularProgressIndicator(
                             modifier = Modifier
                                 .fillMaxSize(spinnerSizeRatio)
