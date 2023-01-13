@@ -25,8 +25,6 @@ fun HomePage(
     if (!UciEngineChannel.isProcessStarted()) {
         coroutineScope.launch {
             UciEngineChannel.tryStartingEngineProcess()
-            UciEngineChannel.sendCommand("uci")
-            UciEngineChannel.sendCommand("isready")
         }
     }
 

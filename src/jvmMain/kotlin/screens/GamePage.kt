@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import components.*
 import i18n.LocalStrings
 import io.github.wolfraam.chessgame.board.Square
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import logic.ChessGameManager
@@ -151,10 +152,9 @@ fun GamePage(
     }
 
     fun launchMoveComputation() {
-        val thinkingTimeMs = PreferencesManager.getEngineThinkingTime()
-        coroutineScope.launch {
-            UciEngineChannel.sendCommand("position fen ${ChessGameManager.getCurrentPosition()}")
-            UciEngineChannel.sendCommand("go movetime $thinkingTimeMs")
+        coroutineScope.launch (Dispatchers.Default) {
+            val result = UciEngineChannel.getBestMoveForPosition(ChessGameManager.getCurrentPosition())
+            println(result)
         }
     }
 
