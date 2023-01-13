@@ -1,35 +1,35 @@
 package logic
 
-import kotlinx.coroutines.Dispatchers
-import net.andreinc.neatchess.client.UCI
-import net.andreinc.neatchess.client.UCIResponse
-import net.andreinc.neatchess.client.model.BestMove
-
 object UciEngineChannel {
-    private var uci: UCI? = null
+    private var process: ProcessWrapper? = null
 
-    fun isProcessStarted(): Boolean = uci != null
+    fun isProcessStarted(): Boolean = process != null
 
     fun tryStartingEngineProcess(): Boolean {
-        if (uci != null) return false
+        if (process != null) return false
 
         return if (PreferencesManager.getEnginePath().isNotEmpty()) {
-            uci = UCI()
-            uci?.start(PreferencesManager.getEnginePath())
+            process = ProcessWrapper(
+                command = PreferencesManager.getEnginePath(),
+                outputCallback = {
+                    println(it)
+                },
+                errorCallback = {
+                    println(it)
+                }
+            )
             true
         } else false
     }
 
-    fun getBestMoveForPosition(position: String) : UCIResponse<BestMove>? {
-        return with(Dispatchers.Default) {
-            uci?.positionFen(position)
-            uci?.bestMove(PreferencesManager.getEngineThinkingTime().toLong())
-        }
+    suspend fun getBestMoveForPosition(position: String) {
+        process?.sendCommand("position fen $position")
+        process?.sendCommand("go movetime ${PreferencesManager.getEngineThinkingTime()}")
     }
 
 
     fun stopProcess() {
-        uci?.close()
-        uci = null
+        process?.stopProcess()
+        process = null
     }
 }

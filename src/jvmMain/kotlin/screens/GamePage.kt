@@ -153,8 +153,7 @@ fun GamePage(
 
     fun launchMoveComputation() {
         coroutineScope.launch (Dispatchers.Default) {
-            val result = UciEngineChannel.getBestMoveForPosition(ChessGameManager.getCurrentPosition())
-            println(result)
+            UciEngineChannel.getBestMoveForPosition(ChessGameManager.getCurrentPosition())
         }
     }
 
