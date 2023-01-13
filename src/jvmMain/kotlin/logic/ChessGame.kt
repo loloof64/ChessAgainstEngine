@@ -101,6 +101,14 @@ object ChessGameManager {
         }
     }
 
+    fun setWhitePlayerType(playerType: PlayerType) {
+        _whitePlayerType = playerType
+    }
+
+    fun setBlackPlayerType(playerType: PlayerType) {
+        _blackPlayerType = playerType
+    }
+
     fun getWhitePlayerType(): PlayerType = _whitePlayerType
 
     fun getBlackPlayerType(): PlayerType = _blackPlayerType

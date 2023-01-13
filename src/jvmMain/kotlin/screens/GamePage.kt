@@ -130,6 +130,35 @@ fun GamePage(
             )
         }
     }
+    fun launchMoveComputation() {
+        coroutineScope.launch(Dispatchers.Default) {
+            UciEngineChannel.getBestMoveForPosition(ChessGameManager.getCurrentPosition())
+        }
+    }
+
+    fun makeCpuPlayIfAppropriated() {
+        if (!gameInProgress) return
+        if (engineIsThinking) return
+
+        val isCpuTurn =
+            (isWhiteTurn && whitePlayerType == PlayerType.Computer) || (!isWhiteTurn && blackPlayerType == PlayerType.Computer)
+        if (isCpuTurn) {
+            engineIsThinking = true
+            launchMoveComputation()
+        }
+    }
+
+    fun chainCpuMoveIfAppropriated() {
+        val isPlayerTurn = (isWhiteTurn && whitePlayerType == PlayerType.Human) ||
+                (!isWhiteTurn && blackPlayerType == PlayerType.Human)
+
+        if (isPlayerTurn) {
+            justUpdatePositionEvaluation()
+        }
+        else {
+            makeCpuPlayIfAppropriated()
+        }
+    }
 
     fun onMovePlayed() {
         isWhiteTurn = ChessGameManager.isWhiteTurn()
@@ -143,7 +172,7 @@ fun GamePage(
         blackPlayerType = ChessGameManager.getBlackPlayerType()
         selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
 
-        justUpdatePositionEvaluation()
+        chainCpuMoveIfAppropriated()
     }
 
     fun onPromotionCancelled() {
@@ -152,27 +181,11 @@ fun GamePage(
         pendingPromotionEndSquare = ChessGameManager.getPendingPromotionEndSquare()
     }
 
-    fun launchMoveComputation() {
-        coroutineScope.launch(Dispatchers.Default) {
-            UciEngineChannel.getBestMoveForPosition(ChessGameManager.getCurrentPosition())
-        }
-    }
-
-    fun makeCpuPlayIfAppropriated() {
-        if (!gameInProgress) return
-        if (engineIsThinking) return
-        val isCpuTurn =
-            (isWhiteTurn && whitePlayerType == PlayerType.Computer) || (!isWhiteTurn && blackPlayerType == PlayerType.Computer)
-        if (isCpuTurn) {
-            engineIsThinking = true
-            launchMoveComputation()
-        }
-    }
-
     fun handleWhiteSideTypeChange(newState: Boolean) {
         cpuPlaysWhiteChecked = newState
         if (gameInProgress) {
             whitePlayerType = if (newState) PlayerType.Computer else PlayerType.Human
+            ChessGameManager.setWhitePlayerType(whitePlayerType)
             val weMustCancelCpuThinking = !newState && engineIsThinking && isWhiteTurn
             if (weMustCancelCpuThinking) engineIsThinking = false
             makeCpuPlayIfAppropriated()
@@ -183,6 +196,7 @@ fun GamePage(
         cpuPlaysBlackChecked = newState
         if (gameInProgress) {
             blackPlayerType = if (newState) PlayerType.Computer else PlayerType.Human
+            ChessGameManager.setBlackPlayerType(blackPlayerType)
             val weMustCancelCpuThinking = !newState && engineIsThinking && !isWhiteTurn
             if (weMustCancelCpuThinking) engineIsThinking = false
             makeCpuPlayIfAppropriated()
@@ -209,6 +223,8 @@ fun GamePage(
         selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
 
         engineIsThinking = false
+
+        chainCpuMoveIfAppropriated()
     }
     UciEngineChannel.setScoreCallback {
         cpuScoreEvaluation = it
@@ -225,7 +241,7 @@ fun GamePage(
         }
     }
 
-    justUpdatePositionEvaluation()
+    chainCpuMoveIfAppropriated()
 
     BoxWithConstraints {
         val isLandscape = maxWidth > maxHeight
@@ -268,7 +284,7 @@ fun GamePage(
             Column {
                 Box {
                     if (isLandscape) {
-                        val heightRatio = if (PreferencesManager.getEnginePath().isNotEmpty()) 0.8f else 1.0f
+                        val heightRatio = if (PreferencesManager.getEnginePath().isNotEmpty() && gameInProgress) 0.8f else 1.0f
                         Row(
                             modifier = Modifier.fillMaxWidth().fillMaxHeight(heightRatio),
                             horizontalArrangement = Arrangement.Center,
@@ -306,7 +322,7 @@ fun GamePage(
                             )
                         }
                     } else {
-                        val heightRatio = if (PreferencesManager.getEnginePath().isNotEmpty()) 0.8f else 1.0f
+                        val heightRatio = if (PreferencesManager.getEnginePath().isNotEmpty() && gameInProgress) 0.8f else 1.0f
                         Column(
                             modifier = Modifier.fillMaxWidth().fillMaxHeight(heightRatio),
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -357,7 +373,7 @@ fun GamePage(
                 }
 
 
-                if (PreferencesManager.getEnginePath().isNotEmpty()) {
+                if (PreferencesManager.getEnginePath().isNotEmpty() && gameInProgress) {
                     Row(
                         horizontalArrangement = Arrangement.Start,
                         verticalAlignment = Alignment.CenterVertically,
