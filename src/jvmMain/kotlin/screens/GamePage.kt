@@ -270,12 +270,14 @@ fun GamePage(
                         colorFilter = ColorFilter.tint(Color.White)
                     )
                 }
-                IconButton(
-                    onGoOptionsPageClick
-                ) {
-                    Icon(
-                        Icons.Default.Settings, strings.preferences, modifier = Modifier.size(30.dp)
-                    )
+                if (!gameInProgress) {
+                    IconButton(
+                        onGoOptionsPageClick
+                    ) {
+                        Icon(
+                            Icons.Default.Settings, strings.preferences, modifier = Modifier.size(30.dp)
+                        )
+                    }
                 }
             })
         }) {
