@@ -119,6 +119,7 @@ fun GamePage(
     }
 
     fun stopGame() {
+        engineIsThinking = false
         ChessGameManager.stopGame()
         gameInProgress = ChessGameManager.isGameInProgress()
         selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
