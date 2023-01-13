@@ -47,6 +47,7 @@ fun GamePage(
     var selectedHistoryNodeIndex by rememberSaveable { mutableStateOf(ChessGameManager.getSelectedHistoryNodeIndex()) }
     var whitePlayerType by rememberSaveable { mutableStateOf(ChessGameManager.getWhitePlayerType()) }
     var blackPlayerType by rememberSaveable { mutableStateOf(ChessGameManager.getBlackPlayerType()) }
+    var showEngineSpinner by rememberSaveable { mutableStateOf(false) }
 
     var cpuPlaysWhiteChecked by rememberSaveable { mutableStateOf(false) }
     var cpuPlaysBlackChecked by rememberSaveable { mutableStateOf(false) }
@@ -68,9 +69,7 @@ fun GamePage(
         blackPlayerType = ChessGameManager.getBlackPlayerType()
         coroutineScope.launch {
             scaffoldState.snackbarHostState.showSnackbar(
-                strings.drawByStalemate,
-                actionLabel = strings.close,
-                duration = SnackbarDuration.Long
+                strings.drawByStalemate, actionLabel = strings.close, duration = SnackbarDuration.Long
             )
         }
     }
@@ -80,9 +79,7 @@ fun GamePage(
         blackPlayerType = ChessGameManager.getBlackPlayerType()
         coroutineScope.launch {
             scaffoldState.snackbarHostState.showSnackbar(
-                strings.drawByThreeFoldRepetition,
-                actionLabel = strings.close,
-                duration = SnackbarDuration.Long
+                strings.drawByThreeFoldRepetition, actionLabel = strings.close, duration = SnackbarDuration.Long
             )
         }
     }
@@ -92,9 +89,7 @@ fun GamePage(
         blackPlayerType = ChessGameManager.getBlackPlayerType()
         coroutineScope.launch {
             scaffoldState.snackbarHostState.showSnackbar(
-                strings.drawByInsufficientMaterial,
-                actionLabel = strings.close,
-                duration = SnackbarDuration.Long
+                strings.drawByInsufficientMaterial, actionLabel = strings.close, duration = SnackbarDuration.Long
             )
         }
     }
@@ -104,9 +99,7 @@ fun GamePage(
         blackPlayerType = ChessGameManager.getBlackPlayerType()
         coroutineScope.launch {
             scaffoldState.snackbarHostState.showSnackbar(
-                strings.drawByFiftyMovesRule,
-                actionLabel = strings.close,
-                duration = SnackbarDuration.Long
+                strings.drawByFiftyMovesRule, actionLabel = strings.close, duration = SnackbarDuration.Long
             )
         }
     }
@@ -125,9 +118,7 @@ fun GamePage(
         blackPlayerType = ChessGameManager.getBlackPlayerType()
         coroutineScope.launch {
             scaffoldState.snackbarHostState.showSnackbar(
-                strings.gameAborted,
-                actionLabel = strings.close,
-                duration = SnackbarDuration.Long
+                strings.gameAborted, actionLabel = strings.close, duration = SnackbarDuration.Long
             )
         }
     }
@@ -162,7 +153,7 @@ fun GamePage(
         val isCpuTurn =
             (isWhiteTurn && whitePlayerType == PlayerType.Computer) || (!isWhiteTurn && blackPlayerType == PlayerType.Computer)
         if (isCpuTurn) {
-            //todo show circular progress bar
+            showEngineSpinner = true
             launchMoveComputation()
         }
     }
@@ -200,6 +191,8 @@ fun GamePage(
         whitePlayerType = ChessGameManager.getWhitePlayerType()
         blackPlayerType = ChessGameManager.getBlackPlayerType()
         selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
+
+        showEngineSpinner = false
     }
     UciEngineChannel.setScoreCallback {
         println("Got score : $it")
@@ -218,93 +211,51 @@ fun GamePage(
 
     BoxWithConstraints {
         val isLandscape = maxWidth > maxHeight
-        Scaffold(
-            scaffoldState = scaffoldState,
-            topBar = {
-                TopAppBar(title = { Text(strings.gamePageTitle) }, navigationIcon = {
-                    IconButton(onBack) {
-                        Icon(Icons.Default.ArrowBack, strings.goBack)
-                    }
-                }, actions = {
-                    IconButton(content = {
-                        Image(
-                            painter = painterResource("icons/swap_vert.svg"),
-                            contentDescription = strings.swapBoardOrientation,
-                            modifier = Modifier.size(30.dp),
-                            colorFilter = ColorFilter.tint(Color.White)
-                        )
-                    }, onClick = {
-                        boardReversed = !boardReversed
-                    })
-                    IconButton(::purposeStopGame) {
-                        Image(
-                            painter = painterResource("icons/cancel.svg"),
-                            contentDescription = strings.stopGame,
-                            modifier = Modifier.size(30.dp),
-                            colorFilter = ColorFilter.tint(Color.White)
-                        )
-                    }
-                    IconButton(
-                        onGoOptionsPageClick
-                    ) {
-                        Icon(
-                            Icons.Default.Settings,
-                            strings.preferences,
-                            modifier = Modifier.size(30.dp)
-                        )
-                    }
+        Scaffold(scaffoldState = scaffoldState, topBar = {
+            TopAppBar(title = { Text(strings.gamePageTitle) }, navigationIcon = {
+                IconButton(onBack) {
+                    Icon(Icons.Default.ArrowBack, strings.goBack)
+                }
+            }, actions = {
+                IconButton(content = {
+                    Image(
+                        painter = painterResource("icons/swap_vert.svg"),
+                        contentDescription = strings.swapBoardOrientation,
+                        modifier = Modifier.size(30.dp),
+                        colorFilter = ColorFilter.tint(Color.White)
+                    )
+                }, onClick = {
+                    boardReversed = !boardReversed
                 })
-            }) {
+                IconButton(::purposeStopGame) {
+                    Image(
+                        painter = painterResource("icons/cancel.svg"),
+                        contentDescription = strings.stopGame,
+                        modifier = Modifier.size(30.dp),
+                        colorFilter = ColorFilter.tint(Color.White)
+                    )
+                }
+                IconButton(
+                    onGoOptionsPageClick
+                ) {
+                    Icon(
+                        Icons.Default.Settings, strings.preferences, modifier = Modifier.size(30.dp)
+                    )
+                }
+            })
+        }) {
+
+            val spinnerSizeRatio = 0.3f
 
             Column {
-                if (isLandscape) {
-                    val heightRatio = if (PreferencesManager.getEnginePath().isNotEmpty()) 0.8f else 1.0f
-                    Row(
-                        modifier = Modifier.fillMaxWidth().fillMaxHeight(heightRatio),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    )
-                    {
-                        ChessBoardComponent(
-                            isWhiteTurn = isWhiteTurn,
-                            piecesValues = boardPieces,
-                            reversed = boardReversed,
-                            whitePlayerType = whitePlayerType,
-                            blackPlayerType = blackPlayerType,
-                            lastMoveArrow = lastMoveArrow,
-                            pendingPromotion = pendingPromotion,
-                            pendingPromotionStartSquare = pendingPromotionStartSquare,
-                            pendingPromotionEndSquare = pendingPromotionEndSquare,
-                            gameInProgress = gameInProgress,
-                            onCheckmate = ::onCheckmate,
-                            onStalemate = ::onStalemate,
-                            onFiftyMovesRuleDraw = ::onFiftyMovesRuleDraw,
-                            onThreeFoldRepetition = ::onThreeFoldRepetition,
-                            onInsufficientMaterial = ::onInsufficientMaterial,
-                            onMovePlayed = ::onMovePlayed,
-                            onPromotionCancelled = ::onPromotionCancelled,
-                        )
-
-                        HistoryComponent(
-                            historyElements = historyElements,
-                            selectedHistoryNodeIndex = selectedHistoryNodeIndex,
-                            onPositionSelected = {
-                                isWhiteTurn = ChessGameManager.isWhiteTurn()
-                                boardPieces = ChessGameManager.getPieces()
-                                lastMoveArrow = ChessGameManager.getLastMoveArrow()
-                                selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
-                            },
-                        )
-                    }
-                } else {
-                    val heightRatio = if (PreferencesManager.getEnginePath().isNotEmpty()) 0.8f else 1.0f
-                    Column(
-                        modifier = Modifier.fillMaxWidth().fillMaxHeight(heightRatio),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    )
-                    {
-                        Column(modifier = Modifier.fillMaxHeight(0.6f)) {
+                Box {
+                    if (isLandscape) {
+                        val heightRatio = if (PreferencesManager.getEnginePath().isNotEmpty()) 0.8f else 1.0f
+                        Row(
+                            modifier = Modifier.fillMaxWidth().fillMaxHeight(heightRatio),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             ChessBoardComponent(
                                 isWhiteTurn = isWhiteTurn,
                                 piecesValues = boardPieces,
@@ -324,17 +275,65 @@ fun GamePage(
                                 onMovePlayed = ::onMovePlayed,
                                 onPromotionCancelled = ::onPromotionCancelled,
                             )
-                        }
 
-                        HistoryComponent(
-                            historyElements = historyElements,
-                            selectedHistoryNodeIndex = selectedHistoryNodeIndex,
-                            onPositionSelected = {
-                                isWhiteTurn = ChessGameManager.isWhiteTurn()
-                                boardPieces = ChessGameManager.getPieces()
-                                lastMoveArrow = ChessGameManager.getLastMoveArrow()
-                                selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
-                            },
+                            HistoryComponent(
+                                historyElements = historyElements,
+                                selectedHistoryNodeIndex = selectedHistoryNodeIndex,
+                                onPositionSelected = {
+                                    isWhiteTurn = ChessGameManager.isWhiteTurn()
+                                    boardPieces = ChessGameManager.getPieces()
+                                    lastMoveArrow = ChessGameManager.getLastMoveArrow()
+                                    selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
+                                },
+                            )
+                        }
+                    } else {
+                        val heightRatio = if (PreferencesManager.getEnginePath().isNotEmpty()) 0.8f else 1.0f
+                        Column(
+                            modifier = Modifier.fillMaxWidth().fillMaxHeight(heightRatio),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Column(modifier = Modifier.fillMaxHeight(0.6f)) {
+                                ChessBoardComponent(
+                                    isWhiteTurn = isWhiteTurn,
+                                    piecesValues = boardPieces,
+                                    reversed = boardReversed,
+                                    whitePlayerType = whitePlayerType,
+                                    blackPlayerType = blackPlayerType,
+                                    lastMoveArrow = lastMoveArrow,
+                                    pendingPromotion = pendingPromotion,
+                                    pendingPromotionStartSquare = pendingPromotionStartSquare,
+                                    pendingPromotionEndSquare = pendingPromotionEndSquare,
+                                    gameInProgress = gameInProgress,
+                                    onCheckmate = ::onCheckmate,
+                                    onStalemate = ::onStalemate,
+                                    onFiftyMovesRuleDraw = ::onFiftyMovesRuleDraw,
+                                    onThreeFoldRepetition = ::onThreeFoldRepetition,
+                                    onInsufficientMaterial = ::onInsufficientMaterial,
+                                    onMovePlayed = ::onMovePlayed,
+                                    onPromotionCancelled = ::onPromotionCancelled,
+                                )
+                            }
+
+                            HistoryComponent(
+                                historyElements = historyElements,
+                                selectedHistoryNodeIndex = selectedHistoryNodeIndex,
+                                onPositionSelected = {
+                                    isWhiteTurn = ChessGameManager.isWhiteTurn()
+                                    boardPieces = ChessGameManager.getPieces()
+                                    lastMoveArrow = ChessGameManager.getLastMoveArrow()
+                                    selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
+                                },
+                            )
+                        }
+                    }
+
+                    if (showEngineSpinner) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .fillMaxSize(spinnerSizeRatio)
+                                .align(Alignment.Center)
                         )
                     }
                 }
@@ -363,36 +362,29 @@ fun GamePage(
                         Text(strings.computerPlaysBlack)
                     }
                 }
-
             }
 
             if (purposeStopGameDialogOpen) {
-                AlertDialog(
-                    onDismissRequest = {
+                AlertDialog(onDismissRequest = {
+                    purposeStopGameDialogOpen = false
+                }, title = {
+                    Text(strings.purposeStopGameTitle)
+                }, text = {
+                    Text(strings.purposeStopGameMessage)
+                }, confirmButton = {
+                    Button({
                         purposeStopGameDialogOpen = false
-                    },
-                    title = {
-                        Text(strings.purposeStopGameTitle)
-                    },
-                    text = {
-                        Text(strings.purposeStopGameMessage)
-                    },
-                    confirmButton = {
-                        Button({
-                            purposeStopGameDialogOpen = false
-                            stopGame()
-                        }) {
-                            Text(strings.validate)
-                        }
-                    },
-                    dismissButton = {
-                        Button({
-                            purposeStopGameDialogOpen = false
-                        }) {
-                            Text(strings.cancel)
-                        }
+                        stopGame()
+                    }) {
+                        Text(strings.validate)
                     }
-                )
+                }, dismissButton = {
+                    Button({
+                        purposeStopGameDialogOpen = false
+                    }) {
+                        Text(strings.cancel)
+                    }
+                })
             }
         }
     }
@@ -460,8 +452,7 @@ private fun ChessBoardComponent(
                 onFiftyMovesRuleDraw = onFiftyMovesRuleDraw,
             )
             onMovePlayed()
-        }
-    )
+        })
 }
 
 @Composable
@@ -470,14 +461,11 @@ fun HistoryComponent(
     selectedHistoryNodeIndex: Int?,
     onPositionSelected: () -> Unit,
 ) {
-    ChessHistory(
-        items = historyElements,
+    ChessHistory(items = historyElements,
         selectedNodeIndex = selectedHistoryNodeIndex,
         onPositionRequest = { positionFen, moveCoordinates, nodeToSelectIndex ->
             val success = ChessGameManager.requestPosition(
-                positionFen = positionFen,
-                moveCoordinates = moveCoordinates,
-                nodeToSelectIndex
+                positionFen = positionFen, moveCoordinates = moveCoordinates, nodeToSelectIndex
             )
             if (success) {
                 onPositionSelected()
@@ -506,6 +494,5 @@ fun HistoryComponent(
             if (success) {
                 onPositionSelected()
             }
-        }
-    )
+        })
 }
