@@ -1,9 +1,37 @@
 package logic
 
+typealias StringCallback = (String) -> Unit
+typealias FloatCallback = (Float) -> Unit
+
 object UciEngineChannel {
     private var process: ProcessWrapper? = null
 
+    private var bestMoveCallback: StringCallback? = null
+    private var scoreCallback: FloatCallback? = null
+
+    fun setBestMoveCallback(callback: StringCallback?) {
+        bestMoveCallback = callback
+    }
+
+    fun setScoreCallback(callback: FloatCallback?) {
+        scoreCallback = callback
+    }
+
     fun isProcessStarted(): Boolean = process != null
+
+    @Suppress("RegExpRedundantEscape")
+    private fun handleEngineOutput(engineOutput: String) {
+        if (engineOutput.startsWith("bestmove")) {
+            bestMoveCallback?.invoke(engineOutput.split(" ")[1])
+        } else if (engineOutput.contains("score cp")) {
+            val scorePartRegex = """score cp (\-?\d+)""".toRegex()
+            val scoreMatch = scorePartRegex.find(engineOutput)
+            val scoreString = scoreMatch?.groups?.get(1)?.value
+            if (scoreString != null) {
+                scoreCallback?.invoke(scoreString.toFloat() / 100f)
+            }
+        }
+    }
 
     fun tryStartingEngineProcess(): Boolean {
         if (process != null) return false
@@ -11,9 +39,7 @@ object UciEngineChannel {
         return if (PreferencesManager.getEnginePath().isNotEmpty()) {
             process = ProcessWrapper(
                 command = PreferencesManager.getEnginePath(),
-                outputCallback = {
-                    println(it)
-                },
+                outputCallback = ::handleEngineOutput,
                 errorCallback = {
                     println(it)
                 }
