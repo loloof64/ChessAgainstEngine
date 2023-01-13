@@ -225,6 +225,8 @@ fun GamePage(
         }
     }
 
+    justUpdatePositionEvaluation()
+
     BoxWithConstraints {
         val isLandscape = maxWidth > maxHeight
         Scaffold(scaffoldState = scaffoldState, topBar = {

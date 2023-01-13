@@ -37,6 +37,7 @@ fun MainContent() {
             is Screen.Home -> HomePage(
                 onGoGamePageClick = {
                     try {
+                        ChessGameManager.setStartPosition("4k3/8/4K3/8/8/8/4P3/8 w - - 0 1")
                         ChessGameManager.resetGame()
                         navigation.push(Screen.Game())
                     } catch (ex: WrongFieldsCountException) {
