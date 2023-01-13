@@ -45,4 +45,5 @@ val esStrings = Strings(
     computerSidesOptions = "Juegos de computadora",
     computerPlaysWhite = "Blancos",
     computerPlaysBlack = "Negros",
+    showComputerScoreEvaluation = "Mostrar evaluación"
 )

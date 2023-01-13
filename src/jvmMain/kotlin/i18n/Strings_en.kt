@@ -45,4 +45,5 @@ val enStrings = Strings(
     computerSidesOptions = "Computer plays",
     computerPlaysWhite = "White",
     computerPlaysBlack = "Black",
+    showComputerScoreEvaluation = "Show score",
 )

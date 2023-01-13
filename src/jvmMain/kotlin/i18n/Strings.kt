@@ -47,7 +47,7 @@ data class Strings(
     val computerSidesOptions: String,
     val computerPlaysWhite: String,
     val computerPlaysBlack: String,
-
+    val showComputerScoreEvaluation: String,
 )
 
 val strings = mapOf(

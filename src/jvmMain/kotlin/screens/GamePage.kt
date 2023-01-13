@@ -51,6 +51,8 @@ fun GamePage(
 
     var cpuPlaysWhiteChecked by rememberSaveable { mutableStateOf(false) }
     var cpuPlaysBlackChecked by rememberSaveable { mutableStateOf(false) }
+    var cpuScoreEvaluation by rememberSaveable { mutableStateOf(0.0f) }
+    var showCpuScoreEvaluation by rememberSaveable { mutableStateOf(false) }
 
     fun onCheckmate(whitePlayer: Boolean) {
         whitePlayerType = ChessGameManager.getWhitePlayerType()
@@ -201,7 +203,7 @@ fun GamePage(
         engineIsThinking = false
     }
     UciEngineChannel.setScoreCallback {
-        println("Got score : $it")
+        cpuScoreEvaluation = it
     }
 
     if (PreferencesManager.getEnginePath().isEmpty()) {
@@ -367,31 +369,50 @@ fun GamePage(
                         )
                         Text(strings.computerPlaysBlack)
                     }
+                    Row(
+                        horizontalArrangement = Arrangement.Start,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(6.dp)
+                    ) {
+                        Checkbox(
+                            modifier = Modifier.padding(start = 20.dp, end = 0.dp),
+                            checked = showCpuScoreEvaluation,
+                            onCheckedChange = { showCpuScoreEvaluation = !showCpuScoreEvaluation },
+                        )
+                        Text(strings.showComputerScoreEvaluation)
+
+                        if (showCpuScoreEvaluation) {
+                            Text(
+                                modifier = Modifier.padding(start = 20.dp, end = 0.dp),
+                                text = cpuScoreEvaluation.toString(),
+                            )
+                        }
+                    }
                 }
             }
+        }
 
-            if (purposeStopGameDialogOpen) {
-                AlertDialog(onDismissRequest = {
+        if (purposeStopGameDialogOpen) {
+            AlertDialog(onDismissRequest = {
+                purposeStopGameDialogOpen = false
+            }, title = {
+                Text(strings.purposeStopGameTitle)
+            }, text = {
+                Text(strings.purposeStopGameMessage)
+            }, confirmButton = {
+                Button({
                     purposeStopGameDialogOpen = false
-                }, title = {
-                    Text(strings.purposeStopGameTitle)
-                }, text = {
-                    Text(strings.purposeStopGameMessage)
-                }, confirmButton = {
-                    Button({
-                        purposeStopGameDialogOpen = false
-                        stopGame()
-                    }) {
-                        Text(strings.validate)
-                    }
-                }, dismissButton = {
-                    Button({
-                        purposeStopGameDialogOpen = false
-                    }) {
-                        Text(strings.cancel)
-                    }
-                })
-            }
+                    stopGame()
+                }) {
+                    Text(strings.validate)
+                }
+            }, dismissButton = {
+                Button({
+                    purposeStopGameDialogOpen = false
+                }) {
+                    Text(strings.cancel)
+                }
+            })
         }
     }
 }

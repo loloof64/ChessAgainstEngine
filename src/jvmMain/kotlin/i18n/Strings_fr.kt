@@ -45,4 +45,5 @@ val frStrings = Strings(
     computerSidesOptions = "Côté(s) ordinateur",
     computerPlaysWhite = "Blancs",
     computerPlaysBlack = "Noirs",
+    showComputerScoreEvaluation = "Montrer le score"
 )
