@@ -10,17 +10,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.arkivanov.decompose.router.stack.StackNavigation
+import com.arkivanov.decompose.router.stack.push
 import i18n.LocalStrings
 import kotlinx.coroutines.launch
-import logic.UciEngineChannel
+import logic.*
 
 @Composable
 fun HomePage(
-    onGoGamePageClick: () -> Unit,
-    onGoOptionsPageClick: () -> Unit,
+    navigation: StackNavigation<Screen>,
     scaffoldState: ScaffoldState,
 ) {
     val coroutineScope = rememberCoroutineScope()
+    val strings = LocalStrings.current
 
     if (!UciEngineChannel.isProcessStarted()) {
         coroutineScope.launch {
@@ -28,14 +30,43 @@ fun HomePage(
         }
     }
 
-    val strings = LocalStrings.current
+    fun onGoEditPositionPageClick() {
+        navigation.push(Screen.EditPosition)
+    }
+
+    fun onGoOptionsPageClick() {
+        navigation.push(Screen.Options)
+    }
+
+    fun onGoGamePageClick() {
+        try {
+            ChessGameManager.setStartPosition(defaultPosition)
+            ChessGameManager.resetGame()
+            navigation.push(Screen.Game())
+        } catch (ex: WrongFieldsCountException) {
+            coroutineScope.launch {
+                scaffoldState.snackbarHostState.showSnackbar(
+                    message = strings.wrongFieldsCountFen,
+                    actionLabel = strings.close,
+                    duration = SnackbarDuration.Long,
+                )
+            }
+        } catch (ex: KingNotInTurnIsInCheck) {
+            coroutineScope.launch {
+                scaffoldState.snackbarHostState.showSnackbar(
+                    message = strings.oppositeKingInCheckFen,
+                    actionLabel = strings.close,
+                    duration = SnackbarDuration.Long
+                )
+            }
+        }
+    }
+
     Scaffold(topBar = {
         TopAppBar(
             title = { Text(strings.homePageTitle) },
             actions = {
-                IconButton(
-                    onGoOptionsPageClick
-                ) {
+                IconButton(::onGoOptionsPageClick) {
                     Icon(Icons.Default.Settings, strings.preferences)
                 }
             }
@@ -44,10 +75,14 @@ fun HomePage(
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.SpaceEvenly
         ) {
-            Button(onGoGamePageClick) {
-                Text(strings.goToGamePage)
+            Button(::onGoGamePageClick) {
+                Text(strings.playDirectly)
+            }
+
+            Button(::onGoEditPositionPageClick) {
+                Text(strings.editStartPosition)
             }
         }
     }

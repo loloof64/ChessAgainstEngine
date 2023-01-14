@@ -1,4 +1,4 @@
-package com.arkivanov.composenavigatorexample.navigator
+package navigator
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider

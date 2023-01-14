@@ -22,9 +22,6 @@ class ProcessWrapper(
         GlobalScope.launch {
             processOutput?.useLines { lines ->
                 lines.forEach {
-                    /////////////////////////////
-                    println("@@@ $it")
-                    /////////////////////////////
                     outputCallback(it)
                 }
             }

@@ -1,11 +1,9 @@
 package screens
 
-import androidx.compose.material.SnackbarDuration
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import com.arkivanov.composenavigatorexample.navigator.ChildStack
+import navigator.ChildStack
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.fade
 import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.plus
@@ -13,11 +11,8 @@ import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.scal
 import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.stackAnimation
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.pop
-import com.arkivanov.decompose.router.stack.push
 import com.arkivanov.essenty.parcelable.Parcelable
 import com.arkivanov.essenty.parcelable.Parcelize
-import i18n.LocalStrings
-import kotlinx.coroutines.launch
 import logic.*
 
 @OptIn(ExperimentalDecomposeApi::class)
@@ -25,8 +20,6 @@ import logic.*
 fun MainContent() {
     val navigation = remember { StackNavigation<Screen>() }
     val scaffoldState = rememberScaffoldState()
-    val scope = rememberCoroutineScope()
-    val strings = LocalStrings.current
 
     ChildStack(
         source = navigation,
@@ -35,39 +28,18 @@ fun MainContent() {
     ) { screen ->
         when (screen) {
             is Screen.Home -> HomePage(
-                onGoGamePageClick = {
-                    try {
-                        ChessGameManager.setStartPosition(defaultPosition)
-                        ChessGameManager.resetGame()
-                        navigation.push(Screen.Game())
-                    } catch (ex: WrongFieldsCountException) {
-                        scope.launch {
-                            scaffoldState.snackbarHostState.showSnackbar(
-                                message = strings.wrongFieldsCountFen,
-                                actionLabel = strings.close,
-                                duration = SnackbarDuration.Long,
-                            )
-                        }
-                    } catch (ex: KingNotInTurnIsInCheck) {
-                        scope.launch {
-                            scaffoldState.snackbarHostState.showSnackbar(
-                                message = strings.oppositeKingInCheckFen,
-                                actionLabel = strings.close,
-                                duration = SnackbarDuration.Long
-                            )
-                        }
-                    }
-                },
-                onGoOptionsPageClick = {
-                    navigation.push(Screen.Options)
-                },
-                scaffoldState = scaffoldState
+                scaffoldState = scaffoldState,
+                navigation = navigation,
+            )
+
+            is Screen.EditPosition -> EditPositionPage(
+                navigation = navigation,
             )
 
             is Screen.Game -> {
                 return@ChildStack GamePage(
-                    onBack = navigation::pop,
-                    onGoOptionsPageClick = { navigation.push(Screen.Options) })
+                    navigation = navigation,
+                )
             }
 
             is Screen.Options -> OptionsPage(onBack = navigation::pop)
@@ -82,6 +54,9 @@ sealed class Screen : Parcelable {
 
     @Parcelize
     data class Game(val startPosition: String = defaultPosition) : Screen()
+
+    @Parcelize
+    object EditPosition : Screen()
 
     @Parcelize
     object Options : Screen()

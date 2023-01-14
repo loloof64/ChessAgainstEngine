@@ -14,6 +14,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.arkivanov.decompose.router.stack.StackNavigation
+import com.arkivanov.decompose.router.stack.pop
+import com.arkivanov.decompose.router.stack.push
 import components.*
 import i18n.LocalStrings
 import io.github.wolfraam.chessgame.board.Square
@@ -27,8 +30,7 @@ import logic.UciEngineChannel
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun GamePage(
-    onBack: () -> Unit,
-    onGoOptionsPageClick: () -> Unit,
+    navigation: StackNavigation<Screen>,
 ) {
     val scaffoldState = rememberScaffoldState()
     val coroutineScope = rememberCoroutineScope()
@@ -131,6 +133,7 @@ fun GamePage(
             )
         }
     }
+
     fun launchMoveComputation() {
         coroutineScope.launch(Dispatchers.Default) {
             UciEngineChannel.getBestMoveForPosition(ChessGameManager.getCurrentPosition())
@@ -155,8 +158,7 @@ fun GamePage(
 
         if (isPlayerTurn) {
             justUpdatePositionEvaluation()
-        }
-        else {
+        } else {
             makeCpuPlayIfAppropriated()
         }
     }
@@ -256,48 +258,52 @@ fun GamePage(
 
     BoxWithConstraints {
         val isLandscape = maxWidth > maxHeight
-        Scaffold(scaffoldState = scaffoldState, topBar = {
-            TopAppBar(title = { Text(strings.gamePageTitle) }, navigationIcon = {
-                IconButton(onBack) {
-                    Icon(Icons.Default.ArrowBack, strings.goBack)
-                }
-            }, actions = {
-                IconButton(content = {
-                    Image(
-                        painter = painterResource("icons/swap_vert.svg"),
-                        contentDescription = strings.swapBoardOrientation,
-                        modifier = Modifier.size(30.dp),
-                        colorFilter = ColorFilter.tint(Color.White)
-                    )
-                }, onClick = {
-                    boardReversed = !boardReversed
-                })
-                IconButton(::purposeStopGame) {
-                    Image(
-                        painter = painterResource("icons/cancel.svg"),
-                        contentDescription = strings.stopGame,
-                        modifier = Modifier.size(30.dp),
-                        colorFilter = ColorFilter.tint(Color.White)
-                    )
-                }
-                if (!gameInProgress) {
-                    IconButton(
-                        onGoOptionsPageClick
-                    ) {
-                        Icon(
-                            Icons.Default.Settings, strings.preferences, modifier = Modifier.size(30.dp)
-                        )
-                    }
-                }
-            })
-        }) {
+        Scaffold(scaffoldState = scaffoldState,
+            topBar = {
+                TopAppBar(
+                    title = { Text(strings.gamePageTitle) },
+                    navigationIcon = {
+                        IconButton({ navigation.pop() }) {
+                            Icon(Icons.Default.ArrowBack, strings.goBack)
+                        }
+                    }, actions = {
+                        IconButton(content = {
+                            Image(
+                                painter = painterResource("icons/swap_vert.svg"),
+                                contentDescription = strings.swapBoardOrientation,
+                                modifier = Modifier.size(30.dp),
+                                colorFilter = ColorFilter.tint(Color.White)
+                            )
+                        }, onClick = {
+                            boardReversed = !boardReversed
+                        })
+                        IconButton(::purposeStopGame) {
+                            Image(
+                                painter = painterResource("icons/cancel.svg"),
+                                contentDescription = strings.stopGame,
+                                modifier = Modifier.size(30.dp),
+                                colorFilter = ColorFilter.tint(Color.White)
+                            )
+                        }
+                        if (!gameInProgress) {
+                            IconButton({
+                                navigation.push(Screen.Options)
+                            }) {
+                                Icon(
+                                    Icons.Default.Settings, strings.preferences, modifier = Modifier.size(30.dp)
+                                )
+                            }
+                        }
+                    })
+            }) {
 
             val spinnerSizeRatio = 0.3f
 
             Column {
                 Box {
                     if (isLandscape) {
-                        val heightRatio = if (PreferencesManager.getEnginePath().isNotEmpty() && gameInProgress) 0.8f else 1.0f
+                        val heightRatio =
+                            if (PreferencesManager.getEnginePath().isNotEmpty() && gameInProgress) 0.8f else 1.0f
                         Row(
                             modifier = Modifier.fillMaxWidth().fillMaxHeight(heightRatio),
                             horizontalArrangement = Arrangement.Center,
@@ -335,7 +341,8 @@ fun GamePage(
                             )
                         }
                     } else {
-                        val heightRatio = if (PreferencesManager.getEnginePath().isNotEmpty() && gameInProgress) 0.8f else 1.0f
+                        val heightRatio =
+                            if (PreferencesManager.getEnginePath().isNotEmpty() && gameInProgress) 0.8f else 1.0f
                         Column(
                             modifier = Modifier.fillMaxWidth().fillMaxHeight(heightRatio),
                             horizontalAlignment = Alignment.CenterHorizontally,
