@@ -21,6 +21,7 @@ package components
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Surface
@@ -43,6 +44,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.arkivanov.essenty.parcelable.Parcelize
 import i18n.LocalStrings
+import i18n.Strings
 import logic.defaultPosition
 import kotlin.math.*
 
@@ -91,6 +93,7 @@ fun ChessBoard(
     tryPlayingMove: (DragAndDropData) -> Unit,
     onCancelPromotion: () -> Unit,
     onValidatePromotion: (PromotionType) -> Unit,
+    onCellClick: (Int, Int) -> Unit = { _, _ -> },
 ) {
     var dndData by rememberSaveable { mutableStateOf<DragAndDropData?>(null) }
 
@@ -136,6 +139,7 @@ fun ChessBoard(
                 onDndDataUpdate = { newDndData ->
                     dndData = newDndData
                 },
+                onCellClick = onCellClick,
             )
             if (pendingPromotion != PendingPromotion.None) {
                 PromotionLayer(
@@ -258,12 +262,22 @@ private fun DragAndDropLayer(
     blackPlayerType: PlayerType,
     onDndDataUpdate: (DragAndDropData?) -> Unit,
     tryPlayingMove: (DragAndDropData) -> Unit,
+    onCellClick: (Int, Int) -> Unit,
 ) {
     val strings = LocalStrings.current
     var dndData by rememberSaveable { mutableStateOf<DragAndDropData?>(null) }
     Column(
         modifier = Modifier.fillMaxSize()
             .pointerInput(reversed, piecesValues, isWhiteTurn, whitePlayerType, blackPlayerType) {
+                detectTapGestures(
+                    onTap = { offset ->
+                        val col = ((offset.x - cellSizePx * 0.5) / cellSizePx).toInt()
+                        val row = ((offset.y - cellSizePx * 0.5) / cellSizePx).toInt()
+                        val file = if (reversed) 7 - col else col
+                        val rank = if (reversed) row else 7 - row
+                        onCellClick(file, rank)
+                    }
+                )
                 detectDragGestures(
                     onDragStart = { offset: Offset ->
                         if (!isActive) return@detectDragGestures
@@ -557,7 +571,7 @@ private fun ChessBoardCell(
             if (!noPiece && !isDraggedPieceOrigin) {
                 Image(
                     painter = painterResource(getVectorForPiece(pieceValue)),
-                    contentDescription = strings.chessPiece,
+                    contentDescription = getContentDescriptionForPiece(pieceValue, strings),
                     modifier = Modifier.fillMaxSize(),
                 )
             }
@@ -583,6 +597,25 @@ fun getVectorForPiece(pieceValue: Char): String {
         else -> throw IllegalArgumentException("Not recognized piece $pieceValue")
     }
     return "images/chess_vectors/$name"
+}
+
+fun getContentDescriptionForPiece(pieceValue: Char, strings: Strings): String {
+    return when (pieceValue) {
+        'P' -> strings.whitePawn
+        'N' -> strings.whiteKnight
+        'B' -> strings.whiteBishop
+        'R' -> strings.whiteRook
+        'Q' -> strings.whiteQueen
+        'K' -> strings.whiteKing
+
+        'p' -> strings.blackPawn
+        'n' -> strings.blackKnight
+        'b' -> strings.blackBishop
+        'r' -> strings.blackRook
+        'q' -> strings.blackQueen
+        'k' -> strings.blackKing
+        else -> strings.emptyCell
+    }
 }
 
 @Parcelize

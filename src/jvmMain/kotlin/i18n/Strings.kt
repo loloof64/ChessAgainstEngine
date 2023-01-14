@@ -50,6 +50,21 @@ data class Strings(
     val computerPlaysWhite: String,
     val computerPlaysBlack: String,
     val showComputerScoreEvaluation: String,
+    val emptyCell: String,
+    val whitePawn: String,
+    val whiteKnight: String,
+    val whiteBishop: String,
+    val whiteRook: String,
+    val whiteQueen: String,
+    val whiteKing: String,
+    val blackPawn: String,
+    val blackKnight: String,
+    val blackBishop: String,
+    val blackRook: String,
+    val blackQueen: String,
+    val blackKing: String,
+    val selectedPiece: String,
+    val selectEraseCell: String,
 )
 
 val strings = mapOf(
