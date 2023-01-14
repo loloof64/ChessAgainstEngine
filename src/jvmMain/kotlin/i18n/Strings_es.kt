@@ -63,4 +63,14 @@ val esStrings = Strings(
     blackKing = "Rey negro",
     selectedPiece = "Pieza seleccionada",
     selectEraseCell = "Para borrar celda",
+    whiteOO = "O-O blanco",
+    whiteOOO = "O-O-O blanco",
+    blackOO = "O-O negro",
+    blackOOO = "O-O-O negro",
+    enPassantFile = "Columna de caso en passant",
+    select = "Seleccionar",
+    drawHalfMovesCount = "La mitad de los movimientos cuentan",
+    goUp = "Subir",
+    goDown = "Bajar",
+    moveNumber = "Golpe número"
 )

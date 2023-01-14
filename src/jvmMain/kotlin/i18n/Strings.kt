@@ -65,6 +65,16 @@ data class Strings(
     val blackKing: String,
     val selectedPiece: String,
     val selectEraseCell: String,
+    val whiteOO: String,
+    val whiteOOO: String,
+    val blackOO: String,
+    val blackOOO: String,
+    val enPassantFile: String,
+    val select: String,
+    val drawHalfMovesCount: String,
+    val goUp: String,
+    val goDown: String,
+    val moveNumber: String,
 )
 
 val strings = mapOf(
