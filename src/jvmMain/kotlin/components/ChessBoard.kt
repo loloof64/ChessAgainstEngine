@@ -269,15 +269,6 @@ private fun DragAndDropLayer(
     Column(
         modifier = Modifier.fillMaxSize()
             .pointerInput(reversed, piecesValues, isWhiteTurn, whitePlayerType, blackPlayerType) {
-                detectTapGestures(
-                    onTap = { offset ->
-                        val col = ((offset.x - cellSizePx * 0.5) / cellSizePx).toInt()
-                        val row = ((offset.y - cellSizePx * 0.5) / cellSizePx).toInt()
-                        val file = if (reversed) 7 - col else col
-                        val rank = if (reversed) row else 7 - row
-                        onCellClick(file, rank)
-                    }
-                )
                 detectDragGestures(
                     onDragStart = { offset: Offset ->
                         if (!isActive) return@detectDragGestures
@@ -350,6 +341,15 @@ private fun DragAndDropLayer(
                         if (dndData == null) return@detectDragGestures
                         dndData = null
                         onDndDataUpdate(null)
+                    }
+                )
+                detectTapGestures(
+                    onTap = { offset ->
+                        val col = ((offset.x - cellSizePx * 0.5) / cellSizePx).toInt()
+                        val row = ((offset.y - cellSizePx * 0.5) / cellSizePx).toInt()
+                        val file = if (reversed) 7 - col else col
+                        val rank = if (reversed) row else 7 - row
+                        onCellClick(file, rank)
                     }
                 )
             }) {

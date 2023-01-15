@@ -53,7 +53,7 @@ sealed class Screen : Parcelable {
     object Home : Screen()
 
     @Parcelize
-    data class Game(val startPosition: String = defaultPosition) : Screen()
+    object Game : Screen()
 
     @Parcelize
     object EditPosition : Screen()

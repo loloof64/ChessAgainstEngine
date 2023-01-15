@@ -42,7 +42,7 @@ fun HomePage(
         try {
             ChessGameManager.setStartPosition(defaultPosition)
             ChessGameManager.resetGame()
-            navigation.push(Screen.Game())
+            navigation.push(Screen.Game)
         } catch (ex: WrongFieldsCountException) {
             coroutineScope.launch {
                 scaffoldState.snackbarHostState.showSnackbar(

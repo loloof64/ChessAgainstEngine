@@ -23,8 +23,10 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.pop
+import com.arkivanov.decompose.router.stack.push
 import components.*
 import i18n.LocalStrings
+import logic.ChessGameManager
 import logic.defaultPosition
 
 const val noEnPassant = "-"
@@ -129,7 +131,9 @@ fun EditPositionPage(
     }
 
     fun onValidate() {
-        // TODO set start position if valid and goto game page
+        ChessGameManager.setStartPosition(currentFen)
+        ChessGameManager.resetGame()
+        navigation.push(Screen.Game)
     }
 
     fun onCancel() {
@@ -279,9 +283,14 @@ fun EditPositionPage(
                     },
                     onPastePositionFen = {
                         clipboardManager.getText()?.text?.let {
-                            if (it.isWellFormedFen()) {
-                                currentFen = it
-                                updateFields()
+                            try {
+                                val fen = it.trim()
+                                if (fen.isWellFormedFen()) {
+                                    currentFen = fen
+                                    updateFields()
+                                }
+                            } catch (ex: Exception) {
+                              println(ex)
                             }
                         }
                     }
