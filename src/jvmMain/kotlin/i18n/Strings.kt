@@ -80,6 +80,8 @@ data class Strings(
     val blackTurn: String,
     val setDefaultPosition: String,
     val eraseBoard: String,
+    val copyFen: String,
+    val pasteFen: String,
 )
 
 val strings = mapOf(

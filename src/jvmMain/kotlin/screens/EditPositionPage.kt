@@ -17,7 +17,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.pop
@@ -26,6 +28,24 @@ import i18n.LocalStrings
 import logic.defaultPosition
 
 const val noEnPassant = "-"
+
+fun String.isWellFormedFen(): Boolean {
+    val parts = split(" ")
+    if (parts.size != 6) return false
+
+    val boardPart = parts[0]
+    if (boardPart.split("/").size != 8) return false
+
+    if (parts[1] != "w" && parts[1] != "b") return false
+    try {
+        parts[4].toInt()
+        parts[5].toInt()
+    } catch (ex: NumberFormatException) {
+        return false
+    }
+
+    return true
+}
 
 private fun positionFenToPiecesArray(positionFen: String): List<List<Char>> {
     return positionFen.split(" ")[0].split('/').map { line ->
@@ -74,6 +94,7 @@ fun EditPositionPage(
     navigation: StackNavigation<Screen>
 ) {
     val strings = LocalStrings.current
+    val clipboardManager = LocalClipboardManager.current
 
     var boardReversed by rememberSaveable { mutableStateOf(false) }
     var piecesValues by rememberSaveable { mutableStateOf(positionFenToPiecesArray(defaultPosition)) }
@@ -252,6 +273,17 @@ fun EditPositionPage(
                     onEraseBoard = {
                         currentFen = "8/8/8/8/8/8/8/8 w - - 0 1"
                         updateFields()
+                    },
+                    onCopyPositionFen = {
+                        clipboardManager.setText(AnnotatedString(currentFen))
+                    },
+                    onPastePositionFen = {
+                        clipboardManager.getText()?.text?.let {
+                            if (it.isWellFormedFen()) {
+                                currentFen = it
+                                updateFields()
+                            }
+                        }
                     }
                 )
             }
@@ -296,6 +328,8 @@ fun PositionEditingControls(
     onWhiteTurnChange: (Boolean) -> Unit,
     onDefaultBoardPosition: () -> Unit,
     onEraseBoard: () -> Unit,
+    onCopyPositionFen: () -> Unit,
+    onPastePositionFen: () -> Unit,
 ) {
     val strings = LocalStrings.current
     var enPassantMenuExpanded by rememberSaveable { mutableStateOf(false) }
@@ -493,6 +527,20 @@ fun PositionEditingControls(
 
             Button({ onEraseBoard() }, modifier = Modifier.padding(start = 10.dp)) {
                 Text(strings.eraseBoard)
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Button({ onCopyPositionFen() }) {
+                Text(strings.copyFen)
+            }
+
+            Button({ onPastePositionFen() }, modifier = Modifier.padding(start = 10.dp)) {
+                Text(strings.pasteFen)
             }
         }
     }

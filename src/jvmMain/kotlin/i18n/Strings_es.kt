@@ -78,4 +78,6 @@ val esStrings = Strings(
     blackTurn = "Negros",
     setDefaultPosition = "Por defecto",
     eraseBoard = "Borrar",
+    copyFen = "Copiar FEN",
+    pasteFen = "Pegar FEN",
 )
