@@ -76,7 +76,6 @@ fun EditPositionPage(
     val strings = LocalStrings.current
 
     var boardReversed by rememberSaveable { mutableStateOf(false) }
-    val isWhiteTurn by rememberSaveable { mutableStateOf(true) }
     var piecesValues by rememberSaveable { mutableStateOf(positionFenToPiecesArray(defaultPosition)) }
     var currentEditingPiece by rememberSaveable { mutableStateOf(emptyCell) }
     var whiteOO by rememberSaveable { mutableStateOf(true) }
@@ -114,6 +113,26 @@ fun EditPositionPage(
 
     fun onCancel() {
         navigation.pop()
+    }
+
+    fun updateFields() {
+        val positionParts = currentFen.split(" ")
+        piecesValues = positionFenToPiecesArray(currentFen)
+        whiteTurn = positionParts[1] == "w"
+
+        val castles = positionParts[2]
+        whiteOO = castles.contains("K")
+        whiteOOO = castles.contains("Q")
+        blackOO = castles.contains("k")
+        blackOOO = castles.contains("q")
+
+        val enPassant = positionParts[3]
+        enPassantFile = if (enPassant != "-") {
+            enPassant[0].code - 'a'.code
+        } else null
+
+        drawHalfMovesCount = positionParts[4].toInt()
+        moveNumber = positionParts[5].toInt()
     }
 
     Scaffold(
@@ -160,7 +179,7 @@ fun EditPositionPage(
                         piecesValues = piecesValues,
                         whitePlayerType = PlayerType.None,
                         blackPlayerType = PlayerType.None,
-                        isWhiteTurn = isWhiteTurn,
+                        isWhiteTurn = whiteTurn,
                         reversed = boardReversed,
                         lastMoveArrow = null,
                         pendingPromotionStartFile = null,
@@ -226,6 +245,14 @@ fun EditPositionPage(
                         whiteTurn = it
                         currentFen = getPositionFen()
                     },
+                    onDefaultBoardPosition = {
+                        currentFen = defaultPosition
+                        updateFields()
+                    },
+                    onEraseBoard = {
+                        currentFen = "8/8/8/8/8/8/8/8 w - - 0 1"
+                        updateFields()
+                    }
                 )
             }
 
@@ -267,6 +294,8 @@ fun PositionEditingControls(
     onDrawHalfMovesCountChange: (Int) -> Unit,
     onMoveNumberChange: (Int) -> Unit,
     onWhiteTurnChange: (Boolean) -> Unit,
+    onDefaultBoardPosition: () -> Unit,
+    onEraseBoard: () -> Unit,
 ) {
     val strings = LocalStrings.current
     var enPassantMenuExpanded by rememberSaveable { mutableStateOf(false) }
@@ -276,7 +305,26 @@ fun PositionEditingControls(
         modifier = modifier.fillMaxSize().verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(currentFen, modifier = Modifier.background(Color.Gray))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(strings.playerTurn)
+            RadioButton(
+                modifier = Modifier.padding(start = 10.dp),
+                selected = isWhiteTurn,
+                onClick = { onWhiteTurnChange(true) }
+            )
+            Text(strings.whiteTurn)
+            RadioButton(
+                modifier = Modifier.padding(start = 10.dp),
+                selected = !isWhiteTurn,
+                onClick = { onWhiteTurnChange(false) }
+            )
+            Text(strings.blackTurn)
+        }
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceAround,
@@ -353,6 +401,8 @@ fun PositionEditingControls(
                 text = strings.whiteOOO
             )
         }
+
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center,
@@ -429,25 +479,21 @@ fun PositionEditingControls(
             )
         }
 
+        Text(currentFen, modifier = Modifier.background(Color.Gray))
+
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(strings.playerTurn)
-            RadioButton(
-                modifier = Modifier.padding(start = 10.dp),
-                selected = isWhiteTurn,
-                onClick = { onWhiteTurnChange(true) }
-            )
-            Text(strings.whiteTurn)
-            RadioButton(
-                modifier = Modifier.padding(start = 10.dp),
-                selected = !isWhiteTurn,
-                onClick = { onWhiteTurnChange(false) }
-            )
-            Text(strings.blackTurn)
+            Button({ onDefaultBoardPosition() }) {
+                Text(strings.setDefaultPosition)
+            }
 
+            Button({ onEraseBoard() }, modifier = Modifier.padding(start = 10.dp)) {
+                Text(strings.eraseBoard)
+            }
         }
     }
 }

@@ -75,5 +75,7 @@ val enStrings = Strings(
     moveNumber = "Move number",
     playerTurn = "Turn",
     whiteTurn = "White",
-    blackTurn = "Black"
+    blackTurn = "Black",
+    setDefaultPosition = "Default",
+    eraseBoard = "Erase",
 )

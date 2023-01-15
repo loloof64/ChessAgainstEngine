@@ -76,4 +76,6 @@ val frStrings = Strings(
     playerTurn = "Trait",
     whiteTurn = "Blancs",
     blackTurn = "Noirs",
+    setDefaultPosition = "Par défaut",
+    eraseBoard = "Effacer",
 )

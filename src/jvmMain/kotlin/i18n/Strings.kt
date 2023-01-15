@@ -78,6 +78,8 @@ data class Strings(
     val playerTurn: String,
     val whiteTurn: String,
     val blackTurn: String,
+    val setDefaultPosition: String,
+    val eraseBoard: String,
 )
 
 val strings = mapOf(

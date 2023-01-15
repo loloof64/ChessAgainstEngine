@@ -76,4 +76,6 @@ val esStrings = Strings(
     playerTurn = "Turno",
     whiteTurn = "Blancos",
     blackTurn = "Negros",
+    setDefaultPosition = "Por defecto",
+    eraseBoard = "Borrar",
 )
