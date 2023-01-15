@@ -75,6 +75,9 @@ data class Strings(
     val goUp: String,
     val goDown: String,
     val moveNumber: String,
+    val playerTurn: String,
+    val whiteTurn: String,
+    val blackTurn: String,
 )
 
 val strings = mapOf(

@@ -73,4 +73,7 @@ val enStrings = Strings(
     goUp = "Go up",
     goDown = "Go down",
     moveNumber = "Move number",
+    playerTurn = "Turn",
+    whiteTurn = "White",
+    blackTurn = "Black"
 )

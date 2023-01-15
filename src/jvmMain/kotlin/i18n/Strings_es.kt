@@ -72,5 +72,8 @@ val esStrings = Strings(
     drawHalfMovesCount = "La mitad de los movimientos cuentan",
     goUp = "Subir",
     goDown = "Bajar",
-    moveNumber = "Golpe número"
+    moveNumber = "Golpe número",
+    playerTurn = "Turno",
+    whiteTurn = "Blancos",
+    blackTurn = "Negros",
 )

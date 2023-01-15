@@ -1,8 +1,7 @@
 package screens
 
 import NumberPicker
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
@@ -46,7 +45,7 @@ private fun boardPositionFromPiecesValues(piecesValues: List<List<Char>>): Strin
         var groupedHoles = 0
 
         for (elem in line) {
-            if (elem.isDigit()) {
+            if (elem == emptyCell) {
                 groupedHoles++
             } else {
                 if (groupedHoles > 0) result += groupedHoles.toString()
@@ -86,10 +85,31 @@ fun EditPositionPage(
     var blackOOO by rememberSaveable { mutableStateOf(true) }
     var enPassantFile by rememberSaveable { mutableStateOf<Int?>(null) }
     var drawHalfMovesCount by rememberSaveable { mutableStateOf(0) }
-    var moveNumber by rememberSaveable{ mutableStateOf(1) }
+    var moveNumber by rememberSaveable { mutableStateOf(1) }
+    var whiteTurn by rememberSaveable { mutableStateOf(true) }
+    var currentFen by rememberSaveable { mutableStateOf(defaultPosition) }
+
+    fun getPositionFen(): String {
+        val boardPart = boardPositionFromPiecesValues(piecesValues)
+        val playerPart = if (whiteTurn) "w" else "b"
+        var castleParts = ""
+        if (whiteOO) castleParts += "K"
+        if (whiteOOO) castleParts += "Q"
+        if (blackOO) castleParts += "k"
+        if (blackOOO) castleParts += "q"
+        if (castleParts.isEmpty()) castleParts = "-"
+
+        val enPassantPart = if (enPassantFile != null) {
+            val rank = if (whiteTurn) 6 else 3
+            val file = ('a'.code + enPassantFile!!).toChar()
+            "$file$rank"
+        } else "-"
+
+        return "$boardPart $playerPart $castleParts $enPassantPart $drawHalfMovesCount $moveNumber"
+    }
 
     fun onValidate() {
-        // TODO set start position and goto game page
+        // TODO set start position if valid and goto game page
     }
 
     fun onCancel() {
@@ -153,11 +173,13 @@ fun EditPositionPage(
                         onCancelPromotion = { },
                         onCellClick = { file, rank ->
                             piecesValues = piecesValues.replace(7 - rank, file, currentEditingPiece)
+                            currentFen = getPositionFen()
                         }
                     )
                 }
 
                 PositionEditingControls(
+                    modifier = Modifier.padding(start = 5.dp),
                     currentEditingPiece = currentEditingPiece,
                     hasWhiteOO = whiteOO,
                     hasWhiteOOO = whiteOOO,
@@ -166,30 +188,44 @@ fun EditPositionPage(
                     selectedEnPassantFile = enPassantFile,
                     drawHalfMovesCount = drawHalfMovesCount,
                     moveNumber = moveNumber,
+                    isWhiteTurn = whiteTurn,
+                    currentFen = currentFen,
                     onEditingPieceChange = { newPiece ->
                         currentEditingPiece = newPiece
+                        currentFen = getPositionFen()
                     },
                     onWhiteOOChange = {
                         whiteOO = it
+                        currentFen = getPositionFen()
                     },
                     onWhiteOOOChange = {
                         whiteOOO = it
+                        currentFen = getPositionFen()
                     },
                     onBlackOOChange = {
                         blackOO = it
+                        currentFen = getPositionFen()
                     },
                     onBlackOOOChange = {
                         blackOOO = it
+                        currentFen = getPositionFen()
                     },
                     onEnPassantSelection = {
                         enPassantFile = it
+                        currentFen = getPositionFen()
                     },
                     onDrawHalfMovesCountChange = {
                         drawHalfMovesCount = it
+                        currentFen = getPositionFen()
                     },
                     onMoveNumberChange = {
                         moveNumber = it
-                    }
+                        currentFen = getPositionFen()
+                    },
+                    onWhiteTurnChange = {
+                        whiteTurn = it
+                        currentFen = getPositionFen()
+                    },
                 )
             }
 
@@ -212,6 +248,7 @@ fun EditPositionPage(
 @Composable
 fun PositionEditingControls(
     modifier: Modifier = Modifier,
+    currentFen: String,
     currentEditingPiece: Char,
     hasWhiteOO: Boolean,
     hasWhiteOOO: Boolean,
@@ -220,6 +257,7 @@ fun PositionEditingControls(
     selectedEnPassantFile: Int?,
     drawHalfMovesCount: Int,
     moveNumber: Int,
+    isWhiteTurn: Boolean,
     onEditingPieceChange: (Char) -> Unit,
     onWhiteOOChange: (Boolean) -> Unit,
     onWhiteOOOChange: (Boolean) -> Unit,
@@ -228,11 +266,17 @@ fun PositionEditingControls(
     onEnPassantSelection: (Int?) -> Unit,
     onDrawHalfMovesCountChange: (Int) -> Unit,
     onMoveNumberChange: (Int) -> Unit,
+    onWhiteTurnChange: (Boolean) -> Unit,
 ) {
     val strings = LocalStrings.current
     var enPassantMenuExpanded by rememberSaveable { mutableStateOf(false) }
     val enPassantValues = listOf(noEnPassant, "a", "b", "c", "d", "e", "f", "g", "h")
-    Column(modifier = modifier.fillMaxSize()) {
+    val scrollState = rememberScrollState()
+    Column(
+        modifier = modifier.fillMaxSize().verticalScroll(scrollState),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(currentFen, modifier = Modifier.background(Color.Gray))
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceAround,
@@ -383,6 +427,27 @@ fun PositionEditingControls(
                 onStateChanged = onMoveNumberChange,
                 range = 1..Int.MAX_VALUE,
             )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(strings.playerTurn)
+            RadioButton(
+                modifier = Modifier.padding(start = 10.dp),
+                selected = isWhiteTurn,
+                onClick = { onWhiteTurnChange(true) }
+            )
+            Text(strings.whiteTurn)
+            RadioButton(
+                modifier = Modifier.padding(start = 10.dp),
+                selected = !isWhiteTurn,
+                onClick = { onWhiteTurnChange(false) }
+            )
+            Text(strings.blackTurn)
+
         }
     }
 }

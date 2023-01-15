@@ -7,3 +7,4 @@
 * Icon file has been downloaded from [Freepik](https://www.freepik.com) : https://www.freepik.com/free-vector/chess-game-isometric-concept_6883519.htm.
 * Using some of [Google Material icons](https://fonts.google.com/icons) 
 * Using some code from the [Accompanist](https://github.com/google/accompanist) project.
+* Using code from [a Gist](https://gist.github.com/vganin/a9a84653a9f48a2d669910fbd48e32d5).

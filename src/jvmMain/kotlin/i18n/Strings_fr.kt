@@ -73,4 +73,7 @@ val frStrings = Strings(
     goUp = "Monter",
     goDown = "Descendre",
     moveNumber = "Numéro coup",
+    playerTurn = "Trait",
+    whiteTurn = "Blancs",
+    blackTurn = "Noirs",
 )
