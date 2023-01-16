@@ -428,9 +428,14 @@ fun GamePage(
                         Text(strings.showComputerScoreEvaluation)
 
                         if (showCpuScoreEvaluation) {
+                            var color = Color.Blue
+                            if (cpuScoreEvaluation >= 1.0f) color = Color.Green
+                            if (cpuScoreEvaluation <= -1.0f) color = Color.Red
+
                             Text(
                                 modifier = Modifier.padding(start = 20.dp, end = 0.dp),
                                 text = cpuScoreEvaluation.toString(),
+                                color = color
                             )
                         }
                     }
