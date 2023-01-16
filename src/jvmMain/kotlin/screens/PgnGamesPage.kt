@@ -58,9 +58,14 @@ fun PgnGamesPage(
     }
 
     fun getGamesFromFile(): List<GameModel> {
-        val pgnReader =
-            PGNReader(FileInputStream(selectedFilePath), selectedFilePath)
-        return pgnReader.parseAll().toList()
+        return try {
+            val pgnReader =
+                PGNReader(FileInputStream(selectedFilePath), selectedFilePath)
+            pgnReader.parseAll().toList()
+        } catch (ex: Exception) {
+            println(ex)
+            listOf()
+        }
     }
 
     val games = getGamesFromFile()
