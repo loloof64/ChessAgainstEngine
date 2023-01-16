@@ -36,9 +36,14 @@ fun MainContent() {
                 navigation = navigation,
             )
 
-            is Screen.Game -> {
-                return@ChildStack GamePage(
+            is Screen.Game -> GamePage(
+                navigation = navigation,
+            )
+
+            is Screen.PgnGames -> {
+                PgnGamesPage(
                     navigation = navigation,
+                    selectedFilePath = screen.selectedPath,
                 )
             }
 
@@ -57,6 +62,9 @@ sealed class Screen : Parcelable {
 
     @Parcelize
     object EditPosition : Screen()
+
+    @Parcelize
+    data class PgnGames(val selectedPath: String) : Screen()
 
     @Parcelize
     object Options : Screen()

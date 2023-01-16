@@ -82,6 +82,16 @@ data class Strings(
     val eraseBoard: String,
     val copyFen: String,
     val pasteFen: String,
+    val playFromPgnFile: String,
+    val loadPgnPageTitle: String,
+    val pgnFileType: String,
+    val errorImportingSomePgnGames: String,
+    val gotoFirstGame: String,
+    val gotoPreviousGame: String,
+    val gotoNextGame: String,
+    val gotoLastGame: String,
+    val unknownPlayer: String,
+    val gamesCount: String,
 )
 
 val strings = mapOf(

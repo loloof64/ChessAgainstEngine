@@ -75,10 +75,10 @@ fun OptionsPage(
     }
 
     fun purposeSelectEnginePath() {
-        val fileChooser = JFileChooser().apply {
-            dialogTitle = strings.selectEnginePathDialogTitle
-            approveButtonText = strings.validate
-        }
+        val folder = PreferencesManager.loadEngineSelectionFolder()
+        val fileChooser = if (folder.isNotEmpty()) JFileChooser(folder) else JFileChooser()
+        fileChooser.dialogTitle = strings.selectEnginePathDialogTitle
+        fileChooser.approveButtonText = strings.validate
         val currentWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().activeWindow
         val actionResult = fileChooser.showOpenDialog(currentWindow)
         if (actionResult == JFileChooser.APPROVE_OPTION) {
@@ -87,6 +87,7 @@ fun OptionsPage(
             coroutineScope.launch(Dispatchers.Default) {
                 val isReallyEngine = testUCIEngine(result.absolutePath)
                 if (isReallyEngine) {
+                    PreferencesManager.saveEngineSelectionFolder(fileChooser.selectedFile.absolutePath)
                     enginePath = result.absolutePath
                 } else {
                     scaffoldState.snackbarHostState.showSnackbar(

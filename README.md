@@ -8,3 +8,4 @@
 * Using some of [Google Material icons](https://fonts.google.com/icons) 
 * Using some code from the [Accompanist](https://github.com/google/accompanist) project.
 * Using code from [a Gist](https://gist.github.com/vganin/a9a84653a9f48a2d669910fbd48e32d5).
+* Using code from [Chesspresso project](https://github.com/BernhardSeybold/Chesspresso).

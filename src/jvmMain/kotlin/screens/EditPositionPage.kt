@@ -28,6 +28,7 @@ import components.*
 import i18n.LocalStrings
 import logic.ChessGameManager
 import logic.defaultPosition
+import logic.positionFenToPiecesArray
 
 const val noEnPassant = "-"
 
@@ -47,18 +48,6 @@ fun String.isWellFormedFen(): Boolean {
     }
 
     return true
-}
-
-private fun positionFenToPiecesArray(positionFen: String): List<List<Char>> {
-    return positionFen.split(" ")[0].split('/').map { line ->
-        line.flatMap { value ->
-            if (value.isDigit()) {
-                List(value.digitToInt()) { emptyCell }
-            } else {
-                listOf(value)
-            }
-        }.toMutableList()
-    }.toMutableList()
 }
 
 private fun boardPositionFromPiecesValues(piecesValues: List<List<Char>>): String {
@@ -290,7 +279,7 @@ fun EditPositionPage(
                                     updateFields()
                                 }
                             } catch (ex: Exception) {
-                              println(ex)
+                                println(ex)
                             }
                         }
                     }

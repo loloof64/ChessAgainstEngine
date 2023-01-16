@@ -1,5 +1,7 @@
 package logic
 
+import components.emptyCell
+
 fun String.toFAN(forBlackTurn: Boolean): String {
     var result = this
     val referenceChars = "NBRQK".toCharArray()
@@ -27,4 +29,16 @@ fun String.toFAN(forBlackTurn: Boolean): String {
         result = "$firstPart$replacement$lastPart"
     }
     return result
+}
+
+fun positionFenToPiecesArray(positionFen: String): List<List<Char>> {
+    return positionFen.split(" ")[0].split('/').map { line ->
+        line.flatMap { value ->
+            if (value.isDigit()) {
+                List(value.digitToInt()) { emptyCell }
+            } else {
+                listOf(value)
+            }
+        }.toMutableList()
+    }.toMutableList()
 }

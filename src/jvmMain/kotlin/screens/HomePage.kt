@@ -15,6 +15,9 @@ import com.arkivanov.decompose.router.stack.push
 import i18n.LocalStrings
 import kotlinx.coroutines.launch
 import logic.*
+import java.awt.KeyboardFocusManager
+import javax.swing.JFileChooser
+import javax.swing.filechooser.FileNameExtensionFilter
 
 @Composable
 fun HomePage(
@@ -62,6 +65,23 @@ fun HomePage(
         }
     }
 
+    fun onLoadPgnClick() {
+        val folder = PreferencesManager.loadPgnFolder()
+        val fileChooser = if (folder.isNotEmpty()) JFileChooser(folder) else JFileChooser()
+        fileChooser.dialogTitle = strings.selectEnginePathDialogTitle
+        fileChooser.approveButtonText = strings.validate
+
+        val pgnFilter = FileNameExtensionFilter(strings.pgnFileType, "pgn")
+        val currentWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().activeWindow
+        fileChooser.addChoosableFileFilter(pgnFilter)
+        fileChooser.isAcceptAllFileFilterUsed = true
+        val actionResult = fileChooser.showOpenDialog(currentWindow)
+        if (actionResult == JFileChooser.APPROVE_OPTION) {
+            PreferencesManager.savePgnFolder(fileChooser.currentDirectory.absolutePath)
+            navigation.push(Screen.PgnGames(selectedPath = fileChooser.selectedFile.absolutePath))
+        }
+    }
+
     Scaffold(topBar = {
         TopAppBar(
             title = { Text(strings.homePageTitle) },
@@ -83,6 +103,10 @@ fun HomePage(
 
             Button(::onGoEditPositionPageClick) {
                 Text(strings.editStartPosition)
+            }
+
+            Button(::onLoadPgnClick) {
+                Text(strings.playFromPgnFile)
             }
         }
     }
