@@ -122,6 +122,7 @@ fun EditPositionPage(
     fun onValidate() {
         ChessGameManager.setStartPosition(currentFen)
         ChessGameManager.resetGame()
+        navigation.pop()
         navigation.push(Screen.Game)
     }
 
