@@ -105,7 +105,7 @@ fun NumberPicker(
                 updateValueOneStep(true)
             }) {
             Image(
-                painter = painterResource("icons/arrow_upward.svg"),
+                painter = painterResource("icons/arrow_left.svg"),
                 contentDescription = strings.goUp,
                 colorFilter = ColorFilter.tint(arrowColor)
             )
@@ -144,7 +144,7 @@ fun NumberPicker(
                 updateValueOneStep(false)
             }) {
             Image(
-                painter = painterResource("icons/arrow_downward.svg"),
+                painter = painterResource("icons/arrow_right.svg"),
                 contentDescription = strings.goDown,
                 colorFilter = ColorFilter.tint(arrowColor)
             )
