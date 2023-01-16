@@ -240,7 +240,7 @@ fun GamePage(
         chainCpuMoveIfAppropriated()
     }
     UciEngineChannel.setScoreCallback {
-        cpuScoreEvaluation = it
+        cpuScoreEvaluation = if (isWhiteTurn) it else -it
     }
 
     if (PreferencesManager.getEnginePath().isEmpty()) {
