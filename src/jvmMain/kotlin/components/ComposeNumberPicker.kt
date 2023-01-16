@@ -72,7 +72,7 @@ fun NumberPicker(
             orientation = Orientation.Horizontal,
             state = rememberDraggableState { deltaX ->
                 coroutineScope.launch {
-                    animatedOffset.snapTo(animatedOffset.value + deltaX)
+                    animatedOffset.snapTo(animatedOffset.value - deltaX)
                 }
             },
             onDragStopped = { velocity ->
