@@ -94,6 +94,7 @@ data class Strings(
     val saveGameInPgn: String,
     val selectSavePgnPathDialogTitle: String,
     val failedSavingPgnFile: String,
+    val pgnExported: String,
 )
 
 val strings = mapOf(

@@ -91,5 +91,6 @@ val enStrings = Strings(
     gamesCount = "games",
     saveGameInPgn = "Save game in PGN file",
     selectSavePgnPathDialogTitle = "Select save PGN file",
-    failedSavingPgnFile = "Failed saving PGN file."
+    failedSavingPgnFile = "Failed saving PGN file.",
+    pgnExported = "Exported game as PGN."
 )

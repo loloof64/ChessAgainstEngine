@@ -91,5 +91,6 @@ val frStrings = Strings(
     gamesCount = "parties",
     saveGameInPgn = "Enregistrer la partie dans un fichier PGN",
     selectSavePgnPathDialogTitle = "Sélectionner le fichier PGN de sauvegarde",
-    failedSavingPgnFile = "Echec de sauvegarde du fichier PGN."
+    failedSavingPgnFile = "Echec de sauvegarde du fichier PGN.",
+    pgnExported = "Partie exportée en tant que PGN."
 )

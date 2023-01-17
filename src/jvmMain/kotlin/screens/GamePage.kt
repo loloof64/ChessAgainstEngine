@@ -14,12 +14,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import chesspresso.Chess
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.push
 import components.*
 import i18n.LocalStrings
+import io.github.wolfraam.chessgame.board.Square
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -27,7 +27,6 @@ import logic.ChessGameManager
 import logic.PreferencesManager
 import logic.UciEngineChannel
 import java.awt.KeyboardFocusManager
-import java.io.FileOutputStream
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
 
@@ -236,7 +235,14 @@ fun GamePage(
             PreferencesManager.saveSavePgnFolder(fileChooser.currentDirectory.absolutePath)
             val selectedFile = fileChooser.selectedFile
             try {
-                ChessGameManager.writePGNTo(FileOutputStream(selectedFile))
+                ChessGameManager.exportAsPgn(selectedFile)
+                coroutineScope.launch {
+                    scaffoldState.snackbarHostState.showSnackbar(
+                        message = strings.pgnExported,
+                        actionLabel = strings.close,
+                        duration = SnackbarDuration.Long,
+                    )
+                }
             } catch (ex: Exception) {
                 println(ex)
                 coroutineScope.launch {
@@ -361,8 +367,8 @@ fun GamePage(
                                 blackPlayerType = blackPlayerType,
                                 lastMoveArrow = lastMoveArrow,
                                 pendingPromotion = pendingPromotion,
-                                pendingPromotionStartSquare = pendingPromotionStartSquare?.toInt(),
-                                pendingPromotionEndSquare = pendingPromotionEndSquare?.toInt(),
+                                pendingPromotionStartSquare = pendingPromotionStartSquare,
+                                pendingPromotionEndSquare = pendingPromotionEndSquare,
                                 gameInProgress = gameInProgress,
                                 onCheckmate = ::onCheckmate,
                                 onStalemate = ::onStalemate,
@@ -401,8 +407,8 @@ fun GamePage(
                                     blackPlayerType = blackPlayerType,
                                     lastMoveArrow = lastMoveArrow,
                                     pendingPromotion = pendingPromotion,
-                                    pendingPromotionStartSquare = pendingPromotionStartSquare?.toInt(),
-                                    pendingPromotionEndSquare = pendingPromotionEndSquare?.toInt(),
+                                    pendingPromotionStartSquare = pendingPromotionStartSquare,
+                                    pendingPromotionEndSquare = pendingPromotionEndSquare,
                                     gameInProgress = gameInProgress,
                                     onCheckmate = ::onCheckmate,
                                     onStalemate = ::onStalemate,
@@ -522,8 +528,8 @@ private fun ChessBoardComponent(
     blackPlayerType: PlayerType,
     lastMoveArrow: LastMoveArrow?,
     pendingPromotion: PendingPromotion,
-    pendingPromotionStartSquare: Int?,
-    pendingPromotionEndSquare: Int?,
+    pendingPromotionStartSquare: Square?,
+    pendingPromotionEndSquare: Square?,
     onCheckmate: (Boolean) -> Unit,
     onStalemate: () -> Unit,
     onThreeFoldRepetition: () -> Unit,
@@ -539,18 +545,10 @@ private fun ChessBoardComponent(
         blackPlayerType = blackPlayerType,
         lastMoveArrow = lastMoveArrow,
         pendingPromotion = pendingPromotion,
-        pendingPromotionStartFile = pendingPromotionStartSquare?.let {
-            Chess.sqiToCol(it)
-        },
-        pendingPromotionStartRank = pendingPromotionStartSquare?.let {
-            Chess.sqiToRow(it)
-        },
-        pendingPromotionEndFile = pendingPromotionEndSquare?.let {
-            Chess.sqiToCol(it)
-        },
-        pendingPromotionEndRank = pendingPromotionEndSquare?.let {
-            Chess.sqiToRow(it)
-        },
+        pendingPromotionStartFile = pendingPromotionStartSquare?.x,
+        pendingPromotionStartRank = pendingPromotionStartSquare?.y,
+        pendingPromotionEndFile = pendingPromotionEndSquare?.x,
+        pendingPromotionEndRank = pendingPromotionEndSquare?.y,
         tryPlayingMove = { dragAndDropData ->
             if (!gameInProgress) return@ChessBoard
             ChessGameManager.playMove(
