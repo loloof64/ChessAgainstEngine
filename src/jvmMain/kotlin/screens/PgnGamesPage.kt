@@ -16,13 +16,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.pop
+import com.arkivanov.decompose.router.stack.push
 import components.ChessBoard
 import components.PendingPromotion
 import components.PlayerType
 import i18n.LocalStrings
-import chesspresso.game.GameModel
-import chesspresso.pgn.PGNReader
-import com.arkivanov.decompose.router.stack.push
+import io.github.wolfraam.chessgame.ChessGame
+import io.github.wolfraam.chessgame.pgn.PGNImporter
+import io.github.wolfraam.chessgame.pgn.PgnTag
 import kotlinx.coroutines.launch
 import logic.ChessGameManager
 import logic.defaultPosition
@@ -38,7 +39,7 @@ fun PgnGamesPage(
     val strings = LocalStrings.current
     val coroutineScope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState()
-    var allGames by rememberSaveable { mutableStateOf<List<GameModel>>(listOf()) }
+    var allGames by rememberSaveable { mutableStateOf<List<ChessGame>>(listOf()) }
     var currentGameIndex by rememberSaveable { mutableStateOf(0) }
     var currentFen by rememberSaveable { mutableStateOf(defaultPosition) }
     var whitePlayer by rememberSaveable { mutableStateOf("") }
@@ -50,21 +51,38 @@ fun PgnGamesPage(
 
     fun loadDataFromCurrentGame() {
         val currentGame = allGames[currentGameIndex]
-        val fenValue = currentGame.headerModel.getTag("FEN")
+        val fenValue = currentGame.getPgnTagValue(PgnTag.FEN)
         currentFen = fenValue?.ifEmpty { defaultPosition } ?: defaultPosition
-        whitePlayer = currentGame.headerModel.white.ifEmpty { strings.unknownPlayer }
-        blackPlayer = currentGame.headerModel.black.ifEmpty { strings.unknownPlayer }
+        whitePlayer = currentGame.getPgnTagValue(PgnTag.WHITE).ifEmpty { strings.unknownPlayer }
+        blackPlayer = currentGame.getPgnTagValue(PgnTag.BLACK).ifEmpty { strings.unknownPlayer }
     }
 
-    fun getGamesFromFile(): List<GameModel> {
-        return try {
-            val pgnReader =
-                PGNReader(FileInputStream(selectedFilePath), selectedFilePath)
-            pgnReader.parseAll().toList()
-        } catch (ex: Exception) {
-            println(ex)
-            listOf()
+    fun getGamesFromFile(): List<ChessGame> {
+        val result = mutableListOf<ChessGame>()
+        val errors = mutableListOf<String>()
+        val pgnImporter = PGNImporter()
+        pgnImporter.setOnGame {
+            result.add(it)
         }
+        pgnImporter.setOnError {
+            errors.add(it)
+        }
+        pgnImporter.setOnWarning {
+            println(it)
+        }
+        pgnImporter.run(FileInputStream(selectedFilePath))
+
+        if (errors.isNotEmpty()) {
+            coroutineScope.launch {
+                scaffoldState.snackbarHostState.showSnackbar(
+                    strings.errorImportingSomePgnGames,
+                    actionLabel = strings.close,
+                    duration = SnackbarDuration.Long
+                )
+            }
+        }
+
+        return result
     }
 
     val games = getGamesFromFile()
@@ -92,21 +110,10 @@ fun PgnGamesPage(
     }
 
     fun onValidate() {
-        try {
-            ChessGameManager.setStartPosition(currentFen)
-            ChessGameManager.resetGame()
-            navigation.pop()
-            navigation.push(Screen.Game)
-        }
-        catch (ex: IllegalArgumentException) {
-            coroutineScope.launch {
-                scaffoldState.snackbarHostState.showSnackbar(
-                    message = strings.wrongFEN,
-                    actionLabel = strings.close,
-                    duration = SnackbarDuration.Long,
-                )
-            }
-        }
+        ChessGameManager.setStartPosition(currentFen)
+        ChessGameManager.resetGame()
+        navigation.pop()
+        navigation.push(Screen.Game)
     }
 
     fun onCancel() {
@@ -216,7 +223,7 @@ fun PgnGamesPage(
                     modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically,
-                )  {
+                ) {
                     Button(::onValidate) {
                         Text(strings.validate)
                     }
