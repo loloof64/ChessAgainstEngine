@@ -13,8 +13,7 @@ val enStrings = Strings(
     editStartPosition = "From custom start position",
     swapBoardOrientation = "Swap board orientation",
     draggedPiece = "Dragged piece",
-    wrongFieldsCountFen = "The start position FEN has a wrong fields count.",
-    oppositeKingInCheckFen = "The start position FEN has opposite king in check.",
+    wrongFEN = "Illegal position (check all fields).",
     close = "Close",
     queenPromotion = "Queen promotion",
     rookPromotion = "Rook, promotion",
@@ -90,4 +89,7 @@ val enStrings = Strings(
     gotoLastGame = "Last game",
     unknownPlayer = "(Unknown)",
     gamesCount = "games",
+    saveGameInPgn = "Save game in PGN file",
+    selectSavePgnPathDialogTitle = "Select save PGN file",
+    failedSavingPgnFile = "Failed saving PGN file."
 )

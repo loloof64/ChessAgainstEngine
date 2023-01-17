@@ -18,8 +18,12 @@ object PreferencesManager {
         preferences.put("engineSelectionFolder", newPath)
     }
 
-    fun savePgnFolder(newPath: String) {
+    fun saveLoadPgnFolder(newPath: String) {
         preferences.put("currentPgnSelectionFolder", newPath)
+    }
+
+    fun saveSavePgnFolder(newPath: String) {
+        preferences.put("savePgnFolder", newPath)
     }
 
     fun getEnginePath(): String {
@@ -34,7 +38,11 @@ object PreferencesManager {
         return preferences.get("engineSelectionFolder", "")
     }
 
-    fun loadPgnFolder(): String {
+    fun loadLoadPgnFolder(): String {
         return preferences.get("currentPgnSelectionFolder", "")
+    }
+
+    fun loadSavePgnFolder(): String {
+        return preferences.get("savePgnFolder", "")
     }
 }

@@ -13,8 +13,7 @@ val frStrings = Strings(
     editStartPosition = "A partir position personnalisée",
     swapBoardOrientation = "Changer orientation échiquier",
     draggedPiece = "Pièce déplacée",
-    wrongFieldsCountFen = "Le code FEN de la position de départ n'a pas le nombre de champs requis.",
-    oppositeKingInCheckFen = "Le code fen de la position de départ a le roi adverse en échec.",
+    wrongFEN = "Position illégale (vérifier tous les champs).",
     close = "Fermer",
     queenPromotion = "Promotion dame",
     rookPromotion = "Promotion tour",
@@ -90,4 +89,7 @@ val frStrings = Strings(
     gotoLastGame = "Last game",
     unknownPlayer = "(Inconnu(e))",
     gamesCount = "parties",
+    saveGameInPgn = "Enregistrer la partie dans un fichier PGN",
+    selectSavePgnPathDialogTitle = "Sélectionner le fichier PGN de sauvegarde",
+    failedSavingPgnFile = "Echec de sauvegarde du fichier PGN."
 )

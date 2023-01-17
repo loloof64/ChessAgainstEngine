@@ -46,27 +46,19 @@ fun HomePage(
             ChessGameManager.setStartPosition(defaultPosition)
             ChessGameManager.resetGame()
             navigation.push(Screen.Game)
-        } catch (ex: WrongFieldsCountException) {
+        } catch (ex: IllegalArgumentException) {
             coroutineScope.launch {
                 scaffoldState.snackbarHostState.showSnackbar(
-                    message = strings.wrongFieldsCountFen,
+                    message = strings.wrongFEN,
                     actionLabel = strings.close,
                     duration = SnackbarDuration.Long,
-                )
-            }
-        } catch (ex: KingNotInTurnIsInCheck) {
-            coroutineScope.launch {
-                scaffoldState.snackbarHostState.showSnackbar(
-                    message = strings.oppositeKingInCheckFen,
-                    actionLabel = strings.close,
-                    duration = SnackbarDuration.Long
                 )
             }
         }
     }
 
     fun onLoadPgnClick() {
-        val folder = PreferencesManager.loadPgnFolder()
+        val folder = PreferencesManager.loadLoadPgnFolder()
         val fileChooser = if (folder.isNotEmpty()) JFileChooser(folder) else JFileChooser()
         fileChooser.dialogTitle = strings.selectEnginePathDialogTitle
         fileChooser.approveButtonText = strings.validate
@@ -77,7 +69,7 @@ fun HomePage(
         fileChooser.isAcceptAllFileFilterUsed = true
         val actionResult = fileChooser.showOpenDialog(currentWindow)
         if (actionResult == JFileChooser.APPROVE_OPTION) {
-            PreferencesManager.savePgnFolder(fileChooser.currentDirectory.absolutePath)
+            PreferencesManager.saveLoadPgnFolder(fileChooser.currentDirectory.absolutePath)
             navigation.push(Screen.PgnGames(selectedPath = fileChooser.selectedFile.absolutePath))
         }
     }

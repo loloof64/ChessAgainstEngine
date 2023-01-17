@@ -7,11 +7,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,8 +23,10 @@ import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.push
 import components.*
 import i18n.LocalStrings
+import kotlinx.coroutines.launch
 import logic.ChessGameManager
 import logic.defaultPosition
+import logic.emptyPosition
 import logic.positionFenToPiecesArray
 
 const val noEnPassant = "-"
@@ -87,6 +86,9 @@ fun EditPositionPage(
     val strings = LocalStrings.current
     val clipboardManager = LocalClipboardManager.current
 
+    val coroutineScope = rememberCoroutineScope()
+    val scaffoldState = rememberScaffoldState()
+
     var boardReversed by rememberSaveable { mutableStateOf(false) }
     var piecesValues by rememberSaveable { mutableStateOf(positionFenToPiecesArray(defaultPosition)) }
     var currentEditingPiece by rememberSaveable { mutableStateOf(emptyCell) }
@@ -120,10 +122,21 @@ fun EditPositionPage(
     }
 
     fun onValidate() {
-        ChessGameManager.setStartPosition(currentFen)
-        ChessGameManager.resetGame()
-        navigation.pop()
-        navigation.push(Screen.Game)
+        try {
+            ChessGameManager.setStartPosition(currentFen)
+            ChessGameManager.resetGame()
+            navigation.pop()
+            navigation.push(Screen.Game)
+        }
+        catch (ex: IllegalArgumentException) {
+            coroutineScope.launch {
+                scaffoldState.snackbarHostState.showSnackbar(
+                    message = strings.wrongFEN,
+                    actionLabel = strings.close,
+                    duration = SnackbarDuration.Long,
+                )
+            }
+        }
     }
 
     fun onCancel() {
@@ -151,6 +164,7 @@ fun EditPositionPage(
     }
 
     Scaffold(
+        scaffoldState = scaffoldState,
         topBar = {
             TopAppBar(
                 title = {
@@ -265,7 +279,7 @@ fun EditPositionPage(
                         updateFields()
                     },
                     onEraseBoard = {
-                        currentFen = "8/8/8/8/8/8/8/8 w - - 0 1"
+                        currentFen = emptyPosition
                         updateFields()
                     },
                     onCopyPositionFen = {

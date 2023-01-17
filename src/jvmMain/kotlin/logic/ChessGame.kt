@@ -3,20 +3,20 @@ package logic
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import chesspresso.Chess
+import chesspresso.game.Game
+import chesspresso.game.GameModel
+import chesspresso.move.IllegalMoveException
+import chesspresso.move.Move
+import chesspresso.pgn.PGNWriter
+import chesspresso.position.FEN
+import chesspresso.position.Position
 import components.*
-import io.github.wolfraam.chessgame.ChessGame
-import io.github.wolfraam.chessgame.board.PieceType
-import io.github.wolfraam.chessgame.board.Side
-import io.github.wolfraam.chessgame.board.Square
-import io.github.wolfraam.chessgame.move.IllegalMoveException
-import io.github.wolfraam.chessgame.move.Move
-import io.github.wolfraam.chessgame.notation.NotationType
-import io.github.wolfraam.chessgame.result.ChessGameResult
-import io.github.wolfraam.chessgame.result.ChessGameResultType
-import io.github.wolfraam.chessgame.result.DrawType
+import java.io.OutputStream
+import java.io.PrintWriter
 
 const val defaultPosition = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-const val emptyPosition = "k/8/8/8/8/8/8/K w - - 0 1"
+const val emptyPosition = "8/8/8/8/8/8/8/8 w - - 0 1"
 
 fun String.toLastMoveArrow(): LastMoveArrow {
     if (length < 4) throw IllegalMoveException("Not a uci chess move string : $this.")
@@ -44,12 +44,100 @@ fun LastMoveArrow.toMoveCoordinates(): MoveCoordinates {
     )
 }
 
+fun Position.playMove(uciMove: String) {
+    val startSquareIndex = Chess.strToSqi(uciMove.substring(0..1))
+    val endSquareIndex = Chess.strToSqi(uciMove.substring(2..3))
+    val promotionPiece = if (uciMove.length >= 5) Chess.charToPiece(uciMove[4]).toShort() else Chess.NO_PIECE
+
+    val matchingMove = getMove(startSquareIndex, endSquareIndex, promotionPiece.toInt())
+    if (matchingMove != Move.ILLEGAL_MOVE) {
+        doMove(matchingMove)
+    }
+}
+
+fun Position.getLegalMove(startSquareIndex: Int, endSquareIndex: Int, promotionPiece: Short) : Short? {
+    val legalMoves = allMoves
+    for (testedMove in legalMoves) {
+        val testedMoveStartSquareIndex = Move.getFromSqi(testedMove)
+        val testedMoveEndSquareIndex = Move.getToSqi(testedMove)
+        val testedMovePromotionPiece = Move.getPromotionPiece(testedMove)
+
+        val isMatchingMove = (startSquareIndex == testedMoveStartSquareIndex)
+                && (endSquareIndex == testedMoveEndSquareIndex)
+                && (promotionPiece.toInt() == testedMovePromotionPiece)
+        if (isMatchingMove) {
+            return testedMove
+        }
+    }
+    return null
+}
+
+fun Position.countPiece(type: Short): Int {
+    var count = 0
+    for (sqi in 0 until Chess.NUM_OF_SQUARES) {
+        if (getPiece(sqi) == type.toInt()) {
+            count++
+        }
+    }
+    return count
+}
+
+fun Position.firstSquareColorIsWhiteForPiece(type: Short): Boolean {
+    for (sqi in 0 until Chess.NUM_OF_SQUARES) {
+        if (getPiece(sqi) == type.toInt()) {
+            return Chess.isWhiteSquare(sqi)
+        }
+    }
+    throw IllegalArgumentException("Piece not found ($type) in position ${FEN.getFEN(this)}.")
+}
+
+fun Position.isMissingMatingMaterial(): Boolean {
+    val whiteQueensCount = countPiece(Chess.WHITE_QUEEN)
+    val blackQueensCount = countPiece(Chess.BLACK_QUEEN)
+    val whitePawnCount = countPiece(Chess.WHITE_PAWN)
+    val blackPawnCount = countPiece(Chess.BLACK_PAWN)
+    val whiteRookCount = countPiece(Chess.WHITE_ROOK)
+    val blackRookCount = countPiece(Chess.BLACK_ROOK)
+
+    val whiteKnightCount = countPiece(Chess.WHITE_KNIGHT)
+    val blackKnightCount = countPiece(Chess.BLACK_KNIGHT)
+    val whiteBishopCount = countPiece(Chess.WHITE_BISHOP)
+    val blackBishopCount = countPiece(Chess.BLACK_BISHOP)
+
+    if (whiteQueensCount > 0) return false
+    if (blackQueensCount > 0) return false
+    if (whiteRookCount > 0) return false
+    if (blackRookCount > 0) return false
+    if (whitePawnCount > 0) return false
+    if (blackPawnCount > 0) return false
+
+    val whiteKnightsAndBishops = whiteBishopCount + whiteKnightCount
+    val blackKnightsAndBishops = blackBishopCount + blackKnightCount
+
+    if (whiteKnightsAndBishops <= 2 && blackKnightsAndBishops <= 2) {
+        // king against king,
+        // king against king and bishop,
+        // king against king and knight
+        if ((whiteKnightsAndBishops == 0 && blackKnightsAndBishops <= 1)
+            || (whiteKnightsAndBishops <= 1 && blackKnightsAndBishops == 0)
+        ) {
+            return true
+        } else if (whiteBishopCount == 1 && blackBishopCount == 1) {
+            // king and bishop against king and bishop, with both bishops on squares of the same color
+            val whiteBishopSquareWhite = firstSquareColorIsWhiteForPiece(Chess.WHITE_BISHOP)
+            val blackBishopSquareWhite = firstSquareColorIsWhiteForPiece(Chess.BLACK_BISHOP)
+            return whiteBishopSquareWhite == blackBishopSquareWhite
+        }
+    }
+    return false
+}
+
 object ChessGameManager {
     private var _gameInProgress by mutableStateOf(false)
-    private var _gameLogic by mutableStateOf(ChessGame(emptyPosition))
+    private var _gameLogic by mutableStateOf(Game(GameModel()))
     private var _pendingPromotion by mutableStateOf(PendingPromotion.None)
-    private var _pendingPromotionStartSquare by mutableStateOf<Square?>(null)
-    private var _pendingPromotionEndSquare by mutableStateOf<Square?>(null)
+    private var _pendingPromotionStartSquare by mutableStateOf<Short?>(null)
+    private var _pendingPromotionEndSquare by mutableStateOf<Short?>(null)
     private var _lastMoveArrow by mutableStateOf<LastMoveArrow?>(null)
     private var _historyElements by mutableStateOf<MutableList<ChessHistoryItem>>(mutableListOf())
     private var _isFirstHistoryNode by mutableStateOf(false)
@@ -58,6 +146,7 @@ object ChessGameManager {
     private var _startPosition by mutableStateOf(defaultPosition)
     private var _whitePlayerType by mutableStateOf(PlayerType.Human)
     private var _blackPlayerType by mutableStateOf(PlayerType.Human)
+    private var _occurrences by mutableStateOf(mutableMapOf<String, Int>())
 
     fun processEngineMove(
         uciMove: String,
@@ -68,10 +157,12 @@ object ChessGameManager {
         onFiftyMovesRuleDraw: () -> Unit
     ) {
         try {
-            _positionFenBeforeLastMove = _gameLogic.fen
-            _gameLogic.playMove(NotationType.UCI, uciMove)
+            _positionFenBeforeLastMove = FEN.getFEN(_gameLogic.position)
+            _gameLogic.position.playMove(uciMove)
             _lastMoveArrow = uciMove.toLastMoveArrow()
             addMoveToHistory(_lastMoveArrow!!.toMoveCoordinates())
+            _occurrences[FEN.getFEN(_gameLogic.position)] =
+                if (_occurrences[FEN.getFEN(_gameLogic.position)] == null) 1 else _occurrences[FEN.getFEN(_gameLogic.position)]!!.inc()
             handleGameEndingStatus(
                 onCheckmate = onCheckmate,
                 onStalemate = onStalemate,
@@ -85,10 +176,10 @@ object ChessGameManager {
         }
     }
 
-    fun getCurrentPosition(): String = _gameLogic.fen
+    fun getCurrentPosition(): String = FEN.getFEN(_gameLogic.position)
 
     fun getPieces(): List<List<Char>> {
-        val positionFen = _gameLogic.fen
+        val positionFen = FEN.getFEN(_gameLogic.position)
         val lineParts = positionFen.split(" ")[0].split('/')
 
         return lineParts.map { line ->
@@ -122,20 +213,25 @@ object ChessGameManager {
 
     fun getPendingPromotion(): PendingPromotion = _pendingPromotion
 
-    fun getPendingPromotionStartSquare(): Square? = _pendingPromotionStartSquare
+    fun getPendingPromotionStartSquare(): Short? = _pendingPromotionStartSquare
 
-    fun getPendingPromotionEndSquare(): Square? = _pendingPromotionEndSquare
+    fun getPendingPromotionEndSquare(): Short? = _pendingPromotionEndSquare
 
     fun getSelectedHistoryNodeIndex(): Int? = _selectedNodeIndex
 
     fun isWhiteTurn(): Boolean {
-        val positionFen = _gameLogic.fen
+        val positionFen = FEN.getFEN(_gameLogic.position)
         return positionFen.split(" ")[1] == "w"
     }
 
     fun setStartPosition(startPosition: String) {
-        startPosition.testIfIsLegalChessFen()
-        _startPosition = startPosition
+        try {
+            val testGame = Game(GameModel())
+            FEN.initFromFEN(testGame.position, startPosition, true)
+            _startPosition = startPosition
+        } catch (ex: IllegalArgumentException) {
+            println(ex)
+        }
     }
 
     fun stopGame() {
@@ -145,10 +241,17 @@ object ChessGameManager {
         selectLastHistoryMoveNodeIfAny()
     }
 
+    fun writePGNTo(outStream: OutputStream) {
+        val writer = PGNWriter(PrintWriter(outStream))
+        writer.write(_gameLogic.model)
+    }
+
     fun resetGame() {
-        _gameLogic = ChessGame(_startPosition)
-        val isWhiteTurn = _gameLogic.sideToMove == Side.WHITE
-        val moveNumber = _gameLogic.fullMoveCount
+        loadPosition(_startPosition)
+        val isWhiteTurn = _gameLogic.position.toPlay == Chess.WHITE
+        val moveNumber = Chess.plyToMoveNumber(_gameLogic.position.plyNumber)
+        _occurrences = mutableMapOf()
+        _occurrences[_startPosition] = 1
         _whitePlayerType = PlayerType.Human
         _blackPlayerType = PlayerType.Human
         _historyElements = mutableListOf()
@@ -172,13 +275,15 @@ object ChessGameManager {
         onInsufficientMaterial: () -> Unit,
         onFiftyMovesRuleDraw: () -> Unit
     ) {
-        val startSquare = Square.values()[8 * startFile + startRank]
-        val endSquare = Square.values()[8 * endFile + endRank]
-        val move = Move(startSquare, endSquare)
+        val startSquareIndex = Chess.coorToSqi(startFile, startRank)
+        val endSquareIndex = Chess.coorToSqi(endFile, endRank)
 
-        if (_gameLogic.isLegalMove(move)) {
-            _positionFenBeforeLastMove = _gameLogic.fen
-            _gameLogic.playMove(move)
+        val moveWithoutPromotion = _gameLogic.position.getLegalMove(startSquareIndex, endSquareIndex, Chess.NO_PIECE)
+        val moveWithPromotion = _gameLogic.position.getLegalMove(startSquareIndex, endSquareIndex, Chess.QUEEN)
+
+        if (moveWithoutPromotion != null) {
+            _positionFenBeforeLastMove = FEN.getFEN(_gameLogic.position)
+            _gameLogic.position.doMove(moveWithoutPromotion)
             addMoveToHistory(
                 MoveCoordinates(
                     startFile = startFile,
@@ -193,6 +298,8 @@ object ChessGameManager {
                 endFile = endFile,
                 endRank = endRank
             )
+            _occurrences[FEN.getFEN(_gameLogic.position)] =
+                if (_occurrences[FEN.getFEN(_gameLogic.position)] == null) 1 else _occurrences[FEN.getFEN(_gameLogic.position)]!!.inc()
             handleGameEndingStatus(
                 onCheckmate = onCheckmate,
                 onStalemate = onStalemate,
@@ -201,12 +308,10 @@ object ChessGameManager {
                 onFiftyMovesRuleDraw = onFiftyMovesRuleDraw,
             )
         } else {
-            val isLegalPromotionMove = _gameLogic.isLegalMove(Move(startSquare, endSquare, PieceType.QUEEN))
-
-            if (isLegalPromotionMove) {
+            if (moveWithPromotion != null) {
                 _pendingPromotion = if (isWhiteTurn()) PendingPromotion.White else PendingPromotion.Black
-                _pendingPromotionStartSquare = startSquare
-                _pendingPromotionEndSquare = endSquare
+                _pendingPromotionStartSquare = startSquareIndex.toShort()
+                _pendingPromotionEndSquare = endSquareIndex.toShort()
             }
         }
     }
@@ -227,33 +332,41 @@ object ChessGameManager {
     ) {
         if (_pendingPromotion == PendingPromotion.None) return
         val promotionPiece = when (pieceType) {
-            PromotionType.Queen -> PieceType.QUEEN
-            PromotionType.Rook -> PieceType.ROOK
-            PromotionType.Bishop -> PieceType.BISHOP
-            PromotionType.Knight -> PieceType.KNIGHT
+            PromotionType.Queen -> Chess.QUEEN
+            PromotionType.Rook -> Chess.ROOK
+            PromotionType.Bishop -> Chess.BISHOP
+            PromotionType.Knight -> Chess.KNIGHT
         }
-        val move = Move(_pendingPromotionStartSquare, _pendingPromotionEndSquare, promotionPiece)
-        if (_gameLogic.isLegalMove(move)) {
-            _positionFenBeforeLastMove = _gameLogic.fen
-            _gameLogic.playMove(move)
+        val matchingMove = _gameLogic.position.getLegalMove(
+            _pendingPromotionStartSquare!!.toInt(),
+            _pendingPromotionEndSquare!!.toInt(),
+            promotionPiece
+        )
+        if (matchingMove != null) {
+            _positionFenBeforeLastMove = FEN.getFEN(_gameLogic.position)
+            _gameLogic.position.doMove(matchingMove)
             addMoveToHistory(
                 MoveCoordinates(
-                    startFile = _pendingPromotionStartSquare!!.x,
-                    startRank = _pendingPromotionStartSquare!!.y,
-                    endFile = _pendingPromotionEndSquare!!.x,
-                    endRank = _pendingPromotionEndSquare!!.y
+                    startFile = Chess.sqiToCol(_pendingPromotionStartSquare!!.toInt()),
+                    startRank = Chess.sqiToRow(_pendingPromotionStartSquare!!.toInt()),
+                    endFile = Chess.sqiToCol(_pendingPromotionEndSquare!!.toInt()),
+                    endRank = Chess.sqiToRow(_pendingPromotionEndSquare!!.toInt())
                 )
             )
+
+            _lastMoveArrow = LastMoveArrow(
+                startFile = Chess.sqiToCol(_pendingPromotionStartSquare!!.toInt()),
+                startRank = Chess.sqiToRow(_pendingPromotionStartSquare!!.toInt()),
+                endFile = Chess.sqiToCol(_pendingPromotionEndSquare!!.toInt()),
+                endRank = Chess.sqiToRow(_pendingPromotionEndSquare!!.toInt())
+            )
+
             _pendingPromotion = PendingPromotion.None
             _pendingPromotionStartSquare = null
             _pendingPromotionEndSquare = null
 
-            _lastMoveArrow = LastMoveArrow(
-                startFile = move.from.x,
-                startRank = move.from.y,
-                endFile = move.to.x,
-                endRank = move.to.y
-            )
+            _occurrences[FEN.getFEN(_gameLogic.position)] =
+                if (_occurrences[FEN.getFEN(_gameLogic.position)] == null) 1 else _occurrences[FEN.getFEN(_gameLogic.position)]!!.inc()
 
 
             handleGameEndingStatus(
@@ -268,7 +381,7 @@ object ChessGameManager {
 
     fun requestPosition(positionFen: String, moveCoordinates: MoveCoordinates, nodeToSelectIndex: Int): Boolean {
         if (_gameInProgress) return false
-        _gameLogic = ChessGame(positionFen)
+        loadPosition(positionFen)
         _lastMoveArrow = LastMoveArrow(
             startFile = moveCoordinates.startFile,
             startRank = moveCoordinates.startRank,
@@ -279,12 +392,17 @@ object ChessGameManager {
         return true
     }
 
+    private fun loadPosition(positionFen: String) {
+        _gameLogic = Game(GameModel())
+        FEN.initFromFEN(_gameLogic.position, positionFen, true)
+    }
+
     fun requestGotoPreviousHistoryNode(): Boolean {
         if (_gameInProgress) return false
         if (_selectedNodeIndex == null) return false
         return if (requestBackOneMove()) {
             val currentHistoryNode = _historyElements[_selectedNodeIndex!!] as ChessHistoryItem.MoveItem
-            _gameLogic = ChessGame(currentHistoryNode.positionFen)
+            loadPosition(currentHistoryNode.positionFen)
             _lastMoveArrow = LastMoveArrow(
                 startFile = currentHistoryNode.movesCoordinates.startFile,
                 startRank = currentHistoryNode.movesCoordinates.startRank,
@@ -293,7 +411,7 @@ object ChessGameManager {
             )
             true
         } else {
-            _gameLogic = ChessGame(_startPosition)
+            loadPosition(_startPosition)
             _selectedNodeIndex = null
             _lastMoveArrow = null
             true
@@ -329,7 +447,7 @@ object ChessGameManager {
         if (_historyElements[newSelectedNodeIndex] !is ChessHistoryItem.MoveItem) return false
         _selectedNodeIndex = newSelectedNodeIndex
         val currentHistoryNode = _historyElements[newSelectedNodeIndex] as ChessHistoryItem.MoveItem
-        _gameLogic = ChessGame(currentHistoryNode.positionFen)
+        loadPosition(currentHistoryNode.positionFen)
         _lastMoveArrow = LastMoveArrow(
             startFile = currentHistoryNode.movesCoordinates.startFile,
             startRank = currentHistoryNode.movesCoordinates.startRank,
@@ -356,24 +474,22 @@ object ChessGameManager {
     }
 
     private fun addMoveToHistory(moveCoordinates: MoveCoordinates) {
-        val lastMove: Move? = _gameLogic.lastMove
-        val isWhiteTurnBeforeMove = _gameLogic.sideToMove == Side.BLACK
+        val lastMove: Move = _gameLogic.lastMove
+        val isWhiteTurnBeforeMove = _gameLogic.position.toPlay == Chess.BLACK
         val needingToAddMoveNumber = isWhiteTurnBeforeMove && !_isFirstHistoryNode
 
         if (needingToAddMoveNumber) {
             _historyElements.add(
                 ChessHistoryItem.MoveNumberItem(
-                    number = _gameLogic.fullMoveCount,
+                    number = Chess.plyToMoveNumber(_gameLogic.position.plyNumber),
                     isWhiteTurn = true,
                 )
             )
         }
 
-        val gameLogicBeforeMove = ChessGame(_positionFenBeforeLastMove)
-        val moveSan = gameLogicBeforeMove.getNotation(NotationType.SAN, lastMove)
         _historyElements.add(
             ChessHistoryItem.MoveItem(
-                san = moveSan, positionFen = _gameLogic.fen, isWhiteMove = isWhiteTurnBeforeMove,
+                san = lastMove.san, positionFen = FEN.getFEN(_gameLogic.position), isWhiteMove = isWhiteTurnBeforeMove,
                 movesCoordinates = moveCoordinates,
             )
         )
@@ -387,65 +503,48 @@ object ChessGameManager {
         onInsufficientMaterial: () -> Unit,
         onFiftyMovesRuleDraw: () -> Unit,
     ) {
-        val gameResult: ChessGameResult? = _gameLogic.gameResult
-        when (gameResult?.chessGameResultType) {
-            ChessGameResultType.WHITE_WINS -> {
+        if (_gameLogic.position.isMate) {
+            if (_gameLogic.position.toPlay == Chess.BLACK) {
                 _gameInProgress = false
                 _whitePlayerType = PlayerType.None
                 _blackPlayerType = PlayerType.None
                 selectLastHistoryMoveNodeIfAny()
                 onCheckmate(true)
-            }
-
-            ChessGameResultType.BLACK_WINS -> {
+            } else {
                 _gameInProgress = false
                 _whitePlayerType = PlayerType.None
                 _blackPlayerType = PlayerType.None
                 selectLastHistoryMoveNodeIfAny()
                 onCheckmate(false)
             }
-
-            ChessGameResultType.DRAW -> {
-                when (gameResult.drawType) {
-                    DrawType.STALE_MATE -> {
-                        _gameInProgress = false
-                        _whitePlayerType = PlayerType.None
-                        _blackPlayerType = PlayerType.None
-                        selectLastHistoryMoveNodeIfAny()
-                        onStalemate()
-                    }
-
-                    DrawType.THREEFOLD_REPETITION -> {
-                        _gameInProgress = false
-                        _whitePlayerType = PlayerType.None
-                        _blackPlayerType = PlayerType.None
-                        selectLastHistoryMoveNodeIfAny()
-                        onThreeFoldsRepetition()
-                    }
-
-                    DrawType.INSUFFICIENT_MATERIAL -> {
-                        _gameInProgress = false
-                        _whitePlayerType = PlayerType.None
-                        _blackPlayerType = PlayerType.None
-                        selectLastHistoryMoveNodeIfAny()
-                        onInsufficientMaterial()
-                    }
-
-                    DrawType.FIFTY_MOVE_RULE -> {
-                        _gameInProgress = false
-                        _whitePlayerType = PlayerType.None
-                        _blackPlayerType = PlayerType.None
-                        selectLastHistoryMoveNodeIfAny()
-                        onFiftyMovesRuleDraw()
-                    }
-
-                    else -> throw RuntimeException("Not in a draw state.")
-                }
-            }
-
-            else -> {}
+        } else if (_gameLogic.position.isStaleMate) {
+            _gameInProgress = false
+            _whitePlayerType = PlayerType.None
+            _blackPlayerType = PlayerType.None
+            selectLastHistoryMoveNodeIfAny()
+            onStalemate()
+        } else if (_occurrences[FEN.getFEN(_gameLogic.position)]!! >= 3) {
+            _gameInProgress = false
+            _whitePlayerType = PlayerType.None
+            _blackPlayerType = PlayerType.None
+            selectLastHistoryMoveNodeIfAny()
+            onThreeFoldsRepetition()
+        } else if (_gameLogic.position.isMissingMatingMaterial()) {
+            _gameInProgress = false
+            _whitePlayerType = PlayerType.None
+            _blackPlayerType = PlayerType.None
+            selectLastHistoryMoveNodeIfAny()
+            onInsufficientMaterial()
+        } else if (_gameLogic.position.isTerminal) {
+            _gameInProgress = false
+            _whitePlayerType = PlayerType.None
+            _blackPlayerType = PlayerType.None
+            selectLastHistoryMoveNodeIfAny()
+            onFiftyMovesRuleDraw()
         }
+
     }
+
 
     private fun selectLastHistoryMoveNodeIfAny() {
         var lastHistoryMoveNodeIndex = _historyElements.size - 1

@@ -6,11 +6,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,6 +23,7 @@ import i18n.LocalStrings
 import chesspresso.game.GameModel
 import chesspresso.pgn.PGNReader
 import com.arkivanov.decompose.router.stack.push
+import kotlinx.coroutines.launch
 import logic.ChessGameManager
 import logic.defaultPosition
 import logic.positionFenToPiecesArray
@@ -38,6 +36,7 @@ fun PgnGamesPage(
     selectedFilePath: String,
 ) {
     val strings = LocalStrings.current
+    val coroutineScope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState()
     var allGames by rememberSaveable { mutableStateOf<List<GameModel>>(listOf()) }
     var currentGameIndex by rememberSaveable { mutableStateOf(0) }
@@ -93,10 +92,21 @@ fun PgnGamesPage(
     }
 
     fun onValidate() {
-        ChessGameManager.setStartPosition(currentFen)
-        ChessGameManager.resetGame()
-        navigation.pop()
-        navigation.push(Screen.Game)
+        try {
+            ChessGameManager.setStartPosition(currentFen)
+            ChessGameManager.resetGame()
+            navigation.pop()
+            navigation.push(Screen.Game)
+        }
+        catch (ex: IllegalArgumentException) {
+            coroutineScope.launch {
+                scaffoldState.snackbarHostState.showSnackbar(
+                    message = strings.wrongFEN,
+                    actionLabel = strings.close,
+                    duration = SnackbarDuration.Long,
+                )
+            }
+        }
     }
 
     fun onCancel() {

@@ -15,8 +15,7 @@ data class Strings(
     val editStartPosition: String,
     val swapBoardOrientation: String,
     val draggedPiece: String,
-    val wrongFieldsCountFen: String,
-    val oppositeKingInCheckFen: String,
+    val wrongFEN: String,
     val close: String,
     val queenPromotion: String,
     val rookPromotion: String,
@@ -92,6 +91,9 @@ data class Strings(
     val gotoLastGame: String,
     val unknownPlayer: String,
     val gamesCount: String,
+    val saveGameInPgn: String,
+    val selectSavePgnPathDialogTitle: String,
+    val failedSavingPgnFile: String,
 )
 
 val strings = mapOf(

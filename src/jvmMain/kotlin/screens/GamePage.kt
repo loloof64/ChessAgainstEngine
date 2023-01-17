@@ -14,18 +14,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import chesspresso.Chess
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.push
 import components.*
 import i18n.LocalStrings
-import io.github.wolfraam.chessgame.board.Square
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import logic.ChessGameManager
 import logic.PreferencesManager
 import logic.UciEngineChannel
+import java.awt.KeyboardFocusManager
+import java.io.FileOutputStream
+import javax.swing.JFileChooser
+import javax.swing.filechooser.FileNameExtensionFilter
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -216,6 +220,36 @@ fun GamePage(
         }
     }
 
+    fun purposeSaveGameInPgnFile() {
+        if (gameInProgress) return
+        val folder = PreferencesManager.loadSavePgnFolder()
+        val fileChooser = if (folder.isNotEmpty()) JFileChooser(folder) else JFileChooser()
+        fileChooser.dialogTitle = strings.selectSavePgnPathDialogTitle
+        fileChooser.approveButtonText = strings.validate
+
+        val pgnFilter = FileNameExtensionFilter(strings.pgnFileType, "pgn")
+        val currentWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().activeWindow
+        fileChooser.addChoosableFileFilter(pgnFilter)
+        fileChooser.isAcceptAllFileFilterUsed = true
+        val actionResult = fileChooser.showSaveDialog(currentWindow)
+        if (actionResult == JFileChooser.APPROVE_OPTION) {
+            PreferencesManager.saveSavePgnFolder(fileChooser.currentDirectory.absolutePath)
+            val selectedFile = fileChooser.selectedFile
+            try {
+                ChessGameManager.writePGNTo(FileOutputStream(selectedFile))
+            } catch (ex: Exception) {
+                println(ex)
+                coroutineScope.launch {
+                    scaffoldState.snackbarHostState.showSnackbar(
+                        message = strings.failedSavingPgnFile,
+                        actionLabel = strings.close,
+                        duration = SnackbarDuration.Long,
+                    )
+                }
+            }
+        }
+    }
+
     UciEngineChannel.setBestMoveCallback {
         if (!engineIsThinking) return@setBestMoveCallback
         ChessGameManager.processEngineMove(
@@ -293,6 +327,16 @@ fun GamePage(
                                     Icons.Default.Settings, strings.preferences, modifier = Modifier.size(30.dp)
                                 )
                             }
+                            IconButton({
+                                purposeSaveGameInPgnFile()
+                            }) {
+                                Image(
+                                    painter = painterResource("images/material_vectors/save.svg"),
+                                    contentDescription = strings.saveGameInPgn,
+                                    modifier = Modifier.size(30.dp),
+                                    colorFilter = ColorFilter.tint(Color.White)
+                                )
+                            }
                         }
                     })
             }) {
@@ -317,8 +361,8 @@ fun GamePage(
                                 blackPlayerType = blackPlayerType,
                                 lastMoveArrow = lastMoveArrow,
                                 pendingPromotion = pendingPromotion,
-                                pendingPromotionStartSquare = pendingPromotionStartSquare,
-                                pendingPromotionEndSquare = pendingPromotionEndSquare,
+                                pendingPromotionStartSquare = pendingPromotionStartSquare?.toInt(),
+                                pendingPromotionEndSquare = pendingPromotionEndSquare?.toInt(),
                                 gameInProgress = gameInProgress,
                                 onCheckmate = ::onCheckmate,
                                 onStalemate = ::onStalemate,
@@ -357,8 +401,8 @@ fun GamePage(
                                     blackPlayerType = blackPlayerType,
                                     lastMoveArrow = lastMoveArrow,
                                     pendingPromotion = pendingPromotion,
-                                    pendingPromotionStartSquare = pendingPromotionStartSquare,
-                                    pendingPromotionEndSquare = pendingPromotionEndSquare,
+                                    pendingPromotionStartSquare = pendingPromotionStartSquare?.toInt(),
+                                    pendingPromotionEndSquare = pendingPromotionEndSquare?.toInt(),
                                     gameInProgress = gameInProgress,
                                     onCheckmate = ::onCheckmate,
                                     onStalemate = ::onStalemate,
@@ -478,8 +522,8 @@ private fun ChessBoardComponent(
     blackPlayerType: PlayerType,
     lastMoveArrow: LastMoveArrow?,
     pendingPromotion: PendingPromotion,
-    pendingPromotionStartSquare: Square?,
-    pendingPromotionEndSquare: Square?,
+    pendingPromotionStartSquare: Int?,
+    pendingPromotionEndSquare: Int?,
     onCheckmate: (Boolean) -> Unit,
     onStalemate: () -> Unit,
     onThreeFoldRepetition: () -> Unit,
@@ -495,10 +539,18 @@ private fun ChessBoardComponent(
         blackPlayerType = blackPlayerType,
         lastMoveArrow = lastMoveArrow,
         pendingPromotion = pendingPromotion,
-        pendingPromotionStartFile = pendingPromotionStartSquare?.x,
-        pendingPromotionStartRank = pendingPromotionStartSquare?.y,
-        pendingPromotionEndFile = pendingPromotionEndSquare?.x,
-        pendingPromotionEndRank = pendingPromotionEndSquare?.y,
+        pendingPromotionStartFile = pendingPromotionStartSquare?.let {
+            Chess.sqiToCol(it)
+        },
+        pendingPromotionStartRank = pendingPromotionStartSquare?.let {
+            Chess.sqiToRow(it)
+        },
+        pendingPromotionEndFile = pendingPromotionEndSquare?.let {
+            Chess.sqiToCol(it)
+        },
+        pendingPromotionEndRank = pendingPromotionEndSquare?.let {
+            Chess.sqiToRow(it)
+        },
         tryPlayingMove = { dragAndDropData ->
             if (!gameInProgress) return@ChessBoard
             ChessGameManager.playMove(

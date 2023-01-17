@@ -13,8 +13,7 @@ val esStrings = Strings(
     editStartPosition = "Desde posición personalizada",
     swapBoardOrientation = "Cambiar la orientación del tablero",
     draggedPiece = "Pieza arrastrada",
-    wrongFieldsCountFen = "La posición de inicio FEN tiene un recuento de campos incorrecto.",
-    oppositeKingInCheckFen = "La posición inicial FEN tiene al rey opuesto en jaque.",
+    wrongFEN = "Posición ilegal (revisa todos los campos).",
     close = "Cerrar",
     queenPromotion = "Promoción de reina",
     rookPromotion = "Promoción de torre",
@@ -90,4 +89,7 @@ val esStrings = Strings(
     gotoLastGame = "Último juego",
     unknownPlayer = "(Desconocido(a))",
     gamesCount = "juegos",
+    saveGameInPgn = "Guardar juego en archivo pgn",
+    selectSavePgnPathDialogTitle = "Seleccione archivo PGN para guardar",
+    failedSavingPgnFile = "No se pudo guardar el archivo PGN."
 )
