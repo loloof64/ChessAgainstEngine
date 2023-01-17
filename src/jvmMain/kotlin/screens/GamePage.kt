@@ -309,7 +309,7 @@ fun GamePage(
                     }, actions = {
                         IconButton(content = {
                             Image(
-                                painter = painterResource("icons/swap_vert.svg"),
+                                painter = painterResource("images/material_vectors/swap_vert.svg"),
                                 contentDescription = strings.swapBoardOrientation,
                                 modifier = Modifier.size(30.dp),
                                 colorFilter = ColorFilter.tint(Color.White)
@@ -319,7 +319,7 @@ fun GamePage(
                         })
                         IconButton(::purposeStopGame) {
                             Image(
-                                painter = painterResource("icons/cancel.svg"),
+                                painter = painterResource("images/material_vectors/cancel.svg"),
                                 contentDescription = strings.stopGame,
                                 modifier = Modifier.size(30.dp),
                                 colorFilter = ColorFilter.tint(Color.White)

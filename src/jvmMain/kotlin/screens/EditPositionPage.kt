@@ -194,7 +194,7 @@ fun EditPositionPage(
                     modifier = Modifier.padding(end = 5.dp),
                     content = {
                         Image(
-                            painter = painterResource("icons/swap_vert.svg"),
+                            painter = painterResource("images/material_vectors/swap_vert.svg"),
                             contentDescription = strings.swapBoardOrientation,
                             modifier = Modifier.size(50.dp)
                                 .border(width = 2.dp, shape = CircleShape, color = Color.Blue),
