@@ -94,5 +94,6 @@ val enStrings = Strings(
     failedSavingPgnFile = "Failed saving PGN file.",
     pgnExported = "Exported game as PGN.",
     confirmExitGameTitle = "Quit game ?",
-    confirmExitGameMessage = "Do you want to quit current game ?"
+    confirmExitGameMessage = "Do you want to quit current game ?",
+    timedGame = "Timed game",
 )

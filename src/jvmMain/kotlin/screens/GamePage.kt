@@ -1,6 +1,8 @@
 package screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -13,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.pop
@@ -59,6 +62,11 @@ fun GamePage(
     var cpuPlaysBlackChecked by rememberSaveable { mutableStateOf(false) }
     var cpuScoreEvaluation by rememberSaveable { mutableStateOf(0.0f) }
     var showCpuScoreEvaluation by rememberSaveable { mutableStateOf(false) }
+
+    var whiteTimeInDeciSeconds by rememberSaveable { mutableStateOf(0) }
+    var blackTimeInDeciSeconds by rememberSaveable { mutableStateOf(0) }
+    var whiteTimeActive by rememberSaveable { mutableStateOf(true) }
+    var clockActive by rememberSaveable { mutableStateOf(false) }
 
     fun justUpdatePositionEvaluation() {
         coroutineScope.launch {
@@ -222,6 +230,15 @@ fun GamePage(
         }
     }
 
+    fun handleClockActiveChange(newState: Boolean) {
+        clockActive = newState
+        if (newState) {
+            /* TODO start time */
+        } else {
+            /* TODO stop time */
+        }
+    }
+
     fun purposeSaveGameInPgnFile() {
         if (gameInProgress) return
         val folder = PreferencesManager.loadSavePgnFolder()
@@ -356,7 +373,7 @@ fun GamePage(
                 Box {
                     if (isLandscape) {
                         val heightRatio =
-                            if (PreferencesManager.getEnginePath().isNotEmpty() && gameInProgress) 0.8f else 1.0f
+                            if (PreferencesManager.getEnginePath().isNotEmpty() && gameInProgress) 0.7f else 1.0f
                         Row(
                             modifier = Modifier.fillMaxWidth().fillMaxHeight(heightRatio),
                             horizontalArrangement = Arrangement.Center,
@@ -382,16 +399,28 @@ fun GamePage(
                                 onPromotionCancelled = ::onPromotionCancelled,
                             )
 
-                            HistoryComponent(
-                                historyElements = historyElements,
-                                selectedHistoryNodeIndex = selectedHistoryNodeIndex,
-                                onPositionSelected = {
-                                    isWhiteTurn = ChessGameManager.isWhiteTurn()
-                                    boardPieces = ChessGameManager.getPieces()
-                                    lastMoveArrow = ChessGameManager.getLastMoveArrow()
-                                    selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
-                                },
-                            )
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Top,
+                            ) {
+                                if (clockActive) {
+                                    ClockComponent(
+                                        whiteTimeInDeciSeconds = whiteTimeInDeciSeconds,
+                                        blackTimeInDeciSeconds = blackTimeInDeciSeconds,
+                                    )
+                                }
+                                HistoryComponent(
+                                    historyElements = historyElements,
+                                    selectedHistoryNodeIndex = selectedHistoryNodeIndex,
+                                    onPositionSelected = {
+                                        isWhiteTurn = ChessGameManager.isWhiteTurn()
+                                        boardPieces = ChessGameManager.getPieces()
+                                        lastMoveArrow = ChessGameManager.getLastMoveArrow()
+                                        selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
+                                    },
+                                )
+                            }
                         }
                     } else {
                         val heightRatio =
@@ -423,16 +452,28 @@ fun GamePage(
                                 )
                             }
 
-                            HistoryComponent(
-                                historyElements = historyElements,
-                                selectedHistoryNodeIndex = selectedHistoryNodeIndex,
-                                onPositionSelected = {
-                                    isWhiteTurn = ChessGameManager.isWhiteTurn()
-                                    boardPieces = ChessGameManager.getPieces()
-                                    lastMoveArrow = ChessGameManager.getLastMoveArrow()
-                                    selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
-                                },
-                            )
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Top,
+                            ) {
+                                if (clockActive) {
+                                    ClockComponent(
+                                        whiteTimeInDeciSeconds = whiteTimeInDeciSeconds,
+                                        blackTimeInDeciSeconds = blackTimeInDeciSeconds,
+                                    )
+                                }
+                                HistoryComponent(
+                                    historyElements = historyElements,
+                                    selectedHistoryNodeIndex = selectedHistoryNodeIndex,
+                                    onPositionSelected = {
+                                        isWhiteTurn = ChessGameManager.isWhiteTurn()
+                                        boardPieces = ChessGameManager.getPieces()
+                                        lastMoveArrow = ChessGameManager.getLastMoveArrow()
+                                        selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
+                                    },
+                                )
+                            }
                         }
                     }
 
@@ -491,6 +532,19 @@ fun GamePage(
                                 color = color
                             )
                         }
+                    }
+
+                    Row(
+                        horizontalArrangement = Arrangement.Start,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(6.dp)
+                    ) {
+                        Checkbox(
+                            modifier = Modifier.padding(start = 20.dp, end = 0.dp),
+                            checked = clockActive,
+                            onCheckedChange = { handleClockActiveChange(it) },
+                        )
+                        Text(strings.timedGame)
                     }
                 }
             }
@@ -650,4 +704,57 @@ fun HistoryComponent(
                 onPositionSelected()
             }
         })
+}
+
+private fun getTimeText(timeInDeciSeconds: Int): String {
+    return timeInDeciSeconds.toString()
+}
+
+@Composable
+fun ClockComponent(
+    modifier: Modifier = Modifier,
+    whiteTimeInDeciSeconds: Int,
+    blackTimeInDeciSeconds: Int,
+) {
+    val whiteText = getTimeText(whiteTimeInDeciSeconds)
+    val blackText = getTimeText(blackTimeInDeciSeconds)
+
+    val whiteZoneFgColor = Color.Black
+    val blackZoneFgColor = Color.White
+
+    val whiteZoneBgColor = Color.White
+    val blackZoneBgColor = Color.Black
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.1f)
+            .border(width = 1.dp, color = Color.Black)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.5f)
+                .fillMaxHeight()
+                .background(whiteZoneBgColor),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = whiteText,
+                color = whiteZoneFgColor,
+                textAlign = TextAlign.Center,
+            )
+        }
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight()
+            .background(blackZoneBgColor),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = blackText,
+                color = blackZoneFgColor,
+                textAlign = TextAlign.Center,
+            )
+        }
+    }
 }

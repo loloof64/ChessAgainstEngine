@@ -97,6 +97,7 @@ data class Strings(
     val pgnExported: String,
     val confirmExitGameTitle: String,
     val confirmExitGameMessage: String,
+    val timedGame: String,
 )
 
 val strings = mapOf(
