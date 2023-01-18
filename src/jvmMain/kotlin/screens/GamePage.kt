@@ -30,6 +30,7 @@ import logic.ChessGameManager
 import logic.PreferencesManager
 import logic.UciEngineChannel
 import java.awt.KeyboardFocusManager
+import java.text.SimpleDateFormat
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
 
@@ -63,7 +64,7 @@ fun GamePage(
     var cpuScoreEvaluation by rememberSaveable { mutableStateOf(0.0f) }
     var showCpuScoreEvaluation by rememberSaveable { mutableStateOf(false) }
 
-    var whiteTimeInDeciSeconds by rememberSaveable { mutableStateOf(0) }
+    var whiteTimeInDeciSeconds by rememberSaveable { mutableStateOf(12422) }
     var blackTimeInDeciSeconds by rememberSaveable { mutableStateOf(0) }
     var whiteTimeActive by rememberSaveable { mutableStateOf(true) }
     var clockActive by rememberSaveable { mutableStateOf(false) }
@@ -707,7 +708,11 @@ fun HistoryComponent(
 }
 
 private fun getTimeText(timeInDeciSeconds: Int): String {
-    return timeInDeciSeconds.toString()
+    val pattern = if (timeInDeciSeconds >= 36000) "hh::mm:ss"
+    else if (timeInDeciSeconds >= 600) "mm:ss"
+    else "ss.S"
+    val simpleDateFormat = SimpleDateFormat(pattern)
+    return simpleDateFormat.format(timeInDeciSeconds * 100)
 }
 
 @Composable
