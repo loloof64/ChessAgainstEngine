@@ -64,7 +64,7 @@ fun GamePage(
     var cpuScoreEvaluation by rememberSaveable { mutableStateOf(0.0f) }
     var showCpuScoreEvaluation by rememberSaveable { mutableStateOf(false) }
 
-    var whiteTimeInDeciSeconds by rememberSaveable { mutableStateOf(12422) }
+    var whiteTimeInDeciSeconds by rememberSaveable { mutableStateOf(0) }
     var blackTimeInDeciSeconds by rememberSaveable { mutableStateOf(0) }
     var whiteTimeActive by rememberSaveable { mutableStateOf(true) }
     var clockActive by rememberSaveable { mutableStateOf(false) }
@@ -409,6 +409,7 @@ fun GamePage(
                                     ClockComponent(
                                         whiteTimeInDeciSeconds = whiteTimeInDeciSeconds,
                                         blackTimeInDeciSeconds = blackTimeInDeciSeconds,
+                                        whiteTimeActive = whiteTimeActive,
                                     )
                                 }
                                 HistoryComponent(
@@ -462,6 +463,7 @@ fun GamePage(
                                     ClockComponent(
                                         whiteTimeInDeciSeconds = whiteTimeInDeciSeconds,
                                         blackTimeInDeciSeconds = blackTimeInDeciSeconds,
+                                        whiteTimeActive = whiteTimeActive,
                                     )
                                 }
                                 HistoryComponent(
@@ -708,7 +710,7 @@ fun HistoryComponent(
 }
 
 private fun getTimeText(timeInDeciSeconds: Int): String {
-    val pattern = if (timeInDeciSeconds >= 36000) "hh::mm:ss"
+    val pattern = if (timeInDeciSeconds >= 36000) "hh:mm:ss"
     else if (timeInDeciSeconds >= 600) "mm:ss"
     else "ss.S"
     val simpleDateFormat = SimpleDateFormat(pattern)
@@ -720,15 +722,34 @@ fun ClockComponent(
     modifier: Modifier = Modifier,
     whiteTimeInDeciSeconds: Int,
     blackTimeInDeciSeconds: Int,
+    whiteTimeActive: Boolean,
 ) {
     val whiteText = getTimeText(whiteTimeInDeciSeconds)
     val blackText = getTimeText(blackTimeInDeciSeconds)
 
-    val whiteZoneFgColor = Color.Black
-    val blackZoneFgColor = Color.White
+    var whiteZoneFgColor = Color.Black
+    var blackZoneFgColor = Color.White
 
-    val whiteZoneBgColor = Color.White
-    val blackZoneBgColor = Color.Black
+    var whiteZoneBgColor = Color.White
+    var blackZoneBgColor = Color.Black
+
+    if (whiteTimeActive) {
+        if (whiteTimeInDeciSeconds < 600) {
+            whiteZoneBgColor = Color.Red
+            whiteZoneFgColor = Color.White
+        } else {
+            whiteZoneBgColor = Color.Blue
+            whiteZoneFgColor = Color.Yellow
+        }
+    } else {
+        if (blackTimeInDeciSeconds < 600) {
+            blackZoneBgColor = Color.Red
+            blackZoneFgColor = Color.White
+        } else {
+            blackZoneBgColor = Color.Blue
+            blackZoneFgColor = Color.Yellow
+        }
+    }
 
     Row(
         modifier = modifier
@@ -749,10 +770,11 @@ fun ClockComponent(
                 textAlign = TextAlign.Center,
             )
         }
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight()
-            .background(blackZoneBgColor),
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .background(blackZoneBgColor),
             contentAlignment = Alignment.Center,
         ) {
             Text(
