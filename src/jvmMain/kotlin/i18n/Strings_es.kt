@@ -93,4 +93,6 @@ val esStrings = Strings(
     selectSavePgnPathDialogTitle = "Seleccione archivo PGN para guardar",
     failedSavingPgnFile = "No se pudo guardar el archivo PGN.",
     pgnExported = "Juego exportado como PGN.",
+    confirmExitGameTitle = "¿Salir del juego?",
+    confirmExitGameMessage = "¿Quieres salir del juego actual?"
 )

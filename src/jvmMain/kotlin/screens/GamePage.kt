@@ -40,6 +40,7 @@ fun GamePage(
 
     val strings = LocalStrings.current
     var purposeStopGameDialogOpen by rememberSaveable { mutableStateOf(false) }
+    var confirmExitGameDialogOpen by rememberSaveable { mutableStateOf(false) }
     var boardReversed by rememberSaveable { mutableStateOf(false) }
     var gameInProgress by rememberSaveable { mutableStateOf(ChessGameManager.isGameInProgress()) }
     var boardPieces by rememberSaveable { mutableStateOf(ChessGameManager.getPieces()) }
@@ -123,17 +124,19 @@ fun GamePage(
         }
     }
 
-    fun stopGame() {
+    fun stopGame(shouldShowSnackBarMessage: Boolean = true) {
         engineIsThinking = false
         ChessGameManager.stopGame()
         gameInProgress = ChessGameManager.isGameInProgress()
         selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
         whitePlayerType = ChessGameManager.getWhitePlayerType()
         blackPlayerType = ChessGameManager.getBlackPlayerType()
-        coroutineScope.launch {
-            scaffoldState.snackbarHostState.showSnackbar(
-                strings.gameAborted, actionLabel = strings.close, duration = SnackbarDuration.Long
-            )
+        if (shouldShowSnackBarMessage) {
+            coroutineScope.launch {
+                scaffoldState.snackbarHostState.showSnackbar(
+                    strings.gameAborted, actionLabel = strings.close, duration = SnackbarDuration.Long
+                )
+            }
         }
     }
 
@@ -303,7 +306,7 @@ fun GamePage(
                 TopAppBar(
                     title = { Text(strings.gamePageTitle) },
                     navigationIcon = {
-                        IconButton({ navigation.pop() }) {
+                        IconButton({ confirmExitGameDialogOpen = true }) {
                             Icon(Icons.Default.ArrowBack, strings.goBack)
                         }
                     }, actions = {
@@ -510,6 +513,30 @@ fun GamePage(
             }, dismissButton = {
                 Button({
                     purposeStopGameDialogOpen = false
+                }) {
+                    Text(strings.cancel)
+                }
+            })
+        }
+
+        if (confirmExitGameDialogOpen) {
+            AlertDialog(onDismissRequest = {
+                confirmExitGameDialogOpen = false
+            }, title = {
+                Text(strings.confirmExitGameTitle)
+            }, text = {
+                Text(strings.confirmExitGameMessage)
+            }, confirmButton = {
+                Button({
+                    confirmExitGameDialogOpen = false
+                    stopGame(shouldShowSnackBarMessage = false)
+                    navigation.pop()
+                }) {
+                    Text(strings.validate)
+                }
+            }, dismissButton = {
+                Button({
+                    confirmExitGameDialogOpen = false
                 }) {
                     Text(strings.cancel)
                 }

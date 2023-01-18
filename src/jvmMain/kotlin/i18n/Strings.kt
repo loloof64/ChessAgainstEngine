@@ -95,6 +95,8 @@ data class Strings(
     val selectSavePgnPathDialogTitle: String,
     val failedSavingPgnFile: String,
     val pgnExported: String,
+    val confirmExitGameTitle: String,
+    val confirmExitGameMessage: String,
 )
 
 val strings = mapOf(

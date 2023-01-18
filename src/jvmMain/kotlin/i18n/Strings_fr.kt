@@ -92,5 +92,7 @@ val frStrings = Strings(
     saveGameInPgn = "Enregistrer la partie dans un fichier PGN",
     selectSavePgnPathDialogTitle = "Sélectionner le fichier PGN de sauvegarde",
     failedSavingPgnFile = "Echec de sauvegarde du fichier PGN.",
-    pgnExported = "Partie exportée en tant que PGN."
+    pgnExported = "Partie exportée en tant que PGN.",
+    confirmExitGameTitle = "Quitter la partie ?",
+    confirmExitGameMessage = "Souhaitez-vous quitter la partie en cours ?"
 )
