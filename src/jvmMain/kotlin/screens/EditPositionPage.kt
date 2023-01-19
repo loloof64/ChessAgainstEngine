@@ -1,6 +1,6 @@
 package screens
 
-import NumberPicker
+import HorizontalNumberPicker
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -505,7 +505,7 @@ fun PositionEditingControls(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(strings.drawHalfMovesCount)
-            NumberPicker(
+            HorizontalNumberPicker(
                 modifier = Modifier.padding(horizontal = 5.dp),
                 value = drawHalfMovesCount,
                 onStateChanged = onDrawHalfMovesCountChange,
@@ -518,7 +518,7 @@ fun PositionEditingControls(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(strings.moveNumber)
-            NumberPicker(
+            HorizontalNumberPicker(
                 modifier = Modifier.padding(horizontal = 5.dp),
                 value = moveNumber,
                 onStateChanged = onMoveNumberChange,

@@ -1,5 +1,6 @@
 package screens
 
+import VerticalNumberPicker
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -31,6 +32,7 @@ import logic.PreferencesManager
 import logic.UciEngineChannel
 import java.awt.KeyboardFocusManager
 import java.text.SimpleDateFormat
+import java.util.*
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
 
@@ -68,6 +70,7 @@ fun GamePage(
     var blackTimeInDeciSeconds by rememberSaveable { mutableStateOf(0) }
     var whiteTimeActive by rememberSaveable { mutableStateOf(true) }
     var clockActive by rememberSaveable { mutableStateOf(false) }
+    var allocatedTimeInDeciSeconds by rememberSaveable { mutableStateOf(3600_0) }
 
     fun justUpdatePositionEvaluation() {
         coroutineScope.launch {
@@ -234,10 +237,51 @@ fun GamePage(
     fun handleClockActiveChange(newState: Boolean) {
         clockActive = newState
         if (newState) {
-            /* TODO start time */
+            whiteTimeInDeciSeconds = allocatedTimeInDeciSeconds
+            blackTimeInDeciSeconds = allocatedTimeInDeciSeconds
         } else {
             /* TODO stop time */
         }
+    }
+
+    fun hoursFor(timeInDeciSeconds: Int): Int {
+        val timeSeconds = timeInDeciSeconds / 10
+        return timeSeconds / 3600
+    }
+
+    fun minutesFor(timeInDeciSeconds: Int): Int {
+        val timeSeconds = timeInDeciSeconds / 10
+        var result = timeSeconds % 3600
+        result /= 60
+        return result
+    }
+
+    fun secondsFor(timeInDeciSeconds: Int): Int {
+        val timeSeconds = timeInDeciSeconds / 10
+        var result = timeSeconds % 3600
+        result %= 60
+        return result
+    }
+
+    fun updateAllocatedHours(newHoursCount: Int) {
+        val currentAllocatedMinutes = minutesFor(allocatedTimeInDeciSeconds)
+        val currentAllocatedSeconds = secondsFor(allocatedTimeInDeciSeconds)
+        allocatedTimeInDeciSeconds =
+            newHoursCount * 3600_0 + currentAllocatedMinutes * 60_0 + currentAllocatedSeconds * 10
+    }
+
+    fun updateAllocatedMinutes(newMinutesCount: Int) {
+        val currentAllocatedHours = hoursFor(allocatedTimeInDeciSeconds)
+        val currentAllocatedSeconds = secondsFor(allocatedTimeInDeciSeconds)
+        allocatedTimeInDeciSeconds =
+            currentAllocatedHours * 3600_0 + newMinutesCount * 60_0 + currentAllocatedSeconds * 10
+    }
+
+    fun updateAllocatedSeconds(newSecondsCount: Int) {
+        val currentAllocatedHours = hoursFor(allocatedTimeInDeciSeconds)
+        val currentAllocatedMinutes = minutesFor(allocatedTimeInDeciSeconds)
+        allocatedTimeInDeciSeconds =
+            currentAllocatedHours * 3600_0 + currentAllocatedMinutes * 60_0 + newSecondsCount * 10
     }
 
     fun purposeSaveGameInPgnFile() {
@@ -374,7 +418,7 @@ fun GamePage(
                 Box {
                     if (isLandscape) {
                         val heightRatio =
-                            if (PreferencesManager.getEnginePath().isNotEmpty() && gameInProgress) 0.7f else 1.0f
+                            if (PreferencesManager.getEnginePath().isNotEmpty() && gameInProgress) 0.65f else 1.0f
                         Row(
                             modifier = Modifier.fillMaxWidth().fillMaxHeight(heightRatio),
                             horizontalArrangement = Arrangement.Center,
@@ -426,7 +470,7 @@ fun GamePage(
                         }
                     } else {
                         val heightRatio =
-                            if (PreferencesManager.getEnginePath().isNotEmpty() && gameInProgress) 0.8f else 1.0f
+                            if (PreferencesManager.getEnginePath().isNotEmpty() && gameInProgress) 0.70f else 1.0f
                         Column(
                             modifier = Modifier.fillMaxWidth().fillMaxHeight(heightRatio),
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -511,14 +555,9 @@ fun GamePage(
                             onCheckedChange = ::handleBlackSideTypeChange,
                         )
                         Text(strings.computerPlaysBlack)
-                    }
-                    Row(
-                        horizontalArrangement = Arrangement.Start,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(6.dp)
-                    ) {
+
                         Checkbox(
-                            modifier = Modifier.padding(start = 20.dp, end = 0.dp),
+                            modifier = Modifier.padding(start = 50.dp, end = 0.dp),
                             checked = showCpuScoreEvaluation,
                             onCheckedChange = { showCpuScoreEvaluation = !showCpuScoreEvaluation },
                         )
@@ -543,11 +582,37 @@ fun GamePage(
                         modifier = Modifier.padding(6.dp)
                     ) {
                         Checkbox(
-                            modifier = Modifier.padding(start = 20.dp, end = 0.dp),
                             checked = clockActive,
                             onCheckedChange = { handleClockActiveChange(it) },
                         )
                         Text(strings.timedGame)
+
+                        VerticalNumberPicker(
+                            value = hoursFor(allocatedTimeInDeciSeconds),
+                            range = 0..3,
+                            onStateChanged = {
+                                updateAllocatedHours(it)
+                            }
+                        )
+                        Text("h")
+
+                        VerticalNumberPicker(
+                            value = minutesFor(allocatedTimeInDeciSeconds),
+                            range = 0..59,
+                            onStateChanged = {
+                                updateAllocatedMinutes(it)
+                            }
+                        )
+                        Text("m")
+
+                        VerticalNumberPicker(
+                            value = secondsFor(allocatedTimeInDeciSeconds),
+                            range = 0..59,
+                            onStateChanged = {
+                                updateAllocatedSeconds(it)
+                            }
+                        )
+                        Text("s")
                     }
                 }
             }
@@ -710,11 +775,14 @@ fun HistoryComponent(
 }
 
 private fun getTimeText(timeInDeciSeconds: Int): String {
-    val pattern = if (timeInDeciSeconds >= 36000) "hh:mm:ss"
+    val pattern = if (timeInDeciSeconds >= 36000) "HH:mm:ss"
     else if (timeInDeciSeconds >= 600) "mm:ss"
     else "ss.S"
-    val simpleDateFormat = SimpleDateFormat(pattern)
-    return simpleDateFormat.format(timeInDeciSeconds * 100)
+    val cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+    val simpleDateFormat = SimpleDateFormat(pattern, Locale.US)
+    simpleDateFormat.timeZone = cal.timeZone
+    cal.timeInMillis = (timeInDeciSeconds * 100).toLong()
+    return simpleDateFormat.format(cal.time)
 }
 
 @Composable

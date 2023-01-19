@@ -98,6 +98,7 @@ data class Strings(
     val confirmExitGameTitle: String,
     val confirmExitGameMessage: String,
     val timedGame: String,
+    val allocatedTime: String,
 )
 
 val strings = mapOf(

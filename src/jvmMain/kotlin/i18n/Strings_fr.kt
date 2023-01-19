@@ -95,5 +95,6 @@ val frStrings = Strings(
     pgnExported = "Partie exportée en tant que PGN.",
     confirmExitGameTitle = "Quitter la partie ?",
     confirmExitGameMessage = "Souhaitez-vous quitter la partie en cours ?",
-    timedGame = "Partie chronométrée"
+    timedGame = "Partie chronométrée",
+    allocatedTime = "Temps alloué"
 )

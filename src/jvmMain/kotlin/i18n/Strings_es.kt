@@ -95,5 +95,6 @@ val esStrings = Strings(
     pgnExported = "Juego exportado como PGN.",
     confirmExitGameTitle = "¿Salir del juego?",
     confirmExitGameMessage = "¿Quieres salir del juego actual?",
-    timedGame = "Juego cronometrado"
+    timedGame = "Juego cronometrado",
+    allocatedTime = "Tiempo asignado"
 )

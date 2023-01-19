@@ -96,4 +96,5 @@ val enStrings = Strings(
     confirmExitGameTitle = "Quit game ?",
     confirmExitGameMessage = "Do you want to quit current game ?",
     timedGame = "Timed game",
+    allocatedTime = "Allocated time"
 )

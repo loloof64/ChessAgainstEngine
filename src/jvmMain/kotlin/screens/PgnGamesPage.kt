@@ -1,6 +1,6 @@
 package screens
 
-import NumberPicker
+import HorizontalNumberPicker
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -163,7 +163,7 @@ fun PgnGamesPage(
                         )
                     }
 
-                    NumberPicker(
+                    HorizontalNumberPicker(
                         value = currentGameIndex.inc(),
                         range = 1..games.size,
                         onStateChanged = {
