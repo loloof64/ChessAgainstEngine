@@ -281,8 +281,7 @@ private fun DragAndDropLayer(
                             onCellClick(file, rank)
                         }
                     )
-                }
-                else {
+                } else {
                     detectDragGestures(
                         onDragStart = { offset: Offset ->
                             if (!isActive) return@detectDragGestures
@@ -346,7 +345,11 @@ private fun DragAndDropLayer(
                         onDragEnd = {
                             if (!isActive) return@detectDragGestures
                             if (dndData == null) return@detectDragGestures
-                            tryPlayingMove(dndData!!)
+                            val startAndEndCellsAreDifferent =
+                                (dndData!!.startFile != dndData!!.endFile) || (dndData!!.startRank != dndData!!.endRank)
+                            if (startAndEndCellsAreDifferent) {
+                                tryPlayingMove(dndData!!)
+                            }
                             dndData = null
                             onDndDataUpdate(null)
                         },
