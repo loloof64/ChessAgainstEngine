@@ -95,13 +95,13 @@ object ChessGameManager {
 
     fun exportAsPgn(outputFile: File) {
         val exporter = PGNExporter(FileOutputStream(outputFile))
+        _savedGameLogic?.setPgnTag(PgnTag.EVENT, "")
+        _savedGameLogic?.setPgnTag(PgnTag.SITE, "")
+        _savedGameLogic?.setPgnTag(PgnTag.DATE, "")
+        _savedGameLogic?.setPgnTag(PgnTag.ROUND, "")
+        _savedGameLogic?.setPgnTag(PgnTag.WHITE, "")
+        _savedGameLogic?.setPgnTag(PgnTag.BLACK, "")
         if (_startPosition != defaultPosition) {
-            _savedGameLogic?.setPgnTag(PgnTag.EVENT, "")
-            _savedGameLogic?.setPgnTag(PgnTag.SITE, "")
-            _savedGameLogic?.setPgnTag(PgnTag.DATE, "")
-            _savedGameLogic?.setPgnTag(PgnTag.ROUND, "")
-            _savedGameLogic?.setPgnTag(PgnTag.WHITE, "")
-            _savedGameLogic?.setPgnTag(PgnTag.BLACK, "")
             _savedGameLogic?.setPgnTag(PgnTag.FEN, _startPosition)
             _savedGameLogic?.setPgnTag(PgnTag.SET_UP, "1")
         }
