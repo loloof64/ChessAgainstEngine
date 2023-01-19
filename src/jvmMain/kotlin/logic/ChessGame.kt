@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import components.*
 import io.github.wolfraam.chessgame.ChessGame
+import io.github.wolfraam.chessgame.board.Piece
 import io.github.wolfraam.chessgame.board.PieceType
 import io.github.wolfraam.chessgame.board.Side
 import io.github.wolfraam.chessgame.board.Square
@@ -342,21 +343,51 @@ object ChessGameManager {
         return true
     }
 
-    fun setWinnerInPgn(whiteSide: Boolean) {
-        _gameLogic.setPgnTag(PgnTag.RESULT, if (whiteSide) "1-0" else "0-1")
+    fun checkIfPlayerWinningOnTimeIsMissingMaterialAndUpdatePgnResultTag(): Boolean {
+        val supposedWinnerSide = if (_gameLogic.sideToMove == Side.BLACK) Side.WHITE else Side.BLACK
+        if (supposedWinnerSide == Side.WHITE) {
+            val queensCount = _gameLogic.getSquares(Piece.WHITE_QUEEN).size
+            val rooksCount = _gameLogic.getSquares(Piece.WHITE_ROOK).size
+            val pawnsCount = _gameLogic.getSquares(Piece.WHITE_PAWN).size
+
+            if (queensCount > 0 || rooksCount > 0 || pawnsCount > 0) {
+                _gameLogic.setPgnTag(PgnTag.RESULT, "1-0")
+                return false
+            }
+
+            val bishopsCount = _gameLogic.getSquares(Piece.WHITE_BISHOP).size
+            val knightsCount = _gameLogic.getSquares(Piece.WHITE_KNIGHT).size
+
+            val isDraw = (bishopsCount == 0 && knightsCount == 1) || (knightsCount == 0 && bishopsCount == 1)
+            if (isDraw) _gameLogic.setPgnTag(PgnTag.RESULT, "1/2-1/2")
+            else _gameLogic.setPgnTag(PgnTag.RESULT, "1-0")
+            return isDraw
+        } else {
+            val queensCount = _gameLogic.getSquares(Piece.BLACK_QUEEN).size
+            val rooksCount = _gameLogic.getSquares(Piece.BLACK_ROOK).size
+            val pawnsCount = _gameLogic.getSquares(Piece.BLACK_PAWN).size
+
+            if (queensCount > 0 || rooksCount > 0 || pawnsCount > 0) {
+                _gameLogic.setPgnTag(PgnTag.RESULT, "0-1")
+                return false
+            }
+
+            val bishopsCount = _gameLogic.getSquares(Piece.BLACK_BISHOP).size
+            val knightsCount = _gameLogic.getSquares(Piece.BLACK_KNIGHT).size
+
+            val isDraw = (bishopsCount == 0 && knightsCount <= 1) || (knightsCount == 0 && bishopsCount <= 1)
+            if (isDraw) _gameLogic.setPgnTag(PgnTag.RESULT, "1/2-1/2")
+            else _gameLogic.setPgnTag(PgnTag.RESULT, "0-1")
+            return isDraw
+        }
     }
 
-    fun setDrawInPgn() {
-        _gameLogic.setPgnTag(PgnTag.RESULT, "1/2-1/2")
-    }
-
-    fun handleGameEndingStatus(
+    private fun handleGameEndingStatus(
         onCheckmate: (Boolean) -> Unit,
         onStalemate: () -> Unit,
         onThreeFoldsRepetition: () -> Unit,
         onInsufficientMaterial: () -> Unit,
-        onFiftyMovesRuleDraw: () -> Unit,
-        onGameContinuation: () -> Unit = { -> },
+        onFiftyMovesRuleDraw: () -> Unit
     ) {
         val gameResult: ChessGameResult? = _gameLogic.gameResult
         when (gameResult?.chessGameResultType) {
@@ -426,9 +457,7 @@ object ChessGameManager {
                 }
             }
 
-            else -> {
-                onGameContinuation()
-            }
+            else -> {}
         }
     }
 
@@ -494,7 +523,6 @@ object ChessGameManager {
         )
         _isFirstHistoryNode = false
     }
-
 
 
     private fun selectLastHistoryMoveNodeIfAny() {

@@ -78,55 +78,37 @@ fun GamePage(
         clockJob = null
         clockActive = false
 
-        ChessGameManager.handleGameEndingStatus(
-            onGameContinuation = {
-                ChessGameManager.setWinnerInPgn(whiteSide = !whiteTimeout)
-                ChessGameManager.stopGame()
-                gameInProgress = ChessGameManager.isGameInProgress()
-                selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
-                whitePlayerType = ChessGameManager.getWhitePlayerType()
-                blackPlayerType = ChessGameManager.getBlackPlayerType()
+        if (ChessGameManager.checkIfPlayerWinningOnTimeIsMissingMaterialAndUpdatePgnResultTag()) {
+            ChessGameManager.stopGame()
+            gameInProgress = ChessGameManager.isGameInProgress()
+            selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
+            whitePlayerType = ChessGameManager.getWhitePlayerType()
+            blackPlayerType = ChessGameManager.getBlackPlayerType()
 
+            val message = strings.drawOnTimeByInsufficientMaterial
+            coroutineScope.launch {
+                scaffoldState.snackbarHostState.showSnackbar(
+                    message,
+                    actionLabel = strings.close,
+                    duration = SnackbarDuration.Long
+                )
+            }
+        } else {
+            ChessGameManager.stopGame()
+            gameInProgress = ChessGameManager.isGameInProgress()
+            selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
+            whitePlayerType = ChessGameManager.getWhitePlayerType()
+            blackPlayerType = ChessGameManager.getBlackPlayerType()
 
-                val message = if (whiteTimeout) strings.blackWonOnTime else strings.whiteWonOnTime
-                coroutineScope.launch {
-                    scaffoldState.snackbarHostState.showSnackbar(
-                        message,
-                        actionLabel = strings.close,
-                        duration = SnackbarDuration.Long
-                    )
-                }
-            },
-            onCheckmate = {
-                // nothing to check here : should never happen
-            },
-            onStalemate = {
-                // nothing to check here : should never happen
-            },
-            onThreeFoldsRepetition = {
-                // nothing to check here : should never happen
-            },
-            onFiftyMovesRuleDraw = {
-                // nothing to check here : should never happen
-            },
-            onInsufficientMaterial = {
-                ChessGameManager.setDrawInPgn()
-                ChessGameManager.stopGame()
-                gameInProgress = ChessGameManager.isGameInProgress()
-                selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
-                whitePlayerType = ChessGameManager.getWhitePlayerType()
-                blackPlayerType = ChessGameManager.getBlackPlayerType()
-
-                val message = strings.drawOnTimeByInsufficientMaterial
-                coroutineScope.launch {
-                    scaffoldState.snackbarHostState.showSnackbar(
-                        message,
-                        actionLabel = strings.close,
-                        duration = SnackbarDuration.Long
-                    )
-                }
-            },
-        )
+            val message = if (whiteTimeout) strings.blackWonOnTime else strings.whiteWonOnTime
+            coroutineScope.launch {
+                scaffoldState.snackbarHostState.showSnackbar(
+                    message,
+                    actionLabel = strings.close,
+                    duration = SnackbarDuration.Long
+                )
+            }
+        }
     }
 
     fun handleClockActiveChange(newState: Boolean) {
