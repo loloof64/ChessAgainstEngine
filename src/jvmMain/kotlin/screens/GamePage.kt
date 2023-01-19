@@ -24,9 +24,7 @@ import com.arkivanov.decompose.router.stack.push
 import components.*
 import i18n.LocalStrings
 import io.github.wolfraam.chessgame.board.Square
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import logic.ChessGameManager
 import logic.PreferencesManager
 import logic.UciEngineChannel
@@ -70,7 +68,27 @@ fun GamePage(
     var blackTimeInDeciSeconds by rememberSaveable { mutableStateOf(0) }
     var whiteTimeActive by rememberSaveable { mutableStateOf(true) }
     var clockActive by rememberSaveable { mutableStateOf(false) }
-    var allocatedTimeInDeciSeconds by rememberSaveable { mutableStateOf(3600_0) }
+    var allocatedTimeInDeciSeconds by rememberSaveable { mutableStateOf(600) }
+
+    var clockJob by rememberSaveable { mutableStateOf<Job?>(null) }
+
+    fun handleClockActiveChange(newState: Boolean) {
+        clockActive = newState
+        if (newState) {
+            whiteTimeInDeciSeconds = allocatedTimeInDeciSeconds
+            blackTimeInDeciSeconds = allocatedTimeInDeciSeconds
+
+            clockJob = coroutineScope.launch {
+                while (isActive) {
+                    delay(100)
+                    if (whiteTimeActive) whiteTimeInDeciSeconds-- else blackTimeInDeciSeconds--
+                }
+            }
+        } else {
+            clockJob?.cancel()
+            clockJob = null
+        }
+    }
 
     fun justUpdatePositionEvaluation() {
         coroutineScope.launch {
@@ -137,6 +155,8 @@ fun GamePage(
     }
 
     fun stopGame(shouldShowSnackBarMessage: Boolean = true) {
+        handleClockActiveChange(false)
+
         engineIsThinking = false
         ChessGameManager.stopGame()
         gameInProgress = ChessGameManager.isGameInProgress()
@@ -182,6 +202,7 @@ fun GamePage(
     }
 
     fun onMovePlayed() {
+        whiteTimeActive = !whiteTimeActive
         isWhiteTurn = ChessGameManager.isWhiteTurn()
         boardPieces = ChessGameManager.getPieces()
         pendingPromotion = ChessGameManager.getPendingPromotion()
@@ -231,16 +252,6 @@ fun GamePage(
                 }
             }
             makeCpuPlayIfAppropriated()
-        }
-    }
-
-    fun handleClockActiveChange(newState: Boolean) {
-        clockActive = newState
-        if (newState) {
-            whiteTimeInDeciSeconds = allocatedTimeInDeciSeconds
-            blackTimeInDeciSeconds = allocatedTimeInDeciSeconds
-        } else {
-            /* TODO stop time */
         }
     }
 
@@ -331,6 +342,7 @@ fun GamePage(
             onInsufficientMaterial = ::onInsufficientMaterial,
             onFiftyMovesRuleDraw = ::onFiftyMovesRuleDraw,
         )
+        whiteTimeActive = !whiteTimeActive
 
         isWhiteTurn = ChessGameManager.isWhiteTurn()
         boardPieces = ChessGameManager.getPieces()
@@ -449,13 +461,11 @@ fun GamePage(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Top,
                             ) {
-                                if (clockActive) {
-                                    ClockComponent(
-                                        whiteTimeInDeciSeconds = whiteTimeInDeciSeconds,
-                                        blackTimeInDeciSeconds = blackTimeInDeciSeconds,
-                                        whiteTimeActive = whiteTimeActive,
-                                    )
-                                }
+                                ClockComponent(
+                                    whiteTimeInDeciSeconds = whiteTimeInDeciSeconds,
+                                    blackTimeInDeciSeconds = blackTimeInDeciSeconds,
+                                    whiteTimeActive = whiteTimeActive,
+                                )
                                 HistoryComponent(
                                     historyElements = historyElements,
                                     selectedHistoryNodeIndex = selectedHistoryNodeIndex,
@@ -503,13 +513,11 @@ fun GamePage(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Top,
                             ) {
-                                if (clockActive) {
-                                    ClockComponent(
-                                        whiteTimeInDeciSeconds = whiteTimeInDeciSeconds,
-                                        blackTimeInDeciSeconds = blackTimeInDeciSeconds,
-                                        whiteTimeActive = whiteTimeActive,
-                                    )
-                                }
+                                ClockComponent(
+                                    whiteTimeInDeciSeconds = whiteTimeInDeciSeconds,
+                                    blackTimeInDeciSeconds = blackTimeInDeciSeconds,
+                                    whiteTimeActive = whiteTimeActive,
+                                )
                                 HistoryComponent(
                                     historyElements = historyElements,
                                     selectedHistoryNodeIndex = selectedHistoryNodeIndex,
