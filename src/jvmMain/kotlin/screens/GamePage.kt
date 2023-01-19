@@ -72,6 +72,26 @@ fun GamePage(
 
     var clockJob by rememberSaveable { mutableStateOf<Job?>(null) }
 
+    fun stopGameByTimeout(whiteTimeout: Boolean) {
+        engineIsThinking = false
+        clockJob?.cancel()
+        clockJob = null
+        clockActive = false
+        ChessGameManager.stopGame()
+        gameInProgress = ChessGameManager.isGameInProgress()
+        selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
+        whitePlayerType = ChessGameManager.getWhitePlayerType()
+        blackPlayerType = ChessGameManager.getBlackPlayerType()
+
+        // todo check if other side is in insufficient material and change result to draw accordingly
+        // todo check game outcome and notify user and add pgn tag
+        if (whiteTimeout) {
+
+        } else {
+
+        }
+    }
+
     fun handleClockActiveChange(newState: Boolean) {
         clockActive = newState
         if (newState) {
@@ -81,7 +101,17 @@ fun GamePage(
             clockJob = coroutineScope.launch {
                 while (isActive) {
                     delay(100)
-                    if (whiteTimeActive) whiteTimeInDeciSeconds-- else blackTimeInDeciSeconds--
+                    if (whiteTimeActive) {
+                        whiteTimeInDeciSeconds--
+                        if (whiteTimeInDeciSeconds <= 0) {
+                            stopGameByTimeout(true)
+                        }
+                    } else {
+                        blackTimeInDeciSeconds--
+                        if (blackTimeInDeciSeconds <= 0) {
+                            stopGameByTimeout(false)
+                        }
+                    }
                 }
             }
         } else {
