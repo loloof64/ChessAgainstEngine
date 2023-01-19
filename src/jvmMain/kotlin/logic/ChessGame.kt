@@ -162,7 +162,9 @@ object ChessGameManager {
         _gameInProgress = false
         _whitePlayerType = PlayerType.None
         _blackPlayerType = PlayerType.None
-        _gameLogic.setPgnTag(PgnTag.RESULT, "*")
+        if (_gameLogic.getPgnTagValue(PgnTag.RESULT) == null) {
+            _gameLogic.setPgnTag(PgnTag.RESULT, "*")
+        }
         _savedGameLogic = _gameLogic.clone()
         selectLastHistoryMoveNodeIfAny()
     }
@@ -338,6 +340,14 @@ object ChessGameManager {
         if (_gameInProgress) return false
         while (requestGotoNextHistoryNode());
         return true
+    }
+
+    fun setWinnerInPgn(whiteSide: Boolean) {
+        _gameLogic.setPgnTag(PgnTag.RESULT, if (whiteSide) "1-0" else "0-1")
+    }
+
+    fun setDrawInPgn() {
+        _gameLogic.setPgnTag(PgnTag.RESULT, "1/2-1/2")
     }
 
     fun handleGameEndingStatus(

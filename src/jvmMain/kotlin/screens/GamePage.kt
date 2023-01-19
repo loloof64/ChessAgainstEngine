@@ -77,16 +77,19 @@ fun GamePage(
         clockJob?.cancel()
         clockJob = null
         clockActive = false
-        ChessGameManager.stopGame()
-        gameInProgress = ChessGameManager.isGameInProgress()
-        selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
-        whitePlayerType = ChessGameManager.getWhitePlayerType()
-        blackPlayerType = ChessGameManager.getBlackPlayerType()
 
         // todo check if other side is in insufficient material and change result to draw accordingly
         // todo check game outcome and notify user and add pgn tag
         ChessGameManager.handleGameEndingStatus(
             onGameContinuation = {
+                ChessGameManager.setWinnerInPgn(whiteSide = !whiteTimeout)
+                ChessGameManager.stopGame()
+                gameInProgress = ChessGameManager.isGameInProgress()
+                selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
+                whitePlayerType = ChessGameManager.getWhitePlayerType()
+                blackPlayerType = ChessGameManager.getBlackPlayerType()
+
+
                 val message = if (whiteTimeout) strings.blackWonOnTime else strings.whiteWonOnTime
                 coroutineScope.launch {
                     scaffoldState.snackbarHostState.showSnackbar(
@@ -109,6 +112,13 @@ fun GamePage(
                 // nothing to check here : should never happen
             },
             onInsufficientMaterial = {
+                ChessGameManager.setDrawInPgn()
+                ChessGameManager.stopGame()
+                gameInProgress = ChessGameManager.isGameInProgress()
+                selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
+                whitePlayerType = ChessGameManager.getWhitePlayerType()
+                blackPlayerType = ChessGameManager.getBlackPlayerType()
+
                 val message = strings.drawOnTimeByInsufficientMaterial
                 coroutineScope.launch {
                     scaffoldState.snackbarHostState.showSnackbar(
