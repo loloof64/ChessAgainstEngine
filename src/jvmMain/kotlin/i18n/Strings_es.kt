@@ -96,5 +96,8 @@ val esStrings = Strings(
     confirmExitGameTitle = "¿Salir del juego?",
     confirmExitGameMessage = "¿Quieres salir del juego actual?",
     timedGame = "Juego cronometrado",
-    allocatedTime = "Tiempo asignado"
+    allocatedTime = "Tiempo asignado",
+    whiteWonOnTime = "Los blancos han ganado por tiempo.",
+    blackWonOnTime = "Los negros han ganado por tiempo.",
+    drawOnTimeByInsufficientMaterial = "Dibujar por material insuficiente aunque hay un tiempo de espera."
 )

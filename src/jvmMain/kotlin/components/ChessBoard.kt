@@ -76,7 +76,6 @@ data class LastMoveArrow(
     val endRank: Int,
 )
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChessBoard(
     piecesValues: List<List<Char>>,

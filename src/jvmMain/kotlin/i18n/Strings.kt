@@ -99,6 +99,9 @@ data class Strings(
     val confirmExitGameMessage: String,
     val timedGame: String,
     val allocatedTime: String,
+    val whiteWonOnTime: String,
+    val blackWonOnTime: String,
+    val drawOnTimeByInsufficientMaterial: String,
 )
 
 val strings = mapOf(

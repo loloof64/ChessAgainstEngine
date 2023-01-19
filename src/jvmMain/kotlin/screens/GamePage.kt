@@ -85,11 +85,40 @@ fun GamePage(
 
         // todo check if other side is in insufficient material and change result to draw accordingly
         // todo check game outcome and notify user and add pgn tag
-        if (whiteTimeout) {
-
-        } else {
-
-        }
+        ChessGameManager.handleGameEndingStatus(
+            onGameContinuation = {
+                val message = if (whiteTimeout) strings.blackWonOnTime else strings.whiteWonOnTime
+                coroutineScope.launch {
+                    scaffoldState.snackbarHostState.showSnackbar(
+                        message,
+                        actionLabel = strings.close,
+                        duration = SnackbarDuration.Long
+                    )
+                }
+            },
+            onCheckmate = {
+                // nothing to check here : should never happen
+            },
+            onStalemate = {
+                // nothing to check here : should never happen
+            },
+            onThreeFoldsRepetition = {
+                // nothing to check here : should never happen
+            },
+            onFiftyMovesRuleDraw = {
+                // nothing to check here : should never happen
+            },
+            onInsufficientMaterial = {
+                val message = strings.drawOnTimeByInsufficientMaterial
+                coroutineScope.launch {
+                    scaffoldState.snackbarHostState.showSnackbar(
+                        message,
+                        actionLabel = strings.close,
+                        duration = SnackbarDuration.Long
+                    )
+                }
+            },
+        )
     }
 
     fun handleClockActiveChange(newState: Boolean) {
@@ -725,7 +754,8 @@ private fun ChessBoardComponent(
     onMovePlayed: () -> Unit,
     onPromotionCancelled: () -> Unit,
 ) {
-    ChessBoard(isWhiteTurn = isWhiteTurn,
+    ChessBoard(
+        isWhiteTurn = isWhiteTurn,
         piecesValues = piecesValues,
         reversed = reversed,
         whitePlayerType = whitePlayerType,

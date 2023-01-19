@@ -96,5 +96,8 @@ val enStrings = Strings(
     confirmExitGameTitle = "Quit game ?",
     confirmExitGameMessage = "Do you want to quit current game ?",
     timedGame = "Timed game",
-    allocatedTime = "Allocated time"
+    allocatedTime = "Allocated time",
+    whiteWonOnTime = "White has won on time.",
+    blackWonOnTime = "Black has won on time.",
+    drawOnTimeByInsufficientMaterial = "Draw by insufficient material though there's a timeout."
 )

@@ -96,5 +96,8 @@ val frStrings = Strings(
     confirmExitGameTitle = "Quitter la partie ?",
     confirmExitGameMessage = "Souhaitez-vous quitter la partie en cours ?",
     timedGame = "Partie chronométrée",
-    allocatedTime = "Temps alloué"
+    allocatedTime = "Temps alloué",
+    whiteWonOnTime = "Les Blancs ont gagné au temps",
+    blackWonOnTime = "Les Noirs ont gagné au temps",
+    drawOnTimeByInsufficientMaterial = "Nulle par insuffisance matérielle bien que le temps soit écoulé."
 )

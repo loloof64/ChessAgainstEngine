@@ -20,7 +20,7 @@ import java.io.File
 import java.io.FileOutputStream
 
 const val defaultPosition = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-const val emptyPosition = "k/8/8/8/8/8/8/K w - - 0 1"
+const val emptyPosition = "4k3/8/8/8/8/8/8/4K3 w - - 0 1"
 
 fun String.toLastMoveArrow(): LastMoveArrow {
     if (length < 4) throw IllegalMoveException("Not a uci chess move string : $this.")
@@ -340,75 +340,13 @@ object ChessGameManager {
         return true
     }
 
-    private fun requestForwardOneMove(): Boolean {
-        if (_gameInProgress) return false
-        if (_selectedNodeIndex != null && _selectedNodeIndex!! >= _historyElements.size - 1) return false
-        var newSelectedNodeIndex = if (_selectedNodeIndex == null) {
-            0
-        } else (_selectedNodeIndex!! + 1)
-        while ((newSelectedNodeIndex < _historyElements.size - 1) && (_historyElements[newSelectedNodeIndex] !is ChessHistoryItem.MoveItem)) {
-            newSelectedNodeIndex++
-        }
-        if (_historyElements[newSelectedNodeIndex] !is ChessHistoryItem.MoveItem) return false
-        _selectedNodeIndex = newSelectedNodeIndex
-        val currentHistoryNode = _historyElements[newSelectedNodeIndex] as ChessHistoryItem.MoveItem
-        _gameLogic = ChessGame(currentHistoryNode.positionFen)
-        _lastMoveArrow = LastMoveArrow(
-            startFile = currentHistoryNode.movesCoordinates.startFile,
-            startRank = currentHistoryNode.movesCoordinates.startRank,
-            endFile = currentHistoryNode.movesCoordinates.endFile,
-            endRank = currentHistoryNode.movesCoordinates.endRank,
-        )
-        return true
-    }
-
-    private fun requestBackOneMove(): Boolean {
-        if (_gameInProgress) return false
-        if (_selectedNodeIndex == null) return false
-        if (_selectedNodeIndex!! <= 0) return false
-        var newSelectedNodeIndex = _selectedNodeIndex!! - 1
-        while ((newSelectedNodeIndex >= 0) && (_historyElements[newSelectedNodeIndex] !is ChessHistoryItem.MoveItem)) {
-            newSelectedNodeIndex--
-        }
-        return if (newSelectedNodeIndex >= 0) {
-            _selectedNodeIndex = newSelectedNodeIndex
-            true
-        } else {
-            false
-        }
-    }
-
-    private fun addMoveToHistory(moveCoordinates: MoveCoordinates) {
-        val lastMove: Move? = _gameLogic.lastMove
-        val isWhiteTurnBeforeMove = _gameLogic.sideToMove == Side.BLACK
-        val needingToAddMoveNumber = isWhiteTurnBeforeMove && !_isFirstHistoryNode
-
-        if (needingToAddMoveNumber) {
-            _historyElements.add(
-                ChessHistoryItem.MoveNumberItem(
-                    number = _gameLogic.fullMoveCount,
-                    isWhiteTurn = true,
-                )
-            )
-        }
-
-        val gameLogicBeforeMove = ChessGame(_positionFenBeforeLastMove)
-        val moveSan = gameLogicBeforeMove.getNotation(NotationType.SAN, lastMove)
-        _historyElements.add(
-            ChessHistoryItem.MoveItem(
-                san = moveSan, positionFen = _gameLogic.fen, isWhiteMove = isWhiteTurnBeforeMove,
-                movesCoordinates = moveCoordinates,
-            )
-        )
-        _isFirstHistoryNode = false
-    }
-
-    private fun handleGameEndingStatus(
+    fun handleGameEndingStatus(
         onCheckmate: (Boolean) -> Unit,
         onStalemate: () -> Unit,
         onThreeFoldsRepetition: () -> Unit,
         onInsufficientMaterial: () -> Unit,
         onFiftyMovesRuleDraw: () -> Unit,
+        onGameContinuation: () -> Unit = { -> },
     ) {
         val gameResult: ChessGameResult? = _gameLogic.gameResult
         when (gameResult?.chessGameResultType) {
@@ -478,9 +416,76 @@ object ChessGameManager {
                 }
             }
 
-            else -> {}
+            else -> {
+                onGameContinuation()
+            }
         }
     }
+
+    private fun requestForwardOneMove(): Boolean {
+        if (_gameInProgress) return false
+        if (_selectedNodeIndex != null && _selectedNodeIndex!! >= _historyElements.size - 1) return false
+        var newSelectedNodeIndex = if (_selectedNodeIndex == null) {
+            0
+        } else (_selectedNodeIndex!! + 1)
+        while ((newSelectedNodeIndex < _historyElements.size - 1) && (_historyElements[newSelectedNodeIndex] !is ChessHistoryItem.MoveItem)) {
+            newSelectedNodeIndex++
+        }
+        if (_historyElements[newSelectedNodeIndex] !is ChessHistoryItem.MoveItem) return false
+        _selectedNodeIndex = newSelectedNodeIndex
+        val currentHistoryNode = _historyElements[newSelectedNodeIndex] as ChessHistoryItem.MoveItem
+        _gameLogic = ChessGame(currentHistoryNode.positionFen)
+        _lastMoveArrow = LastMoveArrow(
+            startFile = currentHistoryNode.movesCoordinates.startFile,
+            startRank = currentHistoryNode.movesCoordinates.startRank,
+            endFile = currentHistoryNode.movesCoordinates.endFile,
+            endRank = currentHistoryNode.movesCoordinates.endRank,
+        )
+        return true
+    }
+
+    private fun requestBackOneMove(): Boolean {
+        if (_gameInProgress) return false
+        if (_selectedNodeIndex == null) return false
+        if (_selectedNodeIndex!! <= 0) return false
+        var newSelectedNodeIndex = _selectedNodeIndex!! - 1
+        while ((newSelectedNodeIndex >= 0) && (_historyElements[newSelectedNodeIndex] !is ChessHistoryItem.MoveItem)) {
+            newSelectedNodeIndex--
+        }
+        return if (newSelectedNodeIndex >= 0) {
+            _selectedNodeIndex = newSelectedNodeIndex
+            true
+        } else {
+            false
+        }
+    }
+
+    private fun addMoveToHistory(moveCoordinates: MoveCoordinates) {
+        val lastMove: Move? = _gameLogic.lastMove
+        val isWhiteTurnBeforeMove = _gameLogic.sideToMove == Side.BLACK
+        val needingToAddMoveNumber = isWhiteTurnBeforeMove && !_isFirstHistoryNode
+
+        if (needingToAddMoveNumber) {
+            _historyElements.add(
+                ChessHistoryItem.MoveNumberItem(
+                    number = _gameLogic.fullMoveCount,
+                    isWhiteTurn = true,
+                )
+            )
+        }
+
+        val gameLogicBeforeMove = ChessGame(_positionFenBeforeLastMove)
+        val moveSan = gameLogicBeforeMove.getNotation(NotationType.SAN, lastMove)
+        _historyElements.add(
+            ChessHistoryItem.MoveItem(
+                san = moveSan, positionFen = _gameLogic.fen, isWhiteMove = isWhiteTurnBeforeMove,
+                movesCoordinates = moveCoordinates,
+            )
+        )
+        _isFirstHistoryNode = false
+    }
+
+
 
     private fun selectLastHistoryMoveNodeIfAny() {
         var lastHistoryMoveNodeIndex = _historyElements.size - 1
