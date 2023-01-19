@@ -78,8 +78,6 @@ fun GamePage(
         clockJob = null
         clockActive = false
 
-        // todo check if other side is in insufficient material and change result to draw accordingly
-        // todo check game outcome and notify user and add pgn tag
         ChessGameManager.handleGameEndingStatus(
             onGameContinuation = {
                 ChessGameManager.setWinnerInPgn(whiteSide = !whiteTimeout)

@@ -205,6 +205,7 @@ fun EditPositionPage(
                     })
                 Column(modifier = Modifier.fillMaxWidth(0.4f).fillMaxHeight()) {
                     ChessBoard(
+                        isEditable = true,
                         piecesValues = piecesValues,
                         whitePlayerType = PlayerType.None,
                         blackPlayerType = PlayerType.None,
