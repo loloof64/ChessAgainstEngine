@@ -268,12 +268,14 @@ fun GamePage(
         }
     }
 
-    fun onMovePlayed() {
-        whiteTimeActive = !whiteTimeActive
-        if (whiteTimeActive) {
-            blackTimeInDeciSeconds += blackIncrementInSeconds * 10
-        } else {
-            whiteTimeInDeciSeconds += whiteIncrementInSeconds * 10
+    fun onMovePlayed(isPendingPromotionMove: Boolean) {
+        if (!isPendingPromotionMove) {
+            whiteTimeActive = !whiteTimeActive
+            if (whiteTimeActive) {
+                blackTimeInDeciSeconds += blackIncrementInSeconds * 10
+            } else {
+                whiteTimeInDeciSeconds += whiteIncrementInSeconds * 10
+            }
         }
         isWhiteTurn = ChessGameManager.isWhiteTurn()
         boardPieces = ChessGameManager.getPieces()
@@ -286,7 +288,9 @@ fun GamePage(
         blackPlayerType = ChessGameManager.getBlackPlayerType()
         selectedHistoryNodeIndex = ChessGameManager.getSelectedHistoryNodeIndex()
 
-        chainCpuMoveIfAppropriated()
+        if (!isPendingPromotionMove) {
+            chainCpuMoveIfAppropriated()
+        }
     }
 
     fun onPromotionCancelled() {
@@ -814,7 +818,7 @@ private fun ChessBoardComponent(
     onThreeFoldRepetition: () -> Unit,
     onInsufficientMaterial: () -> Unit,
     onFiftyMovesRuleDraw: () -> Unit,
-    onMovePlayed: () -> Unit,
+    onMovePlayed: (Boolean) -> Unit,
     onPromotionCancelled: () -> Unit,
 ) {
     ChessBoard(isWhiteTurn = isWhiteTurn,
@@ -830,7 +834,7 @@ private fun ChessBoardComponent(
         pendingPromotionEndRank = pendingPromotionEndSquare?.y,
         tryPlayingMove = { dragAndDropData ->
             if (!gameInProgress) return@ChessBoard
-            val isValidMove = ChessGameManager.playMove(
+            val moveResultInfo = ChessGameManager.playMove(
                 startFile = dragAndDropData.startFile,
                 startRank = dragAndDropData.startRank,
                 endFile = dragAndDropData.endFile,
@@ -841,7 +845,7 @@ private fun ChessBoardComponent(
                 onInsufficientMaterial = onInsufficientMaterial,
                 onFiftyMovesRuleDraw = onFiftyMovesRuleDraw,
             )
-            if (isValidMove) onMovePlayed()
+            if (moveResultInfo.isLegal) onMovePlayed(moveResultInfo.isPendingPromotion)
         },
         onCancelPromotion = {
             if (!gameInProgress) return@ChessBoard
@@ -858,7 +862,7 @@ private fun ChessBoardComponent(
                 onInsufficientMaterial = onInsufficientMaterial,
                 onFiftyMovesRuleDraw = onFiftyMovesRuleDraw,
             )
-            onMovePlayed()
+            onMovePlayed(false)
         })
 }
 

@@ -23,6 +23,8 @@ import java.io.FileOutputStream
 const val defaultPosition = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 const val emptyPosition = "4k3/8/8/8/8/8/8/4K3 w - - 0 1"
 
+data class MoveResultInfo(val isLegal: Boolean, val isPendingPromotion: Boolean)
+
 fun String.toLastMoveArrow(): LastMoveArrow {
     if (length < 4) throw IllegalMoveException("Not a uci chess move string : $this.")
 
@@ -197,7 +199,7 @@ object ChessGameManager {
         onThreeFoldsRepetition: () -> Unit,
         onInsufficientMaterial: () -> Unit,
         onFiftyMovesRuleDraw: () -> Unit
-    ): Boolean {
+    ): MoveResultInfo {
         val startSquare = Square.values()[8 * startFile + startRank]
         val endSquare = Square.values()[8 * endFile + endRank]
         val move = Move(startSquare, endSquare)
@@ -226,7 +228,7 @@ object ChessGameManager {
                 onInsufficientMaterial = onInsufficientMaterial,
                 onFiftyMovesRuleDraw = onFiftyMovesRuleDraw,
             )
-            return true
+            return MoveResultInfo(isLegal = true, isPendingPromotion = false)
         } else {
             val isLegalPromotionMove = _gameLogic.isLegalMove(Move(startSquare, endSquare, PieceType.QUEEN))
 
@@ -234,10 +236,10 @@ object ChessGameManager {
                 _pendingPromotion = if (isWhiteTurn()) PendingPromotion.White else PendingPromotion.Black
                 _pendingPromotionStartSquare = startSquare
                 _pendingPromotionEndSquare = endSquare
-                return true
+                return MoveResultInfo(isLegal = true, isPendingPromotion = true)
             }
 
-            return false
+            return MoveResultInfo(isLegal = false, isPendingPromotion = false)
         }
     }
 
