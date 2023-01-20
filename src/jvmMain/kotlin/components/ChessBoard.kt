@@ -107,7 +107,6 @@ fun ChessBoard(
             cellSize.toPx()
         }
 
-
         Box(
             modifier = Modifier.aspectRatio(1f, heightBasedAspectRatio).background(bgColor)
         ) {
@@ -270,7 +269,7 @@ private fun DragAndDropLayer(
     var dndData by rememberSaveable { mutableStateOf<DragAndDropData?>(null) }
     Column(
         modifier = Modifier.fillMaxSize()
-            .pointerInput(reversed, piecesValues, isWhiteTurn, whitePlayerType, blackPlayerType) {
+            .pointerInput(reversed, piecesValues, isWhiteTurn, whitePlayerType, blackPlayerType, cellSizePx) {
                 if (isEditable) {
                     detectTapGestures(
                         onTap = { offset ->
