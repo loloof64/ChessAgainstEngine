@@ -197,7 +197,7 @@ object ChessGameManager {
         onThreeFoldsRepetition: () -> Unit,
         onInsufficientMaterial: () -> Unit,
         onFiftyMovesRuleDraw: () -> Unit
-    ) {
+    ): Boolean {
         val startSquare = Square.values()[8 * startFile + startRank]
         val endSquare = Square.values()[8 * endFile + endRank]
         val move = Move(startSquare, endSquare)
@@ -226,6 +226,7 @@ object ChessGameManager {
                 onInsufficientMaterial = onInsufficientMaterial,
                 onFiftyMovesRuleDraw = onFiftyMovesRuleDraw,
             )
+            return true
         } else {
             val isLegalPromotionMove = _gameLogic.isLegalMove(Move(startSquare, endSquare, PieceType.QUEEN))
 
@@ -233,7 +234,10 @@ object ChessGameManager {
                 _pendingPromotion = if (isWhiteTurn()) PendingPromotion.White else PendingPromotion.Black
                 _pendingPromotionStartSquare = startSquare
                 _pendingPromotionEndSquare = endSquare
+                return true
             }
+
+            return false
         }
     }
 

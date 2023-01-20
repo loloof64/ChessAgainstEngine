@@ -830,7 +830,7 @@ private fun ChessBoardComponent(
         pendingPromotionEndRank = pendingPromotionEndSquare?.y,
         tryPlayingMove = { dragAndDropData ->
             if (!gameInProgress) return@ChessBoard
-            ChessGameManager.playMove(
+            val isValidMove = ChessGameManager.playMove(
                 startFile = dragAndDropData.startFile,
                 startRank = dragAndDropData.startRank,
                 endFile = dragAndDropData.endFile,
@@ -841,7 +841,7 @@ private fun ChessBoardComponent(
                 onInsufficientMaterial = onInsufficientMaterial,
                 onFiftyMovesRuleDraw = onFiftyMovesRuleDraw,
             )
-            onMovePlayed()
+            if (isValidMove) onMovePlayed()
         },
         onCancelPromotion = {
             if (!gameInProgress) return@ChessBoard
