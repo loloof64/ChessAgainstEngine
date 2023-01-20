@@ -103,6 +103,7 @@ data class Strings(
     val blackWonOnTime: String,
     val drawOnTimeByInsufficientMaterial: String,
     val timeIncrement: String,
+    val differentTimeForBlack: String,
 )
 
 val strings = mapOf(

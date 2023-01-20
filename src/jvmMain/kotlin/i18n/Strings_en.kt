@@ -101,4 +101,5 @@ val enStrings = Strings(
     blackWonOnTime = "Black has won on time.",
     drawOnTimeByInsufficientMaterial = "Draw by insufficient material though there's a timeout.",
     timeIncrement = "Increment (s)",
+    differentTimeForBlack = "Different time for black"
 )

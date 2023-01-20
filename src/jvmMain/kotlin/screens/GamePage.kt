@@ -72,6 +72,8 @@ fun GamePage(
     var whiteTimeActive by rememberSaveable { mutableStateOf(true) }
     var clockActive by rememberSaveable { mutableStateOf(false) }
     var whiteAllocatedTimeInDeciSeconds by rememberSaveable { mutableStateOf(600) }
+    var blackAllocatedTimeInDeciSeconds by rememberSaveable { mutableStateOf(0) }
+    var differentialClockActive by rememberSaveable { mutableStateOf(false) }
 
     var clockJob by rememberSaveable { mutableStateOf<Job?>(null) }
 
@@ -91,9 +93,7 @@ fun GamePage(
             val message = strings.drawOnTimeByInsufficientMaterial
             coroutineScope.launch {
                 scaffoldState.snackbarHostState.showSnackbar(
-                    message,
-                    actionLabel = strings.close,
-                    duration = SnackbarDuration.Long
+                    message, actionLabel = strings.close, duration = SnackbarDuration.Long
                 )
             }
         } else {
@@ -106,20 +106,23 @@ fun GamePage(
             val message = if (whiteTimeout) strings.blackWonOnTime else strings.whiteWonOnTime
             coroutineScope.launch {
                 scaffoldState.snackbarHostState.showSnackbar(
-                    message,
-                    actionLabel = strings.close,
-                    duration = SnackbarDuration.Long
+                    message, actionLabel = strings.close, duration = SnackbarDuration.Long
                 )
             }
         }
+    }
+
+    fun handleDifferentialClockActiveChange(newState: Boolean) {
+        differentialClockActive = newState
     }
 
     fun handleClockActiveChange(newState: Boolean) {
         clockActive = newState
         if (newState) {
             whiteTimeInDeciSeconds = whiteAllocatedTimeInDeciSeconds + 10 * whiteIncrementInSeconds
-            blackTimeInDeciSeconds = whiteTimeInDeciSeconds
-            blackIncrementInSeconds = whiteIncrementInSeconds
+            blackTimeInDeciSeconds =
+                if (differentialClockActive) blackAllocatedTimeInDeciSeconds + 10 * blackIncrementInSeconds else whiteTimeInDeciSeconds
+            blackIncrementInSeconds = if (differentialClockActive) blackIncrementInSeconds else whiteIncrementInSeconds
 
             clockJob = coroutineScope.launch {
                 while (isActive) {
@@ -228,12 +231,14 @@ fun GamePage(
     fun launchMoveComputation() {
         coroutineScope.launch(Dispatchers.Default) {
             if (clockActive) {
-                UciEngineChannel.getBestMoveForPosition(ChessGameManager.getCurrentPosition(), MoveTime(
-                    whiteTimeMillis = whiteTimeInDeciSeconds * 100L,
-                    blackTimeMillis = blackTimeInDeciSeconds * 100L,
-                    whiteIncMillis = whiteIncrementInSeconds * 1000L,
-                    blackIncMillis = blackIncrementInSeconds * 1000L,
-                ))
+                UciEngineChannel.getBestMoveForPosition(
+                    ChessGameManager.getCurrentPosition(), MoveTime(
+                        whiteTimeMillis = whiteTimeInDeciSeconds * 100L,
+                        blackTimeMillis = blackTimeInDeciSeconds * 100L,
+                        whiteIncMillis = whiteIncrementInSeconds * 1000L,
+                        blackIncMillis = blackIncrementInSeconds * 1000L,
+                    )
+                )
             } else {
                 UciEngineChannel.getBestMoveForPosition(ChessGameManager.getCurrentPosition(), null)
             }
@@ -253,8 +258,8 @@ fun GamePage(
     }
 
     fun chainCpuMoveIfAppropriated() {
-        val isPlayerTurn = (isWhiteTurn && whitePlayerType == PlayerType.Human) ||
-                (!isWhiteTurn && blackPlayerType == PlayerType.Human)
+        val isPlayerTurn =
+            (isWhiteTurn && whitePlayerType == PlayerType.Human) || (!isWhiteTurn && blackPlayerType == PlayerType.Human)
 
         if (isPlayerTurn) {
             justUpdatePositionEvaluation()
@@ -267,8 +272,7 @@ fun GamePage(
         whiteTimeActive = !whiteTimeActive
         if (whiteTimeActive) {
             blackTimeInDeciSeconds += blackIncrementInSeconds * 10
-        }
-        else {
+        } else {
             whiteTimeInDeciSeconds += whiteIncrementInSeconds * 10
         }
         isWhiteTurn = ChessGameManager.isWhiteTurn()
@@ -342,25 +346,34 @@ fun GamePage(
         return result
     }
 
-    fun updateAllocatedHours(newHoursCount: Int) {
-        val currentAllocatedMinutes = minutesFor(whiteAllocatedTimeInDeciSeconds)
-        val currentAllocatedSeconds = secondsFor(whiteAllocatedTimeInDeciSeconds)
-        whiteAllocatedTimeInDeciSeconds =
-            newHoursCount * 3600_0 + currentAllocatedMinutes * 60_0 + currentAllocatedSeconds * 10
+    fun updateAllocatedHours(newHoursCount: Int, black: Boolean = false) {
+        val currentAllocatedMinutes =
+            minutesFor(if (black) blackAllocatedTimeInDeciSeconds else whiteAllocatedTimeInDeciSeconds)
+        val currentAllocatedSeconds =
+            secondsFor(if (black) blackAllocatedTimeInDeciSeconds else whiteAllocatedTimeInDeciSeconds)
+        val newValue = newHoursCount * 3600_0 + currentAllocatedMinutes * 60_0 + currentAllocatedSeconds * 10
+        if (black) blackAllocatedTimeInDeciSeconds = newValue
+        else whiteAllocatedTimeInDeciSeconds = newValue
     }
 
-    fun updateAllocatedMinutes(newMinutesCount: Int) {
-        val currentAllocatedHours = hoursFor(whiteAllocatedTimeInDeciSeconds)
-        val currentAllocatedSeconds = secondsFor(whiteAllocatedTimeInDeciSeconds)
-        whiteAllocatedTimeInDeciSeconds =
-            currentAllocatedHours * 3600_0 + newMinutesCount * 60_0 + currentAllocatedSeconds * 10
+    fun updateAllocatedMinutes(newMinutesCount: Int, black: Boolean = false) {
+        val currentAllocatedHours =
+            hoursFor(if (black) blackAllocatedTimeInDeciSeconds else whiteAllocatedTimeInDeciSeconds)
+        val currentAllocatedSeconds =
+            secondsFor(if (black) blackAllocatedTimeInDeciSeconds else whiteAllocatedTimeInDeciSeconds)
+        val newValue = currentAllocatedHours * 3600_0 + newMinutesCount * 60_0 + currentAllocatedSeconds * 10
+        if (black) blackAllocatedTimeInDeciSeconds = newValue
+        else whiteAllocatedTimeInDeciSeconds = newValue
     }
 
-    fun updateAllocatedSeconds(newSecondsCount: Int) {
-        val currentAllocatedHours = hoursFor(whiteAllocatedTimeInDeciSeconds)
-        val currentAllocatedMinutes = minutesFor(whiteAllocatedTimeInDeciSeconds)
-        whiteAllocatedTimeInDeciSeconds =
-            currentAllocatedHours * 3600_0 + currentAllocatedMinutes * 60_0 + newSecondsCount * 10
+    fun updateAllocatedSeconds(newSecondsCount: Int, black: Boolean = false) {
+        val currentAllocatedHours =
+            hoursFor(if (black) blackAllocatedTimeInDeciSeconds else whiteAllocatedTimeInDeciSeconds)
+        val currentAllocatedMinutes =
+            minutesFor(if (black) blackAllocatedTimeInDeciSeconds else whiteAllocatedTimeInDeciSeconds)
+        val newValue = currentAllocatedHours * 3600_0 + currentAllocatedMinutes * 60_0 + newSecondsCount * 10
+        if (black) blackAllocatedTimeInDeciSeconds = newValue
+        else whiteAllocatedTimeInDeciSeconds = newValue
     }
 
     fun purposeSaveGameInPgnFile() {
@@ -414,8 +427,7 @@ fun GamePage(
 
         if (whiteTimeActive) {
             blackTimeInDeciSeconds += blackIncrementInSeconds * 10
-        }
-        else {
+        } else {
             whiteTimeInDeciSeconds += whiteIncrementInSeconds * 10
         }
 
@@ -450,62 +462,61 @@ fun GamePage(
 
     BoxWithConstraints {
         val isLandscape = maxWidth > maxHeight
-        Scaffold(scaffoldState = scaffoldState,
-            topBar = {
-                TopAppBar(
-                    title = { Text(strings.gamePageTitle) },
-                    navigationIcon = {
-                        IconButton({ confirmExitGameDialogOpen = true }) {
-                            Icon(Icons.Default.ArrowBack, strings.goBack)
-                        }
-                    }, actions = {
-                        IconButton(content = {
-                            Image(
-                                painter = painterResource("images/material_vectors/swap_vert.svg"),
-                                contentDescription = strings.swapBoardOrientation,
-                                modifier = Modifier.size(30.dp),
-                                colorFilter = ColorFilter.tint(Color.White)
-                            )
-                        }, onClick = {
-                            boardReversed = !boardReversed
-                        })
-                        IconButton(::purposeStopGame) {
-                            Image(
-                                painter = painterResource("images/material_vectors/cancel.svg"),
-                                contentDescription = strings.stopGame,
-                                modifier = Modifier.size(30.dp),
-                                colorFilter = ColorFilter.tint(Color.White)
-                            )
-                        }
-                        if (!gameInProgress) {
-                            IconButton({
-                                navigation.push(Screen.Options)
-                            }) {
-                                Icon(
-                                    Icons.Default.Settings, strings.preferences, modifier = Modifier.size(30.dp)
-                                )
-                            }
-                            IconButton({
-                                purposeSaveGameInPgnFile()
-                            }) {
-                                Image(
-                                    painter = painterResource("images/material_vectors/save.svg"),
-                                    contentDescription = strings.saveGameInPgn,
-                                    modifier = Modifier.size(30.dp),
-                                    colorFilter = ColorFilter.tint(Color.White)
-                                )
-                            }
-                        }
-                    })
-            }) {
+        Scaffold(scaffoldState = scaffoldState, topBar = {
+            TopAppBar(title = { Text(strings.gamePageTitle) }, navigationIcon = {
+                IconButton({ confirmExitGameDialogOpen = true }) {
+                    Icon(Icons.Default.ArrowBack, strings.goBack)
+                }
+            }, actions = {
+                IconButton(content = {
+                    Image(
+                        painter = painterResource("images/material_vectors/swap_vert.svg"),
+                        contentDescription = strings.swapBoardOrientation,
+                        modifier = Modifier.size(30.dp),
+                        colorFilter = ColorFilter.tint(Color.White)
+                    )
+                }, onClick = {
+                    boardReversed = !boardReversed
+                })
+                IconButton(::purposeStopGame) {
+                    Image(
+                        painter = painterResource("images/material_vectors/cancel.svg"),
+                        contentDescription = strings.stopGame,
+                        modifier = Modifier.size(30.dp),
+                        colorFilter = ColorFilter.tint(Color.White)
+                    )
+                }
+                if (!gameInProgress) {
+                    IconButton({
+                        navigation.push(Screen.Options)
+                    }) {
+                        Icon(
+                            Icons.Default.Settings, strings.preferences, modifier = Modifier.size(30.dp)
+                        )
+                    }
+                    IconButton({
+                        purposeSaveGameInPgnFile()
+                    }) {
+                        Image(
+                            painter = painterResource("images/material_vectors/save.svg"),
+                            contentDescription = strings.saveGameInPgn,
+                            modifier = Modifier.size(30.dp),
+                            colorFilter = ColorFilter.tint(Color.White)
+                        )
+                    }
+                }
+            })
+        }) {
 
             val spinnerSizeRatio = 0.3f
 
-            Column {
+            Column(
+                verticalArrangement = Arrangement.Top
+            ) {
                 Box {
                     if (isLandscape) {
                         val heightRatio =
-                            if (PreferencesManager.getEnginePath().isNotEmpty() && gameInProgress) 0.65f else 1.0f
+                            if (PreferencesManager.getEnginePath().isNotEmpty() && gameInProgress) 0.60f else 1.0f
                         Row(
                             modifier = Modifier.fillMaxWidth().fillMaxHeight(heightRatio),
                             horizontalArrangement = Arrangement.Center,
@@ -555,7 +566,7 @@ fun GamePage(
                         }
                     } else {
                         val heightRatio =
-                            if (PreferencesManager.getEnginePath().isNotEmpty() && gameInProgress) 0.70f else 1.0f
+                            if (PreferencesManager.getEnginePath().isNotEmpty() && gameInProgress) 0.55f else 1.0f
                         Column(
                             modifier = Modifier.fillMaxWidth().fillMaxHeight(heightRatio),
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -609,9 +620,7 @@ fun GamePage(
 
                     if (engineIsThinking) {
                         CircularProgressIndicator(
-                            modifier = Modifier
-                                .fillMaxSize(spinnerSizeRatio)
-                                .align(Alignment.Center)
+                            modifier = Modifier.fillMaxSize(spinnerSizeRatio).align(Alignment.Center)
                         )
                     }
                 }
@@ -621,7 +630,6 @@ fun GamePage(
                     Row(
                         horizontalArrangement = Arrangement.Start,
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(6.dp)
                     ) {
                         Text(strings.computerSidesOptions)
 
@@ -659,10 +667,11 @@ fun GamePage(
                         }
                     }
 
+                    // base clock
+
                     Row(
                         horizontalArrangement = Arrangement.Start,
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(6.dp)
                     ) {
                         Checkbox(
                             checked = clockActive,
@@ -670,41 +679,70 @@ fun GamePage(
                         )
                         Text(strings.timedGame)
 
-                        VerticalNumberPicker(
-                            value = hoursFor(whiteAllocatedTimeInDeciSeconds),
+                        VerticalNumberPicker(value = hoursFor(whiteAllocatedTimeInDeciSeconds),
                             range = 0..3,
                             onStateChanged = {
                                 updateAllocatedHours(it)
-                            }
-                        )
+                            })
                         Text("h")
 
-                        VerticalNumberPicker(
-                            value = minutesFor(whiteAllocatedTimeInDeciSeconds),
+                        VerticalNumberPicker(value = minutesFor(whiteAllocatedTimeInDeciSeconds),
                             range = 0..59,
                             onStateChanged = {
                                 updateAllocatedMinutes(it)
-                            }
-                        )
+                            })
                         Text("m")
 
-                        VerticalNumberPicker(
-                            value = secondsFor(whiteAllocatedTimeInDeciSeconds),
+                        VerticalNumberPicker(value = secondsFor(whiteAllocatedTimeInDeciSeconds),
                             range = 0..59,
                             onStateChanged = {
                                 updateAllocatedSeconds(it)
-                            }
-                        )
+                            })
                         Text("s")
 
                         Text(strings.timeIncrement, modifier = Modifier.padding(start = 10.dp))
-                        VerticalNumberPicker(
-                            value = whiteIncrementInSeconds,
+                        VerticalNumberPicker(value = whiteIncrementInSeconds, range = 0..59, onStateChanged = {
+                            whiteIncrementInSeconds = it
+                        })
+                    }
+
+                    // differential clock
+
+                    Row(
+                        horizontalArrangement = Arrangement.Start,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Checkbox(
+                            checked = differentialClockActive,
+                            onCheckedChange = { handleDifferentialClockActiveChange(it) },
+                        )
+                        Text(strings.differentTimeForBlack)
+
+                        VerticalNumberPicker(value = hoursFor(blackAllocatedTimeInDeciSeconds),
+                            range = 0..3,
+                            onStateChanged = {
+                                updateAllocatedHours(it, black = true)
+                            })
+                        Text("h")
+
+                        VerticalNumberPicker(value = minutesFor(blackAllocatedTimeInDeciSeconds),
                             range = 0..59,
                             onStateChanged = {
-                                whiteIncrementInSeconds = it
-                            }
-                        )
+                                updateAllocatedMinutes(it, black = true)
+                            })
+                        Text("m")
+
+                        VerticalNumberPicker(value = secondsFor(blackAllocatedTimeInDeciSeconds),
+                            range = 0..59,
+                            onStateChanged = {
+                                updateAllocatedSeconds(it, black = true)
+                            })
+                        Text("s")
+
+                        Text(strings.timeIncrement, modifier = Modifier.padding(start = 10.dp))
+                        VerticalNumberPicker(value = blackIncrementInSeconds, range = 0..59, onStateChanged = {
+                            blackIncrementInSeconds = it
+                        })
                     }
                 }
             }
@@ -779,8 +817,7 @@ private fun ChessBoardComponent(
     onMovePlayed: () -> Unit,
     onPromotionCancelled: () -> Unit,
 ) {
-    ChessBoard(
-        isWhiteTurn = isWhiteTurn,
+    ChessBoard(isWhiteTurn = isWhiteTurn,
         piecesValues = piecesValues,
         reversed = reversed,
         whitePlayerType = whitePlayerType,
@@ -913,16 +950,10 @@ fun ClockComponent(
     }
 
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .fillMaxHeight(0.1f)
-            .border(width = 1.dp, color = Color.Black)
+        modifier = modifier.fillMaxWidth().fillMaxHeight(0.1f).border(width = 1.dp, color = Color.Black)
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxWidth(0.5f)
-                .fillMaxHeight()
-                .background(whiteZoneBgColor),
+            modifier = Modifier.fillMaxWidth(0.5f).fillMaxHeight().background(whiteZoneBgColor),
             contentAlignment = Alignment.Center,
         ) {
             Text(
@@ -932,10 +963,7 @@ fun ClockComponent(
             )
         }
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight()
-                .background(blackZoneBgColor),
+            modifier = Modifier.fillMaxWidth().fillMaxHeight().background(blackZoneBgColor),
             contentAlignment = Alignment.Center,
         ) {
             Text(

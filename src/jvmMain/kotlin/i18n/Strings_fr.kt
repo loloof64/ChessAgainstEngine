@@ -100,5 +100,6 @@ val frStrings = Strings(
     whiteWonOnTime = "Les Blancs ont gagné au temps",
     blackWonOnTime = "Les Noirs ont gagné au temps",
     drawOnTimeByInsufficientMaterial = "Nulle par insuffisance matérielle bien que le temps soit écoulé.",
-    timeIncrement = "Incrément (s)"
+    timeIncrement = "Incrément (s)",
+    differentTimeForBlack = "Temps différent pour les Noirs"
 )

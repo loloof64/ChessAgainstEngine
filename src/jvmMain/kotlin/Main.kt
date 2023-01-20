@@ -44,7 +44,7 @@ fun main() = application {
             exitApplication()
         }
     }) {
-        window.minimumSize = Dimension(800, 600)
+        window.minimumSize = Dimension(800, 700)
         App()
     }
 }

@@ -101,4 +101,5 @@ val esStrings = Strings(
     blackWonOnTime = "Los negros han ganado por tiempo.",
     drawOnTimeByInsufficientMaterial = "Dibujar por material insuficiente aunque hay un tiempo de espera.",
     timeIncrement = "Incremento (s)",
+    differentTimeForBlack = "Tiempo diferente para los Negros"
 )
