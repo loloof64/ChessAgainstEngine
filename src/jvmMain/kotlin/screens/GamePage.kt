@@ -26,6 +26,7 @@ import i18n.LocalStrings
 import io.github.wolfraam.chessgame.board.Square
 import kotlinx.coroutines.*
 import logic.ChessGameManager
+import logic.MoveTime
 import logic.PreferencesManager
 import logic.UciEngineChannel
 import java.awt.KeyboardFocusManager
@@ -223,7 +224,14 @@ fun GamePage(
 
     fun launchMoveComputation() {
         coroutineScope.launch(Dispatchers.Default) {
-            UciEngineChannel.getBestMoveForPosition(ChessGameManager.getCurrentPosition())
+            if (clockActive) {
+                UciEngineChannel.getBestMoveForPosition(ChessGameManager.getCurrentPosition(), MoveTime(
+                    whiteTimeMillis = whiteTimeInDeciSeconds * 100L,
+                    blackTimeMillis = blackTimeInDeciSeconds * 100L,
+                ))
+            } else {
+                UciEngineChannel.getBestMoveForPosition(ChessGameManager.getCurrentPosition(), null)
+            }
         }
     }
 

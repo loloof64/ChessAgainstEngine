@@ -3,6 +3,13 @@ package logic
 typealias StringCallback = (String) -> Unit
 typealias FloatCallback = (Float) -> Unit
 
+data class MoveTime(
+    val whiteTimeMillis: Long,
+    val blackTimeMillis: Long,
+    val whiteIncMillis: Long = 0,
+    val blackIncMillis: Long = 0
+)
+
 object UciEngineChannel {
     private var process: ProcessWrapper? = null
 
@@ -52,9 +59,13 @@ object UciEngineChannel {
         } else false
     }
 
-    suspend fun getBestMoveForPosition(position: String) {
+    suspend fun getBestMoveForPosition(position: String, moveTime: MoveTime?) {
         process?.sendCommand("position fen $position")
-        process?.sendCommand("go movetime ${PreferencesManager.getEngineThinkingTime()}")
+        if (moveTime != null) {
+            process?.sendCommand("go wtime ${moveTime.whiteTimeMillis} btime ${moveTime.blackTimeMillis} winc ${moveTime.whiteIncMillis} binc ${moveTime.blackIncMillis}")
+        } else {
+            process?.sendCommand("go movetime ${PreferencesManager.getEngineThinkingTime()}")
+        }
     }
 
     suspend fun getNewPositionEvaluation(position: String) {
