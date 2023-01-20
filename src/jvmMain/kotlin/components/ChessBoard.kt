@@ -345,10 +345,15 @@ private fun DragAndDropLayer(
                         onDragEnd = {
                             if (!isActive) return@detectDragGestures
                             if (dndData == null) return@detectDragGestures
+
                             val startAndEndCellsAreDifferent =
                                 (dndData!!.startFile != dndData!!.endFile) || (dndData!!.startRank != dndData!!.endRank)
                             if (startAndEndCellsAreDifferent) {
-                                tryPlayingMove(dndData!!)
+                                val inBounds = (0..7).contains(dndData!!.startFile) && (0..7).contains(dndData!!.startRank)
+                                        && (0..7).contains(dndData!!.endFile) && (0..7).contains(dndData!!.endRank)
+                                if (inBounds) {
+                                    tryPlayingMove(dndData!!)
+                                }
                             }
                             dndData = null
                             onDndDataUpdate(null)
