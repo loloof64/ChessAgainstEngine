@@ -67,9 +67,11 @@ fun GamePage(
 
     var whiteTimeInDeciSeconds by rememberSaveable { mutableStateOf(0) }
     var blackTimeInDeciSeconds by rememberSaveable { mutableStateOf(0) }
+    var whiteIncrementInSeconds by rememberSaveable { mutableStateOf(0) }
+    var blackIncrementInSeconds by rememberSaveable { mutableStateOf(0) }
     var whiteTimeActive by rememberSaveable { mutableStateOf(true) }
     var clockActive by rememberSaveable { mutableStateOf(false) }
-    var allocatedTimeInDeciSeconds by rememberSaveable { mutableStateOf(600) }
+    var whiteAllocatedTimeInDeciSeconds by rememberSaveable { mutableStateOf(600) }
 
     var clockJob by rememberSaveable { mutableStateOf<Job?>(null) }
 
@@ -115,8 +117,9 @@ fun GamePage(
     fun handleClockActiveChange(newState: Boolean) {
         clockActive = newState
         if (newState) {
-            whiteTimeInDeciSeconds = allocatedTimeInDeciSeconds
-            blackTimeInDeciSeconds = allocatedTimeInDeciSeconds
+            whiteTimeInDeciSeconds = whiteAllocatedTimeInDeciSeconds + 10 * whiteIncrementInSeconds
+            blackTimeInDeciSeconds = whiteTimeInDeciSeconds
+            blackIncrementInSeconds = whiteIncrementInSeconds
 
             clockJob = coroutineScope.launch {
                 while (isActive) {
@@ -228,6 +231,8 @@ fun GamePage(
                 UciEngineChannel.getBestMoveForPosition(ChessGameManager.getCurrentPosition(), MoveTime(
                     whiteTimeMillis = whiteTimeInDeciSeconds * 100L,
                     blackTimeMillis = blackTimeInDeciSeconds * 100L,
+                    whiteIncMillis = whiteIncrementInSeconds * 1000L,
+                    blackIncMillis = blackIncrementInSeconds * 1000L,
                 ))
             } else {
                 UciEngineChannel.getBestMoveForPosition(ChessGameManager.getCurrentPosition(), null)
@@ -260,6 +265,12 @@ fun GamePage(
 
     fun onMovePlayed() {
         whiteTimeActive = !whiteTimeActive
+        if (whiteTimeActive) {
+            blackTimeInDeciSeconds += blackIncrementInSeconds * 10
+        }
+        else {
+            whiteTimeInDeciSeconds += whiteIncrementInSeconds * 10
+        }
         isWhiteTurn = ChessGameManager.isWhiteTurn()
         boardPieces = ChessGameManager.getPieces()
         pendingPromotion = ChessGameManager.getPendingPromotion()
@@ -332,23 +343,23 @@ fun GamePage(
     }
 
     fun updateAllocatedHours(newHoursCount: Int) {
-        val currentAllocatedMinutes = minutesFor(allocatedTimeInDeciSeconds)
-        val currentAllocatedSeconds = secondsFor(allocatedTimeInDeciSeconds)
-        allocatedTimeInDeciSeconds =
+        val currentAllocatedMinutes = minutesFor(whiteAllocatedTimeInDeciSeconds)
+        val currentAllocatedSeconds = secondsFor(whiteAllocatedTimeInDeciSeconds)
+        whiteAllocatedTimeInDeciSeconds =
             newHoursCount * 3600_0 + currentAllocatedMinutes * 60_0 + currentAllocatedSeconds * 10
     }
 
     fun updateAllocatedMinutes(newMinutesCount: Int) {
-        val currentAllocatedHours = hoursFor(allocatedTimeInDeciSeconds)
-        val currentAllocatedSeconds = secondsFor(allocatedTimeInDeciSeconds)
-        allocatedTimeInDeciSeconds =
+        val currentAllocatedHours = hoursFor(whiteAllocatedTimeInDeciSeconds)
+        val currentAllocatedSeconds = secondsFor(whiteAllocatedTimeInDeciSeconds)
+        whiteAllocatedTimeInDeciSeconds =
             currentAllocatedHours * 3600_0 + newMinutesCount * 60_0 + currentAllocatedSeconds * 10
     }
 
     fun updateAllocatedSeconds(newSecondsCount: Int) {
-        val currentAllocatedHours = hoursFor(allocatedTimeInDeciSeconds)
-        val currentAllocatedMinutes = minutesFor(allocatedTimeInDeciSeconds)
-        allocatedTimeInDeciSeconds =
+        val currentAllocatedHours = hoursFor(whiteAllocatedTimeInDeciSeconds)
+        val currentAllocatedMinutes = minutesFor(whiteAllocatedTimeInDeciSeconds)
+        whiteAllocatedTimeInDeciSeconds =
             currentAllocatedHours * 3600_0 + currentAllocatedMinutes * 60_0 + newSecondsCount * 10
     }
 
@@ -400,6 +411,13 @@ fun GamePage(
             onFiftyMovesRuleDraw = ::onFiftyMovesRuleDraw,
         )
         whiteTimeActive = !whiteTimeActive
+
+        if (whiteTimeActive) {
+            blackTimeInDeciSeconds += blackIncrementInSeconds * 10
+        }
+        else {
+            whiteTimeInDeciSeconds += whiteIncrementInSeconds * 10
+        }
 
         isWhiteTurn = ChessGameManager.isWhiteTurn()
         boardPieces = ChessGameManager.getPieces()
@@ -653,7 +671,7 @@ fun GamePage(
                         Text(strings.timedGame)
 
                         VerticalNumberPicker(
-                            value = hoursFor(allocatedTimeInDeciSeconds),
+                            value = hoursFor(whiteAllocatedTimeInDeciSeconds),
                             range = 0..3,
                             onStateChanged = {
                                 updateAllocatedHours(it)
@@ -662,7 +680,7 @@ fun GamePage(
                         Text("h")
 
                         VerticalNumberPicker(
-                            value = minutesFor(allocatedTimeInDeciSeconds),
+                            value = minutesFor(whiteAllocatedTimeInDeciSeconds),
                             range = 0..59,
                             onStateChanged = {
                                 updateAllocatedMinutes(it)
@@ -671,13 +689,22 @@ fun GamePage(
                         Text("m")
 
                         VerticalNumberPicker(
-                            value = secondsFor(allocatedTimeInDeciSeconds),
+                            value = secondsFor(whiteAllocatedTimeInDeciSeconds),
                             range = 0..59,
                             onStateChanged = {
                                 updateAllocatedSeconds(it)
                             }
                         )
                         Text("s")
+
+                        Text(strings.timeIncrement, modifier = Modifier.padding(start = 10.dp))
+                        VerticalNumberPicker(
+                            value = whiteIncrementInSeconds,
+                            range = 0..59,
+                            onStateChanged = {
+                                whiteIncrementInSeconds = it
+                            }
+                        )
                     }
                 }
             }

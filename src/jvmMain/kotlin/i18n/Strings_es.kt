@@ -99,5 +99,6 @@ val esStrings = Strings(
     allocatedTime = "Tiempo asignado",
     whiteWonOnTime = "Los blancos han ganado por tiempo.",
     blackWonOnTime = "Los negros han ganado por tiempo.",
-    drawOnTimeByInsufficientMaterial = "Dibujar por material insuficiente aunque hay un tiempo de espera."
+    drawOnTimeByInsufficientMaterial = "Dibujar por material insuficiente aunque hay un tiempo de espera.",
+    timeIncrement = "Incremento (s)",
 )

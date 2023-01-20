@@ -99,5 +99,6 @@ val frStrings = Strings(
     allocatedTime = "Temps alloué",
     whiteWonOnTime = "Les Blancs ont gagné au temps",
     blackWonOnTime = "Les Noirs ont gagné au temps",
-    drawOnTimeByInsufficientMaterial = "Nulle par insuffisance matérielle bien que le temps soit écoulé."
+    drawOnTimeByInsufficientMaterial = "Nulle par insuffisance matérielle bien que le temps soit écoulé.",
+    timeIncrement = "Incrément (s)"
 )

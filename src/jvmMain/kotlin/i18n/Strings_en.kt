@@ -99,5 +99,6 @@ val enStrings = Strings(
     allocatedTime = "Allocated time",
     whiteWonOnTime = "White has won on time.",
     blackWonOnTime = "Black has won on time.",
-    drawOnTimeByInsufficientMaterial = "Draw by insufficient material though there's a timeout."
+    drawOnTimeByInsufficientMaterial = "Draw by insufficient material though there's a timeout.",
+    timeIncrement = "Increment (s)",
 )
