@@ -62,7 +62,9 @@ object UciEngineChannel {
     suspend fun getBestMoveForPosition(position: String, moveTime: MoveTime?) {
         process?.sendCommand("position fen $position")
         if (moveTime != null) {
-            process?.sendCommand("go wtime ${moveTime.whiteTimeMillis} btime ${moveTime.blackTimeMillis} winc ${moveTime.whiteIncMillis} binc ${moveTime.blackIncMillis}")
+            val whiteIncPart = if (moveTime.whiteIncMillis > 0) "winc ${moveTime.whiteIncMillis}" else ""
+            val blackIncPart = if (moveTime.blackIncMillis > 0) "black ${moveTime.blackIncMillis}" else ""
+            process?.sendCommand("go wtime ${moveTime.whiteTimeMillis} btime ${moveTime.blackTimeMillis} $whiteIncPart $blackIncPart".trim())
         } else {
             process?.sendCommand("go movetime ${PreferencesManager.getEngineThinkingTime()}")
         }
