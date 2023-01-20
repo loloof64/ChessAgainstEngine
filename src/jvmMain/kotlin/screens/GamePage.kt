@@ -153,6 +153,8 @@ fun GamePage(
     }
 
     fun onCheckmate(whitePlayer: Boolean) {
+        handleClockActiveChange(false)
+
         whitePlayerType = ChessGameManager.getWhitePlayerType()
         blackPlayerType = ChessGameManager.getBlackPlayerType()
         coroutineScope.launch {
@@ -165,6 +167,8 @@ fun GamePage(
     }
 
     fun onStalemate() {
+        handleClockActiveChange(false)
+
         whitePlayerType = ChessGameManager.getWhitePlayerType()
         blackPlayerType = ChessGameManager.getBlackPlayerType()
         coroutineScope.launch {
@@ -175,6 +179,8 @@ fun GamePage(
     }
 
     fun onThreeFoldRepetition() {
+        handleClockActiveChange(false)
+
         whitePlayerType = ChessGameManager.getWhitePlayerType()
         blackPlayerType = ChessGameManager.getBlackPlayerType()
         coroutineScope.launch {
@@ -185,6 +191,8 @@ fun GamePage(
     }
 
     fun onInsufficientMaterial() {
+        handleClockActiveChange(false)
+
         whitePlayerType = ChessGameManager.getWhitePlayerType()
         blackPlayerType = ChessGameManager.getBlackPlayerType()
         coroutineScope.launch {
@@ -195,6 +203,8 @@ fun GamePage(
     }
 
     fun onFiftyMovesRuleDraw() {
+        handleClockActiveChange(false)
+
         whitePlayerType = ChessGameManager.getWhitePlayerType()
         blackPlayerType = ChessGameManager.getBlackPlayerType()
         coroutineScope.launch {
