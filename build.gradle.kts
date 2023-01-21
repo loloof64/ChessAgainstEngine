@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com.loloof64"
-version = "1.0"
+version = "1.0.2"
 
 repositories {
     google()
@@ -41,7 +41,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "ChessAgainstEngine"
-            packageVersion = "1.0.0"
+            packageVersion = "1.0.2"
             description = "Play chess against the UCI engine you provide."
             vendor = "Laurent Bernabe"
             licenseFile.set(project.file("license.txt"))

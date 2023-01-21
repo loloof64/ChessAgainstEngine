@@ -19,6 +19,11 @@ Play chess locally.
   * you can show the engine score evaluation (with a checkbox)
 * when game is finished, you also have the option of saving the game in a pgn file, and you can also navigate into the game history
 
+## Caveats
+
+* If your PGN has a tag `Setup` instead of `SetUp`, then it won't be parsed correctly
+* When failing to import a PGN, we can't know on which game the error has been reported
+
 ## Credits
 
 * Free Serif font download from [Fonts2U](https://fr.fonts2u.com/download/free-serif.police).
