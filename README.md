@@ -24,6 +24,12 @@ Play chess locally.
 * If your PGN has a tag `Setup` instead of `SetUp`, then it won't be parsed correctly
 * When failing to import a PGN, we can't know on which game the error has been reported
 
+## Developers
+
+1. Install Intellij Idea (Community version is enough)
+2. Import the project from Git
+3. Run gradle command (from Gradle view) Tasks > createDistributable
+
 ## Credits
 
 * Free Serif font download from [Fonts2U](https://fr.fonts2u.com/download/free-serif.police).
