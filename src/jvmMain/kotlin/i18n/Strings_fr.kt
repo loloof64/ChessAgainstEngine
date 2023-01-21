@@ -101,5 +101,8 @@ val frStrings = Strings(
     blackWonOnTime = "Les Noirs ont gagné au temps",
     drawOnTimeByInsufficientMaterial = "Nulle par insuffisance matérielle bien que le temps soit écoulé.",
     timeIncrement = "Incrément (s)",
-    differentTimeForBlack = "Temps différent pour les Noirs"
+    differentTimeForBlack = "Temps différent pour les Noirs",
+    wrongFieldsCountFen = "Le code FEN de la position de départ n'a pas le nombre de champs requis.",
+    oppositeKingInCheckFen = "Le code FEN de la position de départ a le roi adverse en échec.",
+    wrongKingsCountFen = "Le code FEN de la position de départ n'a pas le bon compte de rois."
 )

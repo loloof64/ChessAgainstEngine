@@ -24,10 +24,7 @@ import com.arkivanov.decompose.router.stack.push
 import components.*
 import i18n.LocalStrings
 import kotlinx.coroutines.launch
-import logic.ChessGameManager
-import logic.defaultPosition
-import logic.emptyPosition
-import logic.positionFenToPiecesArray
+import logic.*
 
 const val noEnPassant = "-"
 
@@ -128,10 +125,28 @@ fun EditPositionPage(
             navigation.pop()
             navigation.push(Screen.Game)
         }
-        catch (ex: IllegalArgumentException) {
+        catch (ex: KingNotInTurnIsInCheck) {
             coroutineScope.launch {
                 scaffoldState.snackbarHostState.showSnackbar(
-                    message = strings.wrongFEN,
+                    message = strings.oppositeKingInCheckFen,
+                    actionLabel = strings.close,
+                    duration = SnackbarDuration.Long,
+                )
+            }
+        }
+        catch (ex: WrongFieldsCountException) {
+            coroutineScope.launch {
+                scaffoldState.snackbarHostState.showSnackbar(
+                    message = strings.wrongFieldsCountFen,
+                    actionLabel = strings.close,
+                    duration = SnackbarDuration.Long,
+                )
+            }
+        }
+        catch (ex: WrongKingsCountException) {
+            coroutineScope.launch {
+                scaffoldState.snackbarHostState.showSnackbar(
+                    message = strings.wrongKingsCountFen,
                     actionLabel = strings.close,
                     duration = SnackbarDuration.Long,
                 )

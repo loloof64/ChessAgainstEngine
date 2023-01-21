@@ -104,6 +104,9 @@ data class Strings(
     val drawOnTimeByInsufficientMaterial: String,
     val timeIncrement: String,
     val differentTimeForBlack: String,
+    val wrongFieldsCountFen: String,
+    val oppositeKingInCheckFen: String,
+    val wrongKingsCountFen: String,
 )
 
 val strings = mapOf(

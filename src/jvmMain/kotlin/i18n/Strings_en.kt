@@ -101,5 +101,8 @@ val enStrings = Strings(
     blackWonOnTime = "Black has won on time.",
     drawOnTimeByInsufficientMaterial = "Draw by insufficient material though there's a timeout.",
     timeIncrement = "Increment (s)",
-    differentTimeForBlack = "Different time for black"
+    differentTimeForBlack = "Different time for black",
+    wrongFieldsCountFen = "The start position FEN has a wrong fields count.",
+    oppositeKingInCheckFen = "The start position FEN has opposite king in check.",
+    wrongKingsCountFen = "The start position FEN has not the right count for kings."
 )

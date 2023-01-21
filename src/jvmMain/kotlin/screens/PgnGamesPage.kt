@@ -25,9 +25,7 @@ import io.github.wolfraam.chessgame.ChessGame
 import io.github.wolfraam.chessgame.pgn.PGNImporter
 import io.github.wolfraam.chessgame.pgn.PgnTag
 import kotlinx.coroutines.launch
-import logic.ChessGameManager
-import logic.defaultPosition
-import logic.positionFenToPiecesArray
+import logic.*
 import java.io.FileInputStream
 
 
@@ -110,10 +108,39 @@ fun PgnGamesPage(
     }
 
     fun onValidate() {
-        ChessGameManager.setStartPosition(currentFen)
-        ChessGameManager.resetGame()
-        navigation.pop()
-        navigation.push(Screen.Game)
+        try {
+            ChessGameManager.setStartPosition(currentFen)
+            ChessGameManager.resetGame()
+            navigation.pop()
+            navigation.push(Screen.Game)
+        }
+        catch (ex: KingNotInTurnIsInCheck) {
+            coroutineScope.launch {
+                scaffoldState.snackbarHostState.showSnackbar(
+                    message = strings.oppositeKingInCheckFen,
+                    actionLabel = strings.close,
+                    duration = SnackbarDuration.Long,
+                )
+            }
+        }
+        catch (ex: WrongFieldsCountException) {
+            coroutineScope.launch {
+                scaffoldState.snackbarHostState.showSnackbar(
+                    message = strings.wrongFieldsCountFen,
+                    actionLabel = strings.close,
+                    duration = SnackbarDuration.Long,
+                )
+            }
+        }
+        catch (ex: WrongKingsCountException) {
+            coroutineScope.launch {
+                scaffoldState.snackbarHostState.showSnackbar(
+                    message = strings.wrongKingsCountFen,
+                    actionLabel = strings.close,
+                    duration = SnackbarDuration.Long,
+                )
+            }
+        }
     }
 
     fun onCancel() {
