@@ -2,6 +2,8 @@
 
 Play chess locally.
 
+![Example usage](https://github.com/loloof64/ChessAgainstEngine/blob/master/screenshot.png?raw=true)
+
 ## Usage
 
 * first we must configure an UCI engine : Stockfish is a good and free candidate
