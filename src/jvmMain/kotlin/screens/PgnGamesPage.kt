@@ -68,7 +68,18 @@ fun PgnGamesPage(
         pgnImporter.setOnWarning {
             println(it)
         }
-        pgnImporter.run(FileInputStream(selectedFilePath))
+
+        try {
+            pgnImporter.run(FileInputStream(selectedFilePath))
+        } catch (ex: IllegalArgumentException) {
+            coroutineScope.launch {
+                scaffoldState.snackbarHostState.showSnackbar(
+                    strings.errorImportingSomePgnGames,
+                    actionLabel = strings.close,
+                    duration = SnackbarDuration.Long
+                )
+            }
+        }
 
         if (errors.isNotEmpty()) {
             coroutineScope.launch {
